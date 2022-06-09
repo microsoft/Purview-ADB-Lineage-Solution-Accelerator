@@ -1,0 +1,29 @@
+{
+    "name": "SparkSubmitForBasicApp",
+    "new_cluster": {
+        "num_workers": 1,
+        "spark_version": "9.1.x-scala2.12",
+        "spark_conf": {
+            "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-scope/Ol-Output-Api-Key}}",
+            "spark.openlineage.host": "https://YOURFUNCTION.azurewebsites.net",
+            "spark.openlineage.namespace": "YOURNAMESPACE#JOBNAME",
+            "spark.openlineage.version": "1"
+        },
+        "node_type_id": "Standard_DS3_v2",
+        "init_scripts": {
+            "dbfs": {
+                "destination": "dbfs:/databricks/openlineagehardcoded/release-candidate.sh"
+            }
+        }
+    },
+    "libraries": [],
+    "timeout_seconds": 3600,
+    "max_retries": 1,
+    "spark_submit_task": {
+        "parameters": [
+            "--class",
+            "SparkApp.ReadWrite.App",
+            "dbfs:/FileStore/testcases/rwapp.jar"
+        ]
+    }
+}

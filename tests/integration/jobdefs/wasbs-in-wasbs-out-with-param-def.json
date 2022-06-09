@@ -1,0 +1,25 @@
+{
+    "settings": {
+        "name": "wasbs-in-wasbs-out-with-param",
+        "email_notifications": {
+            "no_alert_for_skipped_runs": false
+        },
+        "timeout_seconds": 0,
+        "max_concurrent_runs": 1,
+        "tasks": [
+            {
+                "task_key": "wasbs-in-wasbs-out-with-param",
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/wasbs-in-wasbs-out-with-param",
+                    "base_parameters": {
+                        "myval": "10"
+                    }
+                },
+                "existing_cluster_id": "0326-140927-mc4qzaj5",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            }
+        ],
+        "format": "MULTI_TASK"
+    }
+}

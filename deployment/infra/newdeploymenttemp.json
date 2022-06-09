@@ -1,0 +1,499 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"prefixName": {
+			"type": "string"
+		},
+		"clientid": {
+			"type": "string"
+		},
+		"clientsecret": {
+			"type": "string"
+		},
+		"purviewName": {
+			"type": "string",
+			"defaultValue": "[concat(resourceGroup().name,'-openlineage-purview')]",
+			"metadata": {
+				"description": "User name for the Virtual Machine."
+			}
+		},
+		"resourceTagValues": {
+			"type": "object"
+		}
+	},
+	"variables": {
+		"paramName": "[parameters('prefixName')]",
+		"rgId": "[resourceGroup().id]",
+		"uniqueName": "[substring(uniqueString(variables('rgId')),0,4)]",
+		"functionAppName": "[replace(replace(toLower(concat(concat('functionapp',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"hostingPlanName": "[replace(replace(toLower(concat(concat('functionapphostplan',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"functionName": "OpenLineageIn",
+		"applicationInsightsName": "[replace(replace(toLower(concat(concat('appinsight',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"storageAccountName": "[replace(replace(toLower(concat(concat('storage',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"functionStorageAccountName": "[replace(replace(toLower(concat(concat('function','storage'),variables('uniqueName'))),'-',''),'_','')]",
+		"clientidkey": "clientIdKey",
+		"clientsecretkey": "clientSecretKey",
+		"storageAccountAccessKey": "storageAccessKey",
+		"functionStorageAccessKey": "functionStorageAccessKey",
+		"functionStorageAccountAccessKey": "functionStorageAccountKey",
+		"functionWorkerRuntime": "dotnet-isolated",
+		"openlineageEventHubNameSpaceName": "[replace(replace(toLower(concat(concat('eventhubns',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"openlineageNameEventHubName": "[replace(replace(toLower(concat(concat('eventhub',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"openlineageNameEventHubConsumerGroup": "[replace(replace(toLower(concat(concat('consumergroup',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"openlineageKeyVaultName": "[replace(replace(toLower(concat(concat('keyvaut',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+		"purviewAccountName": "[parameters('purviewName')]",
+		"eventHubSku": "Standard",
+		"captureEnabled": true,
+		"captureEncodingFormat": "Avro",
+		"captureTime": 60,
+		"captureSize": 314572800,
+		"EventHubConnectionSecretNameSend": "ehsecretSend",
+		"EventHubConnectionSecretNameListen": "ehsecretListen",
+		"functionStorageSecret": "functionStorageSecret",
+		"storageAccountSecret": "storageAccountSecret",
+		"OLOutputAPIKeySecretName": "Ol-Output-Api-Key",
+		"containerName": "eventhubdata"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2019-06-01",
+			"name": "[variables('storageAccountName')]",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard_LRS"
+			},
+			"kind": "Storage",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"allowBlobPublicAccess": "False",
+            	                "supportsHttpsTrafficOnly": "True"
+			}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2021-06-01",
+			"name": "[variables('functionStorageAccountName')]",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard_LRS"
+			},
+			"kind": "Storage",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"allowBlobPublicAccess": "False"
+			}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+			"apiVersion": "2021-06-01",
+			"name": "[format('{0}/default/{1}', variables('functionStorageAccountName'), variables('containerName'))]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Web/serverfarms",
+			"apiVersion": "2020-06-01",
+			"name": "[variables('hostingPlanName')]",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Y1",
+				"tier": "Dynamic"
+			},
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"name": "[variables('hostingPlanName')]",
+				"computeMode": "Dynamic"
+			}
+		},
+		{
+			"type": "Microsoft.Web/sites",
+			"apiVersion": "2020-06-01",
+			"name": "[variables('functionAppName')]",
+			"location": "[resourceGroup().location]",
+			"identity": {
+				"type": "SystemAssigned"
+			},
+			"kind": "functionapp",
+			"tags": "[parameters('resourceTagValues')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+			],
+			"properties": {
+				"serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+				"httpsOnly": true,
+				"siteConfig": {
+					"appSettings": [
+						{
+							"name": "AzureWebJobsStorage",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+						},
+						{
+							"name": "FunctionStorage",
+							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('functionStorageSecret'),')')]"
+						},
+						{
+							"name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+						},
+						{
+							"name": "WEBSITE_CONTENTSHARE",
+							"value": "[toLower(variables('functionAppName'))]"
+						},
+						{
+							"name": "FUNCTIONS_EXTENSION_VERSION",
+							"value": "~4"
+						},
+						{
+							"name": "WEBSITE_NODE_DEFAULT_VERSION",
+							"value": "~10"
+						},
+						{
+							"name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+							"value": "[reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').InstrumentationKey]"
+						},
+						{
+							"name": "FUNCTIONS_WORKER_RUNTIME",
+							"value": "[variables('functionWorkerRuntime')]"
+						},
+						{
+							"name": "EventHubName",
+							"value": "[variables('openlineageNameEventHubName')]"
+						},
+						{
+							"name": "ListenToMessagesFromEventHub",
+							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('EventHubConnectionSecretNameListen'),')')]"
+						},
+						{
+							"name": "SendMessagesToEventHub",
+							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('EventHubConnectionSecretNameSend'),')')]"
+						},
+						{
+							"name": "EventHubConsumerGroup",
+							"value": "read"
+						},
+						{
+							"name": "OlToPurviewMappings",
+							"value": "{\"olToPurviewMappings\":[{\"name\":\"wasbs\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"wasbs\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_blob_path\",\"purviewPrefix\":\"https\"},{\"name\":\"wasb\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"wasb\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_blob_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsBlobRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssBlobRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsBlob\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfs\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssBlob\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfss\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"cosmos\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"azurecosmos\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[0]}/{nameSpcBodyParts[1]}/{nameSpcBodyParts[2]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_cosmosdb_sqlapi_collection\",\"purviewPrefix\":\"https\"},{\"name\":\"synapseSqlNonDbo\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameSpcBodyParts[0]\",\"compare\":\"contains\",\"op2\":\"azuresynapse\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_synapse_dedicated_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQLNonDbo\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameGroups\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0]}/{nameGroups[1]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"synapseSql\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameSpcBodyParts[0]\",\"compare\":\"contains\",\"op2\":\"azuresynapse\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0].parts[0]}\",\"purviewDataType\":\"azure_synapse_dedicated_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQL\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"db2Jdbc\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"jdbc:db2\"}],\"qualifiedName\":\"db2://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/databases/{nameSpcNameVals['Database']}/schemas/{nameSpcNameVals['CurrentSchema']}/tables/{nameGroups[0]}\",\"purviewDataType\":\"db2_table\",\"purviewPrefix\":\"db2\"},{\"name\":\"msqlJdbc\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"jdbc:mysql\"}],\"qualifiedName\":\"mysql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcNameVals['Database']}/tables/{nameGroups[0]}\",\"purviewDataType\":\"mysql_table\",\"purviewPrefix\":\"mysql\"},{\"name\":\"oracleJdbc\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"jdbc:oracle:thin:\"}],\"qualifiedName\":\"oracle://{nameSpcBodyParts[0]}/{nameSpcNameVals['Database']}/{nameGroups[0]}\",\"purviewDataType\":\"oracle_table\",\"purviewPrefix\":\"oracle\"}]}"
+						},
+						{
+							"name": "PurviewAccountName",
+							"value": "[variables('purviewAccountName')]"
+						},
+						{
+							"name": "ClientID",
+							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientidkey'),')')]"
+						},
+						{
+							"name": "ClientSecret",
+							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientsecretkey'),')')]"
+						},
+						{
+							"name": "AuthEndPoint",
+							"value": "https://login.microsoftonline.com/"
+						},
+						{
+							"name": "TenantId",
+							"value": "[subscription().tenantId]"
+						},
+						{
+							"name": "ResourceUri",
+							"value": "https://purview.azure.net"
+						}
+					]
+				}
+			},
+			"resources": [
+				{
+					"name": "MSDeploy",
+					"type": "extensions",
+					"location": "[resourceGroup().location]",
+					"apiVersion": "2020-06-01",
+					"dependsOn": [
+						"[concat('Microsoft.Web/sites/', variables('functionAppName'))]"
+					],
+					"properties": {
+						"packageUri": "http://aka.ms/APFunctions"
+					}
+				}
+			]
+		},
+		{
+			"type": "microsoft.insights/components",
+			"apiVersion": "2020-02-02-preview",
+			"name": "[variables('applicationInsightsName')]",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"[concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('applicationInsightsName')))]": "Resource"
+			},
+			"properties": {
+				"ApplicationId": "[variables('applicationInsightsName')]",
+				"Request_Source": "IbizaWebAppExtensionCreate"
+			}
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces",
+			"apiVersion": "2018-01-01-preview",
+			"name": "[variables('openlineageEventHubNameSpaceName')]",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "[variables('eventHubSku')]",
+				"tier": "[variables('eventHubSku')]",
+				"capacity": 1
+			},
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"isAutoInflateEnabled": false,
+				"maximumThroughputUnits": 0
+			}
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs",
+			"apiVersion": "2017-04-01",
+			"name": "[concat(variables('openlineageEventHubNameSpaceName'), '/', variables('openlineageNameEventHubName'))]",
+			"location": "[resourceGroup().location]",
+			"tags": "[parameters('resourceTagValues')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]"
+			],
+			"properties": {
+				"messageRetentionInDays": 1,
+				"partitionCount": 1,
+				"captureDescription": {
+					"enabled": "[variables('captureEnabled')]",
+					"skipEmptyArchives": false,
+					"encoding": "[variables('captureEncodingFormat')]",
+					"intervalInSeconds": "[variables('captureTime')]",
+					"sizeLimitInBytes": "[variables('captureSize')]",
+					"destination": {
+						"name": "EventHubArchive.AzureBlockBlob",
+						"properties": {
+							"archiveNameFormat": "{Namespace}/{EventHub}/{PartitionId}/{Year}/{Month}/{Day}/{Hour}/{Minute}/{Second}",
+							"blobContainer": "eventhubdata",
+							"storageAccountResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName'))]"
+						}
+					}
+				}
+			},
+			"resources": [
+				{
+					"apiVersion": "2017-04-01",
+					"name": "read",
+					"type": "consumergroups",
+					"dependsOn": [
+						"[variables('openlineageNameEventHubName')]"
+					],
+					"properties": {}
+				}
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"name": "[variables('openlineageKeyVaultName')]",
+			"apiVersion": "2019-09-01",
+			"location": "[resourceGroup().location]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"sku": {
+					"family": "A",
+					"name": "Standard"
+				},
+				"tenantId": "[subscription().tenantId]",
+				"accessPolicies": [
+					{
+						"tenantId": "[subscription().tenantid]",
+						"objectId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')),'2020-06-01', 'full').identity.principalId]",
+						"permissions": {
+							"keys": [],
+							"secrets": [
+								"get"
+							],
+							"certificates": []
+						}
+					}
+				],
+				"enableSoftDelete": false,
+				"enabledForDeployment": false,
+				"enabledForDiskEncryption": false,
+				"enabledForTemplateDeployment": false
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'), variables('EventHubConnectionSecretNameSend'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[listkeys(resourceId('Microsoft.Eventhub/namespaces/authorizationRules',variables('openlineageEventHubNameSpaceName'), 'SendMessages'),'2017-04-01').primaryConnectionString]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'), variables('EventHubConnectionSecretNameListen'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[listkeys(resourceId('Microsoft.Eventhub/namespaces/authorizationRules',variables('openlineageEventHubNameSpaceName'), 'ListenMessages'),'2017-04-01').primaryConnectionString]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('storageAccountName'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('functionStorageSecret'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('functionStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',variables('functionStorageAccountName')),'2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Storage/storageAccounts/', variables('functionStorageAccountName'))]",
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('OLOutputAPIKeySecretName'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[listKeys(concat(resourceId('Microsoft.Web/sites', variables('functionAppName')), '/host/default'), '2016-08-01').functionKeys.default]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('storageAccountAccessKey'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('functionStorageAccessKey'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName')), '2019-04-01').keys[0].value]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('clientidkey'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[parameters('clientid')]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults/secrets",
+			"apiVersion": "2019-09-01",
+			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('clientsecretkey'))]",
+			"tags": "[parameters('resourceTagValues')]",
+			"properties": {
+				"value": "[parameters('clientsecret')]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('openlineageEventHubNameSpaceName'), '/ListenMessages')]",
+			"tags": "[parameters('resourceTagValues')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]"
+			],
+			"properties": {
+				"rights": [
+					"Listen"
+				]
+			}
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('openlineageEventHubNameSpaceName'), '/SendMessages')]",
+			"tags": "[parameters('resourceTagValues')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]"
+			],
+			"properties": {
+				"rights": [
+					"Send"
+				]
+			}
+		},
+		{
+			"apiVersion": "2020-06-01",
+			"name": "pid-1e23d6fb-478f-4b04-bfa3-70db11929652",
+			"type": "Microsoft.Resources/deployments",
+			"properties": {
+				"mode": "Incremental",
+				"template": {
+					"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+					"contentVersion": "1.0.0.0",
+					"resources": []
+				}
+			}
+		}
+	],
+	"outputs": {
+		"functionAppName": {
+			"type": "string",
+			"value": "[variables('functionAppName')]"
+		},
+		"kvName": {
+			"type": "string",
+			"value": "[variables('openlineageKeyVaultName')]"
+		},
+		"storageAccountName": {
+			"type": "string",
+			"value": "[variables('storageAccountName')]"
+		},
+		"resourcegroupLocation": {
+			"type": "string",
+			"value": "[resourceGroup().location]"
+		}
+	}
+}

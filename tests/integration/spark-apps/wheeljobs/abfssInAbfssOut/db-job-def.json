@@ -1,0 +1,18 @@
+{
+    "settings": {
+        "existing_cluster_id": "TEST-CLUSTER-ID",
+        "libraries": [
+            {
+                "whl": "dbfs:/wheels/abfssintest-0.0.3-py3-none-any.whl"
+            }
+        ],
+        "python_wheel_task": {
+            "packageName": "abfssintest",
+            "entryPoint": "runapp"
+        },
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "name": "WheelJob",
+        "max_concurrent_runs": 1
+    }
+}
