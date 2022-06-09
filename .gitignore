@@ -160,4 +160,4 @@ init_purview*
 build
 
 # Ignore local settings
-localsettings*
+localsettingsdutils.py
