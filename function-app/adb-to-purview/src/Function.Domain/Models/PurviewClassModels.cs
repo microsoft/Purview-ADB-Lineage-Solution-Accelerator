@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-
 namespace Function.Domain.Models
 {
 #pragma warning disable CS8618
