@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "function-app\\adb-to-purview"
+		}
+	],
+	"settings": {
+		"debug.internalConsoleOptions": "neverOpen",
+		"dotnet-test-explorer.testProjectPath": "**/*tests.@(csproj|vbproj|fsproj)"
+	}
+}

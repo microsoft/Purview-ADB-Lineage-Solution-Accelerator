@@ -1,0 +1,69 @@
+{
+    "entityDefs": [
+			{
+			"category": "ENTITY",
+			"name": "purview_custom_connector_generic_column",
+			"description": "purview_custom_connector_generic_column",
+			"serviceType": "Purview Custom Connector",
+			"options": {
+				"schemaAttributes": "data_type"
+			},
+			"attributeDefs": [
+				{
+					"name": "data_type",
+					"typeName": "string",
+					"isOptional": false,
+					"cardinality": "SINGLE",
+					"valuesMinCount": 1,
+					"valuesMaxCount": 1,
+					"isUnique": false,
+					"isIndexable": false,
+					"includeInNotification": false
+				}
+			],
+			"superTypes": [
+				"DataSet"
+			],
+			"subTypes": [],
+			"relationshipAttributeDefs": []
+		},
+		{
+			"category": "ENTITY",
+			"name": "purview_custom_connector_generic_entity_with_columns",
+			"description": "purview_custom_connector_generic_entity_with_columns",
+			"serviceType": "Purview Custom Connector",
+			"options": {
+				"schemaElementsAttribute": "columns"
+			},
+			"attributeDefs": [
+				{
+					"name": "purview_qualifiedName",
+					"typeName": "string",
+					"isOptional": true,
+					"cardinality": "SINGLE",
+					"valuesMinCount": 0,
+					"valuesMaxCount": 1,
+					"isUnique": false,
+					"isIndexable": false,
+					"includeInNotification": false
+				},
+				{
+					"name": "original_source",
+					"typeName": "string",
+					"isOptional": true,
+					"cardinality": "SINGLE",
+					"valuesMinCount": 0,
+					"valuesMaxCount": 1,
+					"isUnique": false,
+					"isIndexable": false,
+					"includeInNotification": false
+				}
+			],
+			"superTypes": [
+				"DataSet"
+			],
+			"subTypes": [],
+			"relationshipAttributeDefs": []
+		}
+    ]
+}

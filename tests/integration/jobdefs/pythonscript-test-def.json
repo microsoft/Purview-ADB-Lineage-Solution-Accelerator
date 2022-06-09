@@ -1,0 +1,42 @@
+{
+    "settings": {
+        "name": "PythonScriptJob",
+        "email_notifications": {},
+        "max_concurrent_runs": 1,
+        "tasks": [
+            {
+                "task_key": "PythonScriptJob",
+                "spark_python_task": {
+                    "python_file": "dbfs:/FileStore/testcases/pythonscript.py"
+                },
+                "new_cluster": {
+                    "spark_version": "9.1.x-scala2.12",
+                    "spark_conf": {
+                        "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-scope/Ol-Output-Api-Key}}",
+                        "spark.openlineage.host": "https://<FUNCTION_SERVICE_NAME>.azurewebsites.net",
+                        "spark.openlineage.namespace": "<DBR_WORKSPACE_NAME>#ABC123",
+                        "spark.openlineage.version": "1"
+                    },
+                    "node_type_id": "Standard_DS3_v2",
+                    "enable_elastic_disk": true,
+                    "init_scripts": [
+                        {
+                            "dbfs": {
+                                "destination": "dbfs:/databricks/openlineagehardcoded/release-candidate.sh"
+                            }
+                        }
+                    ],
+                    "azure_attributes": {
+                        "availability": "ON_DEMAND_AZURE"
+                    },
+                    "num_workers": 1
+                },
+                "max_retries": 1,
+                "min_retry_interval_millis": 0,
+                "retry_on_timeout": false,
+                "timeout_seconds": 3600
+            }
+        ],
+        "format": "MULTI_TASK"
+    }
+}

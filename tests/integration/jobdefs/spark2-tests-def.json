@@ -1,0 +1,65 @@
+{
+    "settings": {
+        "name": "test-examples-spark-2",
+        "email_notifications": {
+            "no_alert_for_skipped_runs": false
+        },
+        "timeout_seconds": 0,
+        "max_concurrent_runs": 2,
+        "tasks": [
+            {
+                "task_key": "spark2-abfss-in-abfss-out",
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/abfss-in-abfss-out"
+                },
+                "existing_cluster_id": "0505-211804-c5x0jm8p",
+                "timeout_seconds": 0,
+                "email_notifications": {},
+                "description": ""
+            },
+            {
+                "task_key": "spark2-abfss-oauth",
+                "depends_on": [
+                    {
+                        "task_key": "spark2-abfss-in-abfss-out"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/abfss-in-abfss-out-ouath"
+                },
+                "existing_cluster_id": "0505-211804-c5x0jm8p",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "spark2-mnt",
+                "depends_on": [
+                    {
+                        "task_key": "spark2-abfss-oauth"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/mnt-in-mnt-out"
+                },
+                "existing_cluster_id": "0505-211804-c5x0jm8p",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "spark2-Synapse-wasbs-synapse",
+                "depends_on": [
+                    {
+                        "task_key": "spark2-mnt"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/synapse-wasbs-in-synapse-out"
+                },
+                "existing_cluster_id": "0505-211804-c5x0jm8p",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            }
+        ],
+        "format": "MULTI_TASK"
+    }
+}

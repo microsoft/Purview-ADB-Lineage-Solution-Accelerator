@@ -1,0 +1,191 @@
+{
+    "settings": {
+        "name": "test-examples-spark-3",
+        "email_notifications": {
+            "no_alert_for_skipped_runs": false
+        },
+        "timeout_seconds": 0,
+        "max_concurrent_runs": 1,
+        "tasks": [
+            {
+                "task_key": "abfss-in-abfss-out",
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/abfss-in-abfss-out"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {},
+                "description": ""
+            },
+            {
+                "task_key": "abfss-oauth",
+                "depends_on": [
+                    {
+                        "task_key": "abfss-in-abfss-out"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/abfss-in-abfss-out-ouath"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "azuresql-in-out",
+                "depends_on": [
+                    {
+                        "task_key": "ab-in-ab-out-root"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/azuresql-in-azuresql-out"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "delta-abfss",
+                "depends_on": [
+                    {
+                        "task_key": "azuresql-in-out"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/delta-in-delta-out-abfss"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "delta-fs",
+                "depends_on": [
+                    {
+                        "task_key": "delta-abfss"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/delta-in-delta-out-fs"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "delta-mnt",
+                "depends_on": [
+                    {
+                        "task_key": "delta-fs"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/delta-in-delta-out-mnt"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "mnt",
+                "depends_on": [
+                    {
+                        "task_key": "intermix-languages"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/mnt-in-mnt-out"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "synapse-in-wasbs-out",
+                "depends_on": [
+                    {
+                        "task_key": "nested-parent"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/synapse-in-wasbs-out"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "Syn-in-WB-in-Syn-Out",
+                "depends_on": [
+                    {
+                        "task_key": "synapse-in-wasbs-out"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/synapse-wasbs-in-synapse-out"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "wasbs-in-wasbs-out",
+                "depends_on": [
+                    {
+                        "task_key": "Syn-in-WB-in-Syn-Out"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/wasbs-in-wasbs-out"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "ab-in-ab-out-root",
+                "depends_on": [
+                    {
+                        "task_key": "abfss-oauth"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/abfss-in-abfss-out-root"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "nested-parent",
+                "depends_on": [
+                    {
+                        "task_key": "mnt"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/nested-parent"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "intermix-languages",
+                "depends_on": [
+                    {
+                        "task_key": "delta-mnt"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/intermix-languages"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            }
+        ],
+        "format": "MULTI_TASK"
+    }
+}

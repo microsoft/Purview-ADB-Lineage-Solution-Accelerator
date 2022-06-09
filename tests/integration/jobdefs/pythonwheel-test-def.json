@@ -1,0 +1,26 @@
+{
+    "settings": {
+        "name": "WheelJob",
+        "email_notifications": {
+            "no_alert_for_skipped_runs": false
+        },
+        "max_concurrent_runs": 1,
+        "tasks": [
+            {
+                "task_key": "WheelJob",
+                "python_wheel_task": {
+                    "package_name": "abfssintest",
+                    "entry_point": "runapp"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "libraries": [
+                    {
+                        "whl": "dbfs:/wheels/abfssintest-0.0.3-py3-none-any.whl"
+                    }
+                ],
+                "timeout_seconds": 0
+            }
+        ],
+        "format": "MULTI_TASK"
+    }
+}

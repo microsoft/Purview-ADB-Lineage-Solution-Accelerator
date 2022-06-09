@@ -1,0 +1,27 @@
+{
+    "settings": {
+        "name": "JarJob",
+        "email_notifications": {
+            "no_alert_for_skipped_runs": false
+        },
+        "max_concurrent_runs": 1,
+        "tasks": [
+            {
+                "task_key": "JarJob",
+                "spark_jar_task": {
+                    "jar_uri": "",
+                    "main_class_name": "SparkApp.Basic.App",
+                    "run_as_repl": true
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "libraries": [
+                    {
+                        "jar": "dbfs:/FileStore/testcases/app.jar"
+                    }
+                ],
+                "timeout_seconds": 0
+            }
+        ],
+        "format": "MULTI_TASK"
+    }
+}
