@@ -18,7 +18,7 @@ namespace Function.Domain.Helpers
 {
 
     /// <summary>
-    /// Helper Class that Connect to HTTP Service
+    /// Helper Class that Connect to HTTP Service used to call Microsoft Purview API
     /// </summary>
     public class PurviewClientHelper : IPurviewClientHelper
     {
