@@ -43,6 +43,7 @@
 		"openlineageNameEventHubConsumerGroup": "[replace(replace(toLower(concat(concat('consumergroup',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
 		"openlineageKeyVaultName": "[replace(replace(toLower(concat(concat('keyvaut',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
 		"purviewAccountName": "[parameters('purviewName')]",
+		"purviewDomain": "purview.azure.com",
 		"eventHubSku": "Standard",
 		"captureEnabled": true,
 		"captureEncodingFormat": "Avro",
@@ -183,6 +184,10 @@
 							"name": "PurviewAccountName",
 							"value": "[variables('purviewAccountName')]"
 						},
+						{
+							"name": "PurviewDomain",
+							"value": "[variables('purviewDomain')]"
+						},						
 						{
 							"name": "ClientID",
 							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientidkey'),')')]"

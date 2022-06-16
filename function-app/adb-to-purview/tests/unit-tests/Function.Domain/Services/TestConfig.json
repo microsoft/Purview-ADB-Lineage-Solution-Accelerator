@@ -7,6 +7,7 @@
     "EventHubConsumerGroup": "read",
     "OlToPurviewMappings": "{\"OlToPurviewMappings\": [{\"UrlSuffix\":\"\",\"OlPrefix\":\"wasbs\",\"PurviewPrefix\":\"https\",\"PurviewDatatype\":\"azure_blob_path\"},{\"UrlSuffix\":\"\",\"OlPrefix\":\"wasb\",\"PurviewPrefix\":\"https\",\"PurviewDatatype\":\"azure_blob_path\"},{\"UrlSuffix\":\"\",\"OlPrefix\":\"abfss\",\"PurviewPrefix\":\"https\",\"PurviewDatatype\":\"azure_datalake_gen2_path\"},{\"UrlSuffix\":\"\",\"OlPrefix\":\"abfs\",\"PurviewPrefix\":\"https\",\"PurviewDatatype\":\"azure_datalake_gen2_path\"},{\"UrlSuffix\":\"\",\"OlPrefix\":\"azurecosmos\",\"PurviewPrefix\":\"https\",\"PurviewDatatype\":\"azure_cosmosdb_sqlapi_collection\"},{\"UrlSuffix\":\"database.windows.net\",\"OlPrefix\":\"sqlserver\",\"PurviewPrefix\":\"mssql\",\"PurviewDatatype\":\"azure_sql_table\"},{\"UrlSuffix\":\"sql.azuresynapse.net\",\"OlPrefix\":\"sqlserver\",\"PurviewPrefix\":\"mssql\",\"PurviewDatatype\":\"azure_synapse_dedicated_sql_table\"}]}",
     "PurviewAccountName" : "purview-to-adb-purview",
+    "PurviewDomain" : "purview.azure.com",
     "ClientName": "ADBToPurviewSPN",
     "ClientID":"dc451e0e-8641-458b-8ba3-6871cae65d92",
     "AuthEndPoint":"https://login.microsoftonline.com/",

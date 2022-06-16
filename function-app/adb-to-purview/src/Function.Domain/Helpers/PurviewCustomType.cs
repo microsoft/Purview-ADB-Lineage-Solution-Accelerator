@@ -559,7 +559,7 @@ namespace Function.Domain.Helpers
         {
             var correlationId = Guid.NewGuid().ToString();
             var token = this.GetToken();
-            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.catalog.purview.azure.com/api";
+            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.catalog.{Environment.GetEnvironmentVariable("PurviewDomain") ?? ""}/api";
             var purviewSearchEndpoint = $"{baseurl}/atlas/v2/search/advanced";
             PurviewEntitySearchResponseModel entityObjectModel = new PurviewEntitySearchResponseModel();
             try
@@ -632,7 +632,7 @@ namespace Function.Domain.Helpers
         {
             var correlationId = Guid.NewGuid().ToString();
             var token = this.GetToken();
-            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.purview.azure.com/catalog/api";
+            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("PurviewDomain") ?? ""}/catalog/api";
             var purviewSearchEndpoint = $"{baseurl}/atlas/v2/entity/bulk/uniqueAttribute/type/";
             var deleteEndPoint = $"{baseurl}/atlas/v2/entity/guid/";
             List<Asset> entities = await PurviewclientHelper.GetEntityFromPurview(correlationId, quilifiedName.Trim('/').ToLower(), purviewSearchEndpoint, token, typeName);
@@ -728,7 +728,7 @@ namespace Function.Domain.Helpers
 
             _logger.LogInformation($"Sending this payload to Purview: {payloadJson}");
 
-            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.catalog.purview.azure.com/api";
+            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.catalog.{Environment.GetEnvironmentVariable("PurviewDomain") ?? ""}/api";
             var purviewEntityEndpoint = $"{baseurl}/atlas/v2/entity/bulk";
 
             HttpResponseMessage? response = await this.PurviewclientHelper.PostEntitiesToPurview(
@@ -749,7 +749,7 @@ namespace Function.Domain.Helpers
         {
             var correlationId = Guid.NewGuid().ToString();
             var token = this.GetToken();
-            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? "purview-to-adb-demo-openlineage-purview"}.catalog.purview.azure.com/api";
+            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? "purview-to-adb-demo-openlineage-purview"}.catalog.{Environment.GetEnvironmentVariable("PurviewDomain") ?? ""}/api";
             var purviewSearchEndpoint = $"{baseurl}/search/query?api-version=2021-05-01-preview";
 
             List<QueryValeuModel> returnValue = await PurviewclientHelper.QueryEntities(correlationId, token, purviewSearchEndpoint, filter);
@@ -765,7 +765,7 @@ namespace Function.Domain.Helpers
         public async Task<JObject> GetByGuid(string guid)
         {
             var token = this.GetToken();
-            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? "purview-to-adb-demo-openlineage-purview"}.purview.azure.com/catalog/api";
+            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? "purview-to-adb-demo-openlineage-purview"}.{Environment.GetEnvironmentVariable("PurviewDomain") ?? ""}/catalog/api";
             var purviewSearchEndpoint = $"{baseurl}/atlas/v2/entity/guid/";
             JObject entity = await PurviewclientHelper.GetEntityByGuid(token, purviewSearchEndpoint, guid);
             return entity;
@@ -781,7 +781,7 @@ namespace Function.Domain.Helpers
         {
             var correlationId = Guid.NewGuid().ToString();
             var token = this.GetToken();
-            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.purview.azure.com/catalog/api";
+            var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("PurviewDomain") ?? ""}/catalog/api";
             var purviewSearchEndpoint = $"{baseurl}/atlas/v2/entity/bulk/uniqueAttribute/type/";
             var deleteEndPoint = $"{baseurl}/atlas/v2/entity/guid/";
             List<Asset> entities = await PurviewclientHelper.GetEntityFromPurview(correlationId, quilifiedName.Trim('/').ToLower(), purviewSearchEndpoint, token, typeName);
