@@ -8,9 +8,8 @@ on:
     paths:
       - '**.cs'
       - '**.csproj'
-      - 'tests/'
-    paths-ignore:
-      - '.md'
+      - 'tests/jobdefs/'
+      - 'tests/spark-apps/'
   workflow_dispatch:
 
 env:
@@ -66,6 +65,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    # TODO: Deploy the Function to integration environment
     # TODO: Deploy / Update Spark jobs
 
     - name: Start Integration Synapse SQL Pool
