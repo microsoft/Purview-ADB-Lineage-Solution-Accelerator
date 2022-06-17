@@ -98,10 +98,5 @@ purview_type_resp_custom_type=$(curl -s -X POST $purview_endpoint/catalog/api/at
         -H "Content-Type: application/json" \
         -d @Custom_Types.json )
 
-purview_type_resp_databricks_type=$(curl -s -X POST $purview_endpoint/catalog/api/atlas/v2/types/typedefs \
-        -H "Authorization: Bearer $acc_purview_token" \
-        -H "Content-Type: application/json" \
-        -d @Databricks_Types.json )
 echo $purview_type_resp_custom_type
-echo $purview_type_resp_databricks_type
 ```

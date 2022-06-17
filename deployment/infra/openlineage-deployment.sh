@@ -408,7 +408,7 @@ do
         echo "There was a problem getting the Purview Token. Please check your Client ID and Client Secret"
         break
     elif [[ "${purview_type_resp_spark_type}" == "" && $i -eq 1 ]] || [[ $retry_check == "retry" && $i -le 5 ]]; then
-        echo "Upload try"
+        echo "Uploading Solution Accelerator Custom Types"
         purview_type_resp_spark_type=$(curl -s -X POST $purview_endpoint/catalog/api/atlas/v2/types/typedefs \
             -H "Authorization: Bearer $acc_purview_token" \
             -H "Content-Type: application/json" \
@@ -420,21 +420,9 @@ do
         fi
 
 
-        echo "Trying spark_application type upload"
-
-	    purview_type_resp_spark_type2=$(curl -s -X POST $purview_endpoint/catalog/api/atlas/v2/types/typedefs \
-	        -H "Authorization: Bearer $acc_purview_token" \
-	        -H "Content-Type: application/json" \
-	        -d @Databricks_Types.json )
-        sub_Check2=$purview_type_resp_spark_type2
-
-        if [[ "$sub_Check2" != *"$subCheck"* ]]; then
-	    echo "Databricks Types already exist."
-        fi 
-
         upload_good="yes"
 
-        if [[ "$purview_type_resp_spark_type" == "" || "$purview_type_resp_spark_type2" == "" ]]; then
+        if [[ "$purview_type_resp_spark_type" == "" ]]; then
             upload_good="no"
         fi
 	    retry_check=""
