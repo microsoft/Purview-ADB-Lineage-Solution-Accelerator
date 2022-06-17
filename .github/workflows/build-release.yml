@@ -1,0 +1,133 @@
+name: Build and Release
+
+on:
+  create:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - 'tests/'
+    paths-ignore:
+      - '.md'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '6.x.x' # The .NET SDK version to use
+  REPO: "function-app/adb-to-purview/src/"
+  TEST: "function-app/adb-to-purview/tests/unit-tests"
+
+jobs:
+  build:
+
+    name: build-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Install dependencies
+      run: dotnet restore ${{ env.REPO }}
+      
+    - name: Build
+      run: dotnet build ${{ env.REPO }} --configuration Release --no-restore
+      
+    - name: Test
+      run:  dotnet test ${{ env.TEST }}
+      
+    - name: Publish
+      run: dotnet publish ${{ env.REPO }}
+
+    - name: Display structure of downloaded files
+      run: | 
+        mkdir ~/artifact 
+        Compress-Archive -Path D:/a/Purview-ADB-Lineage-Solution-Accelerator/Purview-ADB-Lineage-Solution-Accelerator/function-app/adb-to-purview/src/bin/Debug/net6.0/publish/* -DestinationPath ~/artifact/FunctionZip.zip
+      
+    - name: Upload Function Zip Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FunctionZip
+        path: ~/artifact/FunctionZip.zip
+
+  runIntegrationTests:
+    name: Test on Integration Tests
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Integration
+    steps:
+    - uses: actions/checkout@v3
+
+    # TODO: Deploy / Update Spark jobs
+
+    - name: Start Integration Synapse SQL Pool
+      run: source tests/integration/manage-sql-pool.sh start ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Install Python Requirements and Databricks CLI
+      run: pip install pyapacheatlas==0.12.0 azure-identity databricks-cli
+
+    - name: Configure Databricks CLI
+      run: |
+        echo "[DEFAULT]
+        host = https://${{ secrets.INT_DATABRICKS_WKSP_ID }}.azuredatabricks.net
+        token = ${{ secrets.INT_DATABRICKS_ACCESS_TOKEN }}" > ./config.ini
+        export DATABRICKS_CONFIG_FILE=./config.ini
+
+
+    - name: Cleanup Integration Environment
+      run: python ./tests/integration/runner.py --cleanup --dontwait None None None
+      env:
+        PURVIEW_INTEGRATION_TARGET: ${{ secrets.INT_PURVIEW_NAME }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        DATABRICKS_CONFIG_FILE: ./config.ini
+
+    - name: Run Integration Tests
+      run: source ./tests/integration/run-test.sh ALL ${{ secrets.INT_DATABRICKS_WKSP_ID }}
+      env:
+        PURVIEW_INTEGRATION_TARGET: ${{ secrets.INT_PURVIEW_NAME }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        DATABRICKS_CONFIG_FILE: ./config.ini
+
+    - name: Stop Integration Synapse SQL Pool
+      run: source tests/integration/manage-sql-pool.sh stop ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+  createRelease:
+    name: Create Release
+    if: ${{ github.event_name == 'create' && github.ref_type == 'tag' }}
+    needs: [runIntegrationTests]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Production
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: FunctionZip
+        path: ~/artifacts
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      if: github.ref_type == 'tag'
+      with:
+        artifacts: ~/artifact/FunctionZip.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
