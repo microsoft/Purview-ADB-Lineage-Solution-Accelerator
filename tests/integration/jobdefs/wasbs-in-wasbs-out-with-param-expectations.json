@@ -1,6 +1,6 @@
 [
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/wasbs-in-wasbs-out-with-param",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/wasbs-in-wasbs-out-with-param",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/wasbs-in-wasbs-out-with-param/9E51CA344228BD2C592091F34BCF81B8->D4051C5A34E3E2812E191B59E82CB1B1",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/wasbs-in-wasbs-out-with-param/D4051C5A34E3E2812E191B59E82CB1B1->8031DA4E838D99236E94A4CE72C951BC"
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/wasbs-in-wasbs-out-with-param",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/wasbs-in-wasbs-out-with-param",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/wasbs-in-wasbs-out-with-param/9E51CA344228BD2C592091F34BCF81B8->D4051C5A34E3E2812E191B59E82CB1B1",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/wasbs-in-wasbs-out-with-param/D4051C5A34E3E2812E191B59E82CB1B1->8031DA4E838D99236E94A4CE72C951BC"
 ]

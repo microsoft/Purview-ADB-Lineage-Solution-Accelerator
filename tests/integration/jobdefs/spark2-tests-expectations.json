@@ -1,15 +1,15 @@
 [
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-in-abfss-out",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-in-abfss-out/2796E46D0CCD18971A9C936C1EB97B1E->34BBA1402F1BAE560BFEA804B83FED62",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-oauth",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-oauth/56EE0B098A9A3D07DC11F4C6EA9BF71C->E6B1D99B74724B48DAB2BCB79142CB65",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out-oauth",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-mnt",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-mnt/EAEEF594372A61E0E1B545C0B430E966->ADFAB39F64A04DBD087DC73F8DF4EA47",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/mnt-in-mnt-out",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-Synapse-wasbs-synapse",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-Synapse-wasbs-synapse/B596CF432EE21C0349CD0770BC839867->F1AD7C08349CD0A30B47392F787D6364",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-wasbs-in-synapse-out"
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-in-abfss-out",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-in-abfss-out/2796E46D0CCD18971A9C936C1EB97B1E->34BBA1402F1BAE560BFEA804B83FED62",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-oauth",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-abfss-oauth/56EE0B098A9A3D07DC11F4C6EA9BF71C->E6B1D99B74724B48DAB2BCB79142CB65",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out-oauth",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-mnt",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-mnt/EAEEF594372A61E0E1B545C0B430E966->ADFAB39F64A04DBD087DC73F8DF4EA47",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/mnt-in-mnt-out",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-Synapse-wasbs-synapse",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/spark2-Synapse-wasbs-synapse/B596CF432EE21C0349CD0770BC839867->F1AD7C08349CD0A30B47392F787D6364",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-wasbs-in-synapse-out"
 ]

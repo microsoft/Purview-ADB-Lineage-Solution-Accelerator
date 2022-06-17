@@ -1,5 +1,5 @@
 [
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/JarJob",
-    "databricks://workspaces/<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/JarJob/B4CFB465D62A3D282313EF88E9E4779C->2B1635731ED472A95FC7A53B61F02674"
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/JarJob",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/JarJob/B4CFB465D62A3D282313EF88E9E4779C->2B1635731ED472A95FC7A53B61F02674"
 ]
