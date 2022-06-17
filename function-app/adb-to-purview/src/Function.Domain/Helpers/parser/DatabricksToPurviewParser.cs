@@ -95,7 +95,7 @@ namespace Function.Domain.Helpers
         {
             DatabricksWorkspace databricksWorkspace = new DatabricksWorkspace();
             databricksWorkspace.Attributes.Name = $"{_adbWorkspaceUrl}.azuredatabricks.net";
-            databricksWorkspace.Attributes.QualifiedName = $"databricks://workspaces/{_adbWorkspaceUrl}.azuredatabricks.net";
+            databricksWorkspace.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net";
             
             return databricksWorkspace;
         }
@@ -123,7 +123,7 @@ namespace Function.Domain.Helpers
             }
             var databricksJob = new DatabricksJob();
             databricksJob.Attributes.Name = adbJobRoot.RunName;
-            databricksJob.Attributes.QualifiedName = $"databricks://workspaces/{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_eEvent.AdbRoot!.JobId}";
+            databricksJob.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_eEvent.AdbRoot!.JobId}";
             databricksJob.Attributes.JobId = adbJobRoot.JobId;
             databricksJob.Attributes.CreatorUserName = adbJobRoot.CreatorUserName;
 
@@ -176,7 +176,7 @@ namespace Function.Domain.Helpers
                 throw ex;
             }
             taskAttributes.Name = _eEvent.AdbRoot.JobTasks[0].TaskKey;
-            string jobQn = $"databricks://workspaces/{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_eEvent.AdbRoot.JobId}";
+            string jobQn = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_eEvent.AdbRoot.JobId}";
             taskAttributes.QualifiedName = $"{jobQn}/tasks/{_eEvent.AdbRoot.JobTasks[0].TaskKey}";
             taskAttributes.JobId = _eEvent.AdbRoot.JobId;
             taskAttributes.ClusterId = _eEvent.AdbRoot.JobTasks[0].ClusterInstance.ClusterId;
