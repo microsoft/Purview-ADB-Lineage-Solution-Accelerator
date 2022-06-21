@@ -9,7 +9,7 @@
     "SendMessagesToEventHub": "<insert EH connection>",
     "EventHubName": "<insert>",
     "EventHubConsumerGroup": "read",
-    "OlToPurviewMappings": "{\"name\":\"adlsg1\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"adl\"}],\"qualifiedName\":\"adl://{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen1_path\",\"purviewPrefix\":\"adl\"}",
+    "OlToPurviewMappings": "{\"name\":\"adlsg1\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"adl\"}],\"qualifiedName\":\"adl://{nameSpcBodyParts[0]}{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen1_path\",\"purviewPrefix\":\"adl\"}",
     "PurviewAccountName": "<insert>",
     "ClientName": "<insert>",
     "ClientID": "<insert>",
