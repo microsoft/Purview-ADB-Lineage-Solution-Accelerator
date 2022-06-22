@@ -42,8 +42,10 @@ From the [Azure Portal](https://portal.azure.com)
 1. Clone this repository into the clouddrive directory
 
     ```bash
-    git clone https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
+    git clone [-b <version_tag>] https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
     ```
+
+> **Note**: [See list of supported tags](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags). Use `git clone https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git` when using the edge version.
 
 ### Configure application settings file
 
