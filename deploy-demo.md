@@ -45,7 +45,9 @@ From the [Azure Portal](https://portal.azure.com)
     git clone [-b <version_tag>] https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
     ```
 
-> **Note**: [See list of supported tags](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags). Use `git clone https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git` when using the edge version.
+    > **Note**: We highly recommend cloning from [specific release tags listed here](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
+    >
+    > Clone the main branch only when using the edge version.
 
 ### Configure application settings file
 
