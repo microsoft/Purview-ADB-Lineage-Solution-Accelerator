@@ -49,6 +49,10 @@ Does not support:
 * query as data source: Lineage will show the input table as `dbo.COMPLEX`.
 * Spark jobs that use Synapse tables in the same synapse workspace for input and output (all operations are done in Synapse in this scenario and no lineage is emitted).
 
+Limited support for Azure Synapse as an output:
+
+* Due to the implementation by Databricks, it will report output lineage to the staging folder path used to temporarily store the data before a Polybase / Copy command is executed inside of your Synapse SQL Pool.
+
 ## Azure SQL DB
 
 Supports Azure SQL DB through the [Apache Spark Connector for Azure SQL DB](https://docs.microsoft.com/en-us/sql/connect/spark/connector?view=sql-server-ver15).
@@ -86,6 +90,12 @@ As a result, this solution attempts to find the best matching *existing* asset. 
 
 The solution currently does not provide column level mapping within the Microsoft Purview lineage tab.
 
+### Hive Metastore / Delta Table Names
+
+The solution currently does not support emitting the Hive Metastore / Delta table SQL names. For example, if you have a Delta table name `default.events` and it's physical location is `abfss://container@storage/path`, the solution will report `abfss://container@storage/path`.
+
+OpenLineage is considering adding this feature with [OpenLineage#435](https://github.com/OpenLineage/OpenLineage/issues/435).
+
 ### Spark Streaming
 
 The solution does not currently support Spark Streaming. OpenLineage will emit events on Spark Streaming events, however, OpenLineage does not currently support retrieving the input and output data sources.
@@ -97,3 +107,7 @@ At this time, we encourage clusters running Spark Structured Streaming jobs to n
 ### Spark 2 Support
 
 The solution supports Spark 2 job cluster jobs. Databricks has removed Spark 2 from it's Long Term Support program.
+
+### Spark 3.2+ Support
+
+The solution supports Spark 3.0 and 3.1 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.2 on Databricks Runtime 10.4 and higher.
