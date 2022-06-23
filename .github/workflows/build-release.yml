@@ -131,5 +131,5 @@ jobs:
       uses: ncipollo/release-action@v1
       if: github.ref_type == 'tag'
       with:
-        artifacts: ~/artifact/FunctionZip.zip
+        artifacts: ~/artifacts/FunctionZip.zip
         token: ${{ secrets.GITHUB_TOKEN }}
