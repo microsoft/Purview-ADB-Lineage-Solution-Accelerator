@@ -9,6 +9,8 @@ namespace Function.Domain.Models.OL
     {
         [JsonProperty("lifeCycleStateChange")]
         public LifeCycleStateChangeClass LifeCycleStateChange = new LifeCycleStateChangeClass();
+        [JsonProperty("columnLineage")]
+        public ColumnLineageFacetsClass ColFacets = new ColumnLineageFacetsClass();
     }
 
     public class LifeCycleStateChangeClass
