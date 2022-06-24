@@ -23,6 +23,7 @@ namespace Function.Domain.Helpers
         private readonly ILoggerFactory _loggerFactory;
         private readonly ParserSettings _parserConfig;
         private readonly IQnParser _qnParser;
+        private readonly IColParser _colParser;
         private readonly EnrichedEvent _eEvent;
         private readonly string _adbWorkspaceUrl;
         const string SETTINGS = "OlToPurviewMappings";
@@ -55,6 +56,9 @@ namespace Function.Domain.Helpers
             _eEvent = eEvent;
             _qnParser = new QnParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.MountPoints);
+            // _colParser = new ColParser(_parserConfig, _loggerFactory,
+            //                           _eEvent.OlEvent.Outputs[0].Facets.ColFacets.fields[0].inputFields)
+            //_colParser = 
             _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
         }
 
@@ -266,6 +270,7 @@ namespace Function.Domain.Helpers
         public DatabricksProcess GetDatabricksProcess(string taskQn)
         {
             var databricksProcess = new DatabricksProcess();
+            //var ColumnAttributes = new ColumnLevelAttributes();
 
             var inputs = new List<InputOutput>();
             foreach (IInputsOutputs input in _eEvent.OlEvent!.Inputs)
@@ -278,12 +283,14 @@ namespace Function.Domain.Helpers
             {
                 outputs.Add(GetInputOutputs(output));
             }
-            
+
             databricksProcess.Attributes = GetProcAttributes(taskQn, inputs,outputs,_eEvent.OlEvent);
+            databricksProcess.ColumnLevel = GetColumnLevelInfo( databricksProcess,_eEvent.OlEvent);
             databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn; 
             return databricksProcess;
         }
 
+        
         private DatabricksProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent)
         {
             var pa = new DatabricksProcessAttributes();
@@ -292,8 +299,48 @@ namespace Function.Domain.Helpers
             pa.SparkPlan = sparkEvent.Run.Facets.SparkLogicalPlan.ToString(Formatting.None);
             pa.Inputs = inputs;
             pa.Outputs = outputs;
-
             return pa;
+        }
+
+
+        // private DatasetMappingClass GetDatasetmapping(Event sparkEvent)
+        // {
+        //     var dataSetMap = new DatasetMappingClass();
+        //     foreach(var output in sparkEvent.Outputs)
+        //     {
+        //     dataSetMap.sink = output.NameSpace + output.Name;
+        //     }
+        //     return dataSetMap;
+            
+        // }
+        private ColumnLevelAttributes GetColumnLevelInfo(DatabricksProcess databricksProcess, Event sparkEvent)
+        {
+            
+            var col = new ColumnLevelAttributes();
+            var dataSetList = new List<DatasetMappingClass>();
+            var columnLevelList = new List<ColumnMappingClass>();
+
+            foreach(Outputs colId in sparkEvent.Outputs)
+            {   var dataSet = new DatasetMappingClass();
+                var sinkQN = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name);
+                dataSet.sink = sinkQN.QualifiedName;
+                foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
+                {
+                    var columnLevel = new ColumnMappingClass();
+                    foreach(ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
+                    {
+                        //var sourceQN = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name);
+                        dataSet.source = colInfo2.nameSpace + colInfo2.name;
+                        columnLevel.source = colInfo2.field;
+                        dataSetList.Add(dataSet);
+                        columnLevelList.Add(columnLevel);
+                    }
+                    col.datasetMapping.Add(dataSet);
+                    col.columnMapping.Add(columnLevel);
+                }
+            }
+            
+            return col; 
         }
 
         private InputOutput GetInputOutputs(IInputsOutputs inOut)
@@ -305,6 +352,13 @@ namespace Function.Domain.Helpers
 
             return inputOutputId;
         }
+
+        // private ColumnLevelAttributes GetColumnLevelAttributes(IInputsOutputs inOut)
+        // {
+        //     var id = _colParser.GetColIdentifiers(_eEvent.OlEvent.Outputs);
+        //     var columnLevelId = new ColumnLevelAttributes();
+        //     return columnLevelId;
+        // } 
 
         private string GetInputsOutputsHash(List<InputOutput> inputs, List<InputOutput> outputs)
         {
