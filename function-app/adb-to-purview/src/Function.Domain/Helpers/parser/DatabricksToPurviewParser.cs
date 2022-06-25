@@ -321,16 +321,16 @@ namespace Function.Domain.Helpers
             var columnLevelList = new List<ColumnMappingClass>();
 
             foreach(Outputs colId in sparkEvent.Outputs)
-            {   var dataSet = new DatasetMappingClass();
-                var sinkQN = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name);
-                dataSet.sink = sinkQN.QualifiedName;
+            {   
                 foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
                 {
+                    var dataSet = new DatasetMappingClass();
+                    var sinkQN = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name);
+                    dataSet.sink = sinkQN.QualifiedName;
                     var columnLevel = new ColumnMappingClass();
                     foreach(ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
                     {
-                        //var sourceQN = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name);
-                        dataSet.source = colInfo2.nameSpace + colInfo2.name;
+                        dataSet.source = colInfo2.name;
                         columnLevel.source = colInfo2.field;
                         dataSetList.Add(dataSet);
                         columnLevelList.Add(columnLevel);
