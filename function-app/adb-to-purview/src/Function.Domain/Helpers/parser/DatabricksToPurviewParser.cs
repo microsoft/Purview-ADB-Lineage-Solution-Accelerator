@@ -302,17 +302,6 @@ namespace Function.Domain.Helpers
             return pa;
         }
 
-
-        // private DatasetMappingClass GetDatasetmapping(Event sparkEvent)
-        // {
-        //     var dataSetMap = new DatasetMappingClass();
-        //     foreach(var output in sparkEvent.Outputs)
-        //     {
-        //     dataSetMap.sink = output.NameSpace + output.Name;
-        //     }
-        //     return dataSetMap;
-            
-        // }
         private ColumnLevelAttributes GetColumnLevelInfo(DatabricksProcess databricksProcess, Event sparkEvent)
         {
             
@@ -325,16 +314,21 @@ namespace Function.Domain.Helpers
                 foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
                 {
                     var dataSet = new DatasetMappingClass();
+                    //Get sink name for datasetlist 
                     var sinkQN = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name);
+                    //Set sink name 
                     dataSet.sink = sinkQN.QualifiedName;
                     var columnLevel = new ColumnMappingClass();
                     foreach(ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
                     {
+                        //get sources for column level list 
                         dataSet.source = colInfo2.name;
                         columnLevel.source = colInfo2.field;
+                        //ADD data to model
                         dataSetList.Add(dataSet);
                         columnLevelList.Add(columnLevel);
                     }
+                    //Add data to list 
                     col.datasetMapping.Add(dataSet);
                     col.columnMapping.Add(columnLevel);
                 }

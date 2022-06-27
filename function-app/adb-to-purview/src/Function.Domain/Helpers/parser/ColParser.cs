@@ -18,15 +18,7 @@ namespace Function.Domain.Helpers
         private ParserSettings _configuration;
         private ILogger _logger;
 
-
-        /// <summary>
-        /// Parses the NameSpace and Name from the OpenLineage message and returns an object with
-        /// organized subparts to be used to construct the names and allow for support to be added in
-        /// configuration.
-        /// </summary>
-        /// <param name="nameSpace">The job/namespace from the OpenLineage message</param>
-        /// <param name="name">The job/name from the OpenLineage message</param>
-        /// <returns>PurviewIdentifier that is used to construct the Purview Qualified name</returns>
+// This class will be used for the parsing code. 
         public ColumnMappingClass GetColIdentifiers(Outputs output)
         {
             var cl = output; 

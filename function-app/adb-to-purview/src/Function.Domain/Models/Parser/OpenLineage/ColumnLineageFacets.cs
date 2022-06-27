@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace Function.Domain.Models.OL
 {
+    //Model for gett column data from Openlineae in
     [JsonObject("facets")]
     public class ColumnLineageFacets
     {
