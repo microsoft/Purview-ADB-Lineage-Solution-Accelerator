@@ -261,7 +261,7 @@
                 "op2": "adl"
             }
         ],
-        "qualifiedName": "adl://{nameSpcBodyParts[0]}{nameGroups[0]}",
+        "qualifiedName": "adl://{nameSpcBodyParts[0]}/{nameGroups[0]}",
         "purviewDataType": "azure_datalake_gen1_path",
         "purviewPrefix": "adl"
     }
