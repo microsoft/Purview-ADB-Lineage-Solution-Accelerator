@@ -44,6 +44,9 @@ jobs:
       
     - name: Publish
       run: dotnet publish ${{ env.REPO }}
+    
+    - name: Confirm Mappings Match
+      run: python tests/deployment/test_arm_mapping_matches_json.py
 
     - name: Display structure of downloaded files
       run: | 
