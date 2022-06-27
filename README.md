@@ -3,7 +3,7 @@ page_type: sample
 languages:
 - csharp
 products:
-- azure-purview
+- microsoft-purview
 - azure-databricks
 ---
 <!-- markdownlint-disable MD033 - HTML rule -->

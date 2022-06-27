@@ -34,9 +34,13 @@ From the [Azure Portal](https://portal.azure.com)
 
     ```powershell
     cd clouddrive
-    git clone https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
+    git clone [-b <release_tag>] https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
 
     ```
+
+    > **Note**: We highly recommend cloning from [specific release tags listed here](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
+    >
+    > Clone the main branch only when using the edge version.
 
 -----
 
