@@ -75,6 +75,10 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("sqlserver://purviewadbsynapsews.sql.azuresynapse.net:1433;database=SQLPool1;", 
                     "sales.region", 
                     "mssql://purviewadbsynapsews.sql.azuresynapse.net/SQLPool1/sales/region")]         
+        // Azure Data Lake Gen 1
+        [InlineData("adl://adblineagetesting.azuredatalakestore.net", 
+                    "/sampledata/outdatadata/test002", 
+                    "adl://adblineagetesting.azuredatalakestore.net/sampledata/outdatadata/test002")]         
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
         {
             var rslt = _qnparser.GetIdentifiers(nameSpace, name);
