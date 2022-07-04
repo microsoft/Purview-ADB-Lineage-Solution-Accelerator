@@ -1,0 +1,83 @@
+name: Build and Release
+
+on:
+  create:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - 'tests/jobdefs/'
+      - 'tests/spark-apps/'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '6.x.x' # The .NET SDK version to use
+  REPO: "function-app/adb-to-purview/src/"
+  TEST: "function-app/adb-to-purview/tests/unit-tests"
+
+jobs:
+  build:
+
+    name: build-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Install dependencies
+      run: dotnet restore ${{ env.REPO }}
+      
+    - name: Build
+      run: dotnet build ${{ env.REPO }} --configuration Release --no-restore
+      
+    - name: Test
+      run:  dotnet test ${{ env.TEST }}
+      
+    - name: Publish
+      run: dotnet publish ${{ env.REPO }}
+    
+    - name: Confirm Mappings Match
+      run: python tests/deployment/test_arm_mapping_matches_json.py
+
+    - name: Display structure of downloaded files
+      run: | 
+        mkdir ~/artifact 
+        Compress-Archive -Path D:/a/Public-Purview-ADB-Lineage-Solution-Accelerator/Public-Purview-ADB-Lineage-Solution-Accelerator/function-app/adb-to-purview/src/bin/Debug/net6.0/publish/* -DestinationPath ~/artifact/FunctionZip.zip
+      
+    - name: Upload Function Zip Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FunctionZip
+        path: ~/artifact/FunctionZip.zip
+
+  createRelease:
+    name: Create Release
+    if: ${{ github.event_name == 'create' && github.ref_type == 'tag' }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Production
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: FunctionZip
+        path: ~/artifacts
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      if: github.ref_type == 'tag'
+      with:
+        artifacts: ~/artifacts/FunctionZip.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
