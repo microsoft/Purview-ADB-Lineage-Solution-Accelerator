@@ -68,9 +68,38 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    # TODO: Deploy the Function to integration environment
+    # Deploy the Function to integration environment
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: FunctionZip
+        path: ./artifacts
+
+    - name: Run a one-line script
+      run: ls -l ./artifacts
+    
+    - name: Azure Functions Action
+      uses: Azure/functions-action@v1.4.6
+      with:
+        app-name: ${{ secrets.INT_FUNC_NAME }}
+        package: ./artifacts/FunctionZip.zip
+        publish-profile: ${{ secrets.INT_PUBLISH_PROFILE }}
+    
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.INT_AZ_CLI_CREDENTIALS }}
+    
+    - name: Azure CLI script
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.34.1
+        inlineScript: |
+          chmod +x $GITHUB_WORKSPACE/tests/deployment/compare-app-settings.py
+          python3 $GITHUB_WORKSPACE/tests/deployment/compare-app-settings.py ${{ secrets.INT_FUNC_NAME }} ${{ secrets.INT_RG_NAME }}
+
     # TODO: Deploy / Update Spark jobs
 
+    # Start up Synapse Pool and Execute Tests
     - name: Start Integration Synapse SQL Pool
       run: source tests/integration/manage-sql-pool.sh start ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
       env:
