@@ -338,7 +338,6 @@ user_object_id=$(echo $(jq -r '.id' <<< $user_detail))
 echo "objectId"
 echo "$user_object_id"
 
-kv_add_adb_ap=$(az keyvault set-policy --name $KVNAME --secret-permissions get list --object-id e84e8963-b732-473a-a15f-45b1206c3884)
 kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --secret-permissions get list --object-id $user_object_id)
 
 if [[ $az_token == "" ]]; then
