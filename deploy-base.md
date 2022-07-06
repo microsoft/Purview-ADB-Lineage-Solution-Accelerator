@@ -30,17 +30,18 @@ From the [Azure Portal](https://portal.azure.com)
 
     ![CloudShellConfirm.png](./assets/img/deploy/CloudShellConfirm.png)
 
-1. Change directory and clone this repository into the `clouddrive` directory. *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
+1. Change directory and clone this repository into the `clouddrive` directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `1.0.0`). *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
 
     ```powershell
     cd clouddrive
-    git clone [-b <release_tag>] https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
-
+    git clone -b <release_tag> https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
     ```
 
-    > **Note**: We highly recommend cloning from [specific release tags listed here](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
+    > **Note**:<br/>
+    > We highly recommend cloning from the [release tags listed here](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
     >
-    > Clone the main branch only when using the edge version.
+    > **Clone the *main* branch only when using nightly builds.**
+    > By using a nightly build (i.e. the latest commit on main), you gain access to newer / experimental features, however those features may change before the next official release. If you are testing a deployment for production, please clone using [release tags](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
 
 -----
 
