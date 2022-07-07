@@ -111,3 +111,7 @@ The solution supports Spark 2 job cluster jobs. Databricks has removed Spark 2 f
 ### Spark 3.2+ Support
 
 The solution supports Spark 3.0 and 3.1 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.2 on Databricks Runtime 10.4 and higher.
+
+### Private Endpoints on Microsoft Purview
+
+Currently, the solution does not support pushing lineage to a Private Endpoint backed Microsoft Purview service. The solution may be customized to deploy the Azure Function to connect to Microsoft Purview. Consider reviewing the documentation to [Connect privately and securely to your Microsoft Purview account](https://docs.microsoft.com/en-us/azure/purview/catalog-private-link-account-portal).
