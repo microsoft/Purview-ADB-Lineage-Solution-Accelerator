@@ -114,4 +114,4 @@ The solution supports Spark 3.0 and 3.1 interactive and job clusters. We are wor
 
 ### Private Endpoints on Microsoft Purview
 
-Currently, the solution does not support pushing lineage to a Private Endpoint backed Microsoft Purview service. The solution may be customized to deploy the Azure Function to connect to Purview. Consider reviewing the [Connect privately and securely to your Microsoft Purview account](https://docs.microsoft.com/en-us/azure/purview/catalog-private-link-account-portal) Microsoft Purview documentation.
+Currently, the solution does not support pushing lineage to a Private Endpoint backed Microsoft Purview service. The solution may be customized to deploy the Azure Function to connect to Microsoft Purview. Consider reviewing the documentation to [Connect privately and securely to your Microsoft Purview account](https://docs.microsoft.com/en-us/azure/purview/catalog-private-link-account-portal).
