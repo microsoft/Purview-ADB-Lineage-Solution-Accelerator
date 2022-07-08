@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 using Function.Domain.Helpers;
 using System.Net.Http;
 using Function.Domain.Models;
+using System.Text;
+using System.Security.Cryptography;
+using System.Runtime.Caching;
 
 namespace Function.Domain.Services
 {
@@ -28,7 +31,11 @@ namespace Function.Domain.Services
         private JArray to_purview_Json = new JArray();
         private readonly ILogger<PurviewIngestion> _logger;
         private List<PurviewCustomType> found_entities = new List<PurviewCustomType>();
-        
+        private MemoryCache _payLoad = MemoryCache.Default;
+        private CacheItemPolicy cacheItemPolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60.0)
+            };
         /// <summary>
         /// Create Object
         /// </summary>
@@ -38,7 +45,6 @@ namespace Function.Domain.Services
             _logger = log;
             _purviewClient = new PurviewClient(_logger);
             log.LogInformation($"Got Purview Client!");
-
         }
 
         /// <summary>
@@ -58,7 +64,6 @@ namespace Function.Domain.Services
             }
             return new JArray();
         }
-
         /// <summary>
         /// Send to Microsoft Purview API an single Entity to be inserted or updated
         /// </summary>
@@ -75,82 +80,115 @@ namespace Function.Domain.Services
                 return false;
             }
 
-            foreach (JObject entity in entities)
+            string ? dataEvent = CalculateHash(entities.ToString());
+            if (!_payLoad.Contains(dataEvent))
             {
-                if (Validate_Process_Json(entity))
+                var cacheItem = new CacheItem(dataEvent, dataEvent);  
+                _payLoad.Add(cacheItem, cacheItemPolicy);
+
+                foreach (JObject entity in entities)
                 {
-                    JObject new_entity = await Validate_Process_Entities(entity);
-                    hasProcess = Process_Json(new_entity);
-                    to_purview_Json.Add(new_entity);
-                }
-                else
-                {
-                    if (Validate_Entities_Json(entity))
+
+
+                    if (Validate_Process_Json(entity))
                     {
-                        PurviewCustomType new_entity = await Validate_Entities(entity);
-                        //Check Entity Relatioship
-//                        if (new_entity.is_dummy_asset)
-//                            to_purview_Json.Add(new_entity.Properties);
-                        
-                        string qualifiedName = entity["attributes"]!["qualifiedName"]!.ToString();
-                        if (entity.ContainsKey("relationshipAttributes"))
+                        JObject new_entity = await Validate_Process_Entities(entity);
+                        hasProcess = Process_Json(new_entity);
+                        to_purview_Json.Add(new_entity);
+                    }
+                    else
+                    {
+                        if (Validate_Entities_Json(entity))
                         {
-                            foreach (var rel in entity["relationshipAttributes"]!.Values<JProperty>())
+                            PurviewCustomType new_entity = await Validate_Entities(entity);
+                            //Check Entity Relatioship
+                            //                        if (new_entity.is_dummy_asset)
+                            //                            to_purview_Json.Add(new_entity.Properties);
+
+                            string qualifiedName = entity["attributes"]!["qualifiedName"]!.ToString();
+                            if (entity.ContainsKey("relationshipAttributes"))
                             {
-                                if (((JObject)(entity["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
+                                foreach (var rel in entity["relationshipAttributes"]!.Values<JProperty>())
                                 {
-                                    if (this.entities.ContainsKey(entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()))
+                                    if (((JObject)(entity["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
                                     {
-                                        entity["relationshipAttributes"]![rel!.Name]!["guid"] = this.entities[entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()].Properties["guid"];
+                                        if (this.entities.ContainsKey(entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()))
+                                        {
+                                            entity["relationshipAttributes"]![rel!.Name]!["guid"] = this.entities[entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()].Properties["guid"];
+                                        }
+                                        else
+                                        {
+                                            string qn = entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
+                                            PurviewCustomType sourceEntity = new PurviewCustomType("search relationship"
+                                                , ""
+                                                , qn
+                                                , ""
+                                                , "search relationship"
+                                                , NewGuid()
+                                                , _logger
+                                                , _purviewClient);
+
+
+                                            QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
+
+                                            if (!this.entities.ContainsKey(qn))
+                                                this.entities.Add(qn, sourceEntity);
+                                            entity["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
+
+                                        }
+
                                     }
-                                    else
-                                    {
-                                        string qn = entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
-                                        PurviewCustomType sourceEntity = new PurviewCustomType("search relationship"
-                                            , ""
-                                            , qn
-                                            , ""
-                                            , "search relationship"
-                                            , NewGuid()
-                                            , _logger
-                                            , _purviewClient);
-
-
-                                        QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
-
-                                        if (!this.entities.ContainsKey(qn))
-                                            this.entities.Add(qn, sourceEntity);
-                                        entity["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
-
-                                    }
-
                                 }
                             }
+                            to_purview_Json.Add(entity);
                         }
-                        to_purview_Json.Add(entity);
                     }
                 }
-            }
 
-            HttpResponseMessage results;
-            string? payload = "";
-            if (!hasProcess)
-            {
-                if (inputs_outputs.Count > 0)
+                HttpResponseMessage results;
+                string? payload = "";
+                if (!hasProcess)
                 {
-                    JArray tempEntities = new JArray();
-                    foreach (var newEntity in inputs_outputs)
+                    if (inputs_outputs.Count > 0)
                     {
-                        if (newEntity.is_dummy_asset)
+                        JArray tempEntities = new JArray();
+                        foreach (var newEntity in inputs_outputs)
                         {
-                            if (!usePurviewTypes)
-                                newEntity.Properties["attributes"]!["qualifiedName"] = newEntity.Properties["attributes"]!["qualifiedName"]!.ToString().ToLower();
-                            tempEntities.Add(newEntity.Properties);
+                            if (newEntity.is_dummy_asset)
+                            {
+                                if (!usePurviewTypes)
+                                    newEntity.Properties["attributes"]!["qualifiedName"] = newEntity.Properties["attributes"]!["qualifiedName"]!.ToString().ToLower();
+                                tempEntities.Add(newEntity.Properties);
+                            }
+                        }
+                        payload = "{\"entities\": " + tempEntities.ToString() + "}";
+                        JObject? Jpayload = JObject.Parse(payload);
+                        Log("Info", $"Entities to load: {Jpayload.ToString()}");
+                        results = await _purviewClient.Send_to_Purview(payload);
+                        if (results != null)
+                        {
+                            if (results.ReasonPhrase != "OK")
+                            {
+                                Log("Error", $"Error Loading to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                            }
+                            else
+                            {
+                                var data = await results.Content.ReadAsStringAsync();
+                                Log("Info", $"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
+                            }
+                        }
+                        else
+                        {
+                            Log("Error", $"Error Loading to Purview!");
                         }
                     }
-                    payload = "{\"entities\": " + tempEntities.ToString() + "}";
+                }
+                if (to_purview_Json.Count > 0)
+                {
+                    Log("Debug", to_purview_Json.ToString());
+                    payload = "{\"entities\": " + to_purview_Json.ToString() + "}";
                     JObject? Jpayload = JObject.Parse(payload);
-                    Log("Info", $"Entities to load: {Jpayload.ToString()}");
+                    Log("Info", $"Processes to load: {Jpayload.ToString()}");
                     results = await _purviewClient.Send_to_Purview(payload);
                     if (results != null)
                     {
@@ -158,59 +196,37 @@ namespace Function.Domain.Services
                         {
                             Log("Error", $"Error Loading to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
-                        else
-                        {
-                            var data = await results.Content.ReadAsStringAsync();
-                            Log("Info", $"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
-                        }
                     }
                     else
                     {
                         Log("Error", $"Error Loading to Purview!");
                     }
-                }
-            }
-            if (to_purview_Json.Count > 0)
-            {
-                Log("Debug", to_purview_Json.ToString());
-                payload = "{\"entities\": " + to_purview_Json.ToString() + "}";
-                JObject? Jpayload = JObject.Parse(payload);
-                Log("Info", $"Processes to load: {Jpayload.ToString()}");
-                results = await _purviewClient.Send_to_Purview(payload);
-                if (results != null)
-                {
-                    if (results.ReasonPhrase != "OK")
+                    foreach (var entity in this.entities)
                     {
-                        Log("Error", $"Error Loading to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                        await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
                     }
+                    return true;
                 }
                 else
                 {
-                    Log("Error", $"Error Loading to Purview!");
+                    if (json.Count > 0)
+                    {
+                        Log("INFO", $"Payload: {json}");
+                        Log("Error", "Nothing found to load on to Purview, look if the payload is empty.");
+                    }
+                    else
+                    {
+                        Log("Error", "No Purview entity to load");
+                    }
+                    foreach (var entity in this.entities)
+                    {
+                        await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
+                    }
+                    return false;
                 }
-                foreach (var entity in this.entities)
-                {
-                    await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
-                }
-                return true;
             }
-            else
-            {
-                if (json.Count > 0)
-                {
-                    Log("INFO", $"Payload: {json}");
-                    Log("Error", "Nothing found to load on to Purview, look if the payload is empty.");
-                }
-                else
-                {
-                    Log("Error", "No Purview entity to load");
-                }
-                foreach (var entity in this.entities)
-                {
-                    await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
-                }
-                return false;
-            }
+            Log("INFO", $"Payload already registered in Microsoft Purview: {json.ToString()}");
+            return false;
         }
         private bool Validate_Entities_Json(JObject Process)
         {
@@ -267,7 +283,6 @@ namespace Function.Domain.Services
                 entities.Add(qualifiedName, sourceEntity);
             return sourceEntity;
         }
-
         private async Task<PurviewCustomType> SetOutputInput(JObject outPutInput, string inorout)
         {
 
@@ -315,7 +330,6 @@ namespace Function.Domain.Services
 
             return sourceEntity;
         }
-
         private async Task<JObject> Validate_Process_Entities(JObject Process)
         {
             //Validate process
@@ -421,7 +435,6 @@ namespace Function.Domain.Services
 
             return true;
         }
-        
         /// <summary>
         /// Responsible to track and corelate Column Linage
         /// </summary>
@@ -434,13 +447,13 @@ namespace Function.Domain.Services
                 return false;
             return true;
         }
-       
-       /// <summary>
-       /// Get Safe attributes in a Json object without needing to check if exists
-       /// </summary>
-       /// <param name="attribute_name">Name of the attribute</param>
-       /// <param name="json_entity">Json Object</param>
-       /// <returns>Attribute Value</returns>
+
+        /// <summary>
+        /// Get Safe attributes in a Json object without needing to check if exists
+        /// </summary>
+        /// <param name="attribute_name">Name of the attribute</param>
+        /// <param name="json_entity">Json Object</param>
+        /// <returns>Attribute Value</returns>
         public JToken get_attribute(string attribute_name, JObject json_entity)
         {
             if (json_entity.SelectToken(attribute_name) != null)
@@ -602,6 +615,21 @@ namespace Function.Domain.Services
             { _logger.LogInformation(msg); return; }
         }
 
+        private static string CalculateHash(string payload)
+        {
+            var newKey = Encoding.UTF8.GetBytes(payload);
+
+            var sha1 = SHA1.Create();
+            sha1.Initialize();
+            var result = sha1.ComputeHash(newKey);
+
+            // if you replace this base64 version with one of the encoding 
+            //   classes this will become corrupt due to nulls and other 
+            //   control character values in the byte[]
+            var outval = Convert.ToBase64String(result);
+
+            return outval;
+        }
     }
 
     /// <summary>
