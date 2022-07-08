@@ -46,7 +46,7 @@ namespace AdbToPurview.Function
                 AuthorizationLevel.Function, 
                 "get", 
                 "post", 
-                Route = "1/lineage"
+                Route = "v1/lineage"
             )] HttpRequestData req)
         {
             try {
