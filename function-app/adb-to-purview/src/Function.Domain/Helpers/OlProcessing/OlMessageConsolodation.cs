@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Collections.Generic;
 using Function.Domain.Models.OL;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ namespace Function.Domain.Helpers
         private ILogger _log;
         private TableServiceClient _serviceClient;
         private TableClient _tableClient;
+        static Queue<string> _completedRunIds = new Queue<string>();
 
 
         const string STORAGE = "FunctionStorage";
@@ -96,14 +98,35 @@ namespace Function.Domain.Helpers
             {
                 return null;
             }
+            if (RunIdProcessed(jobRunId))
+            {
+                return null;
+            }
             if (await JoinEventData(olEvent, jobRunId))
             {
                 return olEvent;
             }
             else {
-                // Return origional event here. If using the old jar, the env facet would be included.
                 return null;
             }   
+        }
+
+
+        // Uses a static queue as a circular buffer to keep track of processed JobRunIds. This is used to prevent duplicate 
+        // events from being processed.
+        // This code will change once Open Lineage supports differentiating between complete events.
+        private bool RunIdProcessed(string runId)
+        {
+            bool rtrn = _completedRunIds.Contains(runId);
+            if (!rtrn)
+            {
+                _completedRunIds.Enqueue(runId);
+            }
+            if (_completedRunIds.Count > 10)
+            {
+                _completedRunIds.Dequeue();
+            }
+            return rtrn;
         }
 
         // Uses function storage account to store ol event info which must be
