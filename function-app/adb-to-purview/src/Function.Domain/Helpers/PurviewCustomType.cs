@@ -549,13 +549,9 @@ namespace Function.Domain.Helpers
         private readonly PurviewClientHelper PurviewclientHelper;
         private readonly IHttpClientManager httpclientManager;
         ILogger _logger;
-        private AuthenticationResult? _token;
-        private AppConfigurationSettings config = new AppConfigurationSettings();
+        private AppConfigurationSettings? config = new AppConfigurationSettings();
         private MemoryCache _cache = MemoryCache.Default;
-        private CacheItemPolicy cacheItemPolicy = new CacheItemPolicy
-            {
-                AbsoluteExpiration = DateTimeOffset.Now.AddHours(6.0)
-            };
+        private CacheItemPolicy cacheItemPolicy;
         /// <summary>
         /// Create Object passing the logger class
         /// </summary>
@@ -565,6 +561,10 @@ namespace Function.Domain.Helpers
             _logger = logger;
             httpclientManager = new HttpClientManager(logger);
             this.PurviewclientHelper = new PurviewClientHelper(httpclientManager, logger);
+            cacheItemPolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddHours(config!.tokenCacheTimeInHours)
+            };
         }
 
         /// <summary>

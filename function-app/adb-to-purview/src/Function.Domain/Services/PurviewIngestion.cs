@@ -10,6 +10,7 @@ using Function.Domain.Models;
 using System.Text;
 using System.Security.Cryptography;
 using System.Runtime.Caching;
+using Function.Domain.Models.Settings;
 
 namespace Function.Domain.Services
 {
@@ -32,10 +33,8 @@ namespace Function.Domain.Services
         private readonly ILogger<PurviewIngestion> _logger;
         private List<PurviewCustomType> found_entities = new List<PurviewCustomType>();
         private MemoryCache _payLoad = MemoryCache.Default;
-        private CacheItemPolicy cacheItemPolicy = new CacheItemPolicy
-            {
-                AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60.0)
-            };
+        private AppConfigurationSettings? config = new AppConfigurationSettings();
+        private CacheItemPolicy cacheItemPolicy;
         /// <summary>
         /// Create Object
         /// </summary>
@@ -45,6 +44,10 @@ namespace Function.Domain.Services
             _logger = log;
             _purviewClient = new PurviewClient(_logger);
             log.LogInformation($"Got Purview Client!");
+            cacheItemPolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(config.dataEntityCacheTimeInSeconds)
+            };
         }
 
         /// <summary>

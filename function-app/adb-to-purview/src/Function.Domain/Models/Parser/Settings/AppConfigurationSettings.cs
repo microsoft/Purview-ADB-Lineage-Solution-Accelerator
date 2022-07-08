@@ -39,6 +39,8 @@ namespace Function.Domain.Models.Settings
         public string purviewApiEntityByTypeMethod { get; set; } = "/atlas/v2/entity/bulk/uniqueAttribute/type/";
         public string purviewApiEntityQueryMethod { get; set; } = "/search/query?api-version=2021-05-01-preview";
         public string purviewApiSearchAdvancedMethod { get; set; } = "/atlas/v2/search/advanced";
+        public int tokenCacheTimeInHours {get;set;} = 6;
+        public int dataEntityCacheTimeInSeconds {get;set;} = 60;
         public CertificateDescription? Certificate { get; set; }
         public string purviewAppDomain()
         {
@@ -66,7 +68,10 @@ namespace Function.Domain.Models.Settings
                         if(p.PropertyType == typeof(Microsoft.Identity.Web.CertificateDescription))
                              p.SetValue(this, JsonConvert.DeserializeObject<CertificateDescription>(val));
                         else
-                            p.SetValue(this, val);
+                            if(p.PropertyType == typeof(int))
+                                p.SetValue(this, int.Parse(val));
+                            else
+                                p.SetValue(this, val);
             }
         }
         public AppConfigurationSettings()
