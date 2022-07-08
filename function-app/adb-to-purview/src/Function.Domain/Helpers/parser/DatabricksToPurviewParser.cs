@@ -56,9 +56,10 @@ namespace Function.Domain.Helpers
             _eEvent = eEvent;
             _qnParser = new QnParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.MountPoints);
-            // _colParser = new ColParser(_parserConfig, _loggerFactory,
-            //                           _eEvent.OlEvent.Outputs[0].Facets.ColFacets.fields[0].inputFields)
-            //_colParser = 
+            _colParser = new ColParser(_parserConfig, _loggerFactory,
+                                      _eEvent.OlEvent,
+                                      _qnParser);
+
             _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
         }
 
@@ -285,7 +286,7 @@ namespace Function.Domain.Helpers
             }
 
             databricksProcess.Attributes = GetProcAttributes(taskQn, inputs,outputs,_eEvent.OlEvent);
-            databricksProcess.ColumnLevel = GetColumnLevelInfo( databricksProcess,_eEvent.OlEvent);
+            databricksProcess.ColumnLevel = _colParser.GetColIdentifiers();
             databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn; 
             return databricksProcess;
         }
@@ -300,41 +301,6 @@ namespace Function.Domain.Helpers
             pa.Inputs = inputs;
             pa.Outputs = outputs;
             return pa;
-        }
-
-        private ColumnLevelAttributes GetColumnLevelInfo(DatabricksProcess databricksProcess, Event sparkEvent)
-        {
-            
-            var col = new ColumnLevelAttributes();
-            var dataSetList = new List<DatasetMappingClass>();
-            var columnLevelList = new List<ColumnMappingClass>();
-
-            foreach(Outputs colId in sparkEvent.Outputs)
-            {   
-                foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
-                {
-                    var dataSet = new DatasetMappingClass();
-                    //Get sink name for datasetlist 
-                    var sinkQN = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name);
-                    //Set sink name 
-                    dataSet.sink = sinkQN.QualifiedName;
-                    var columnLevel = new ColumnMappingClass();
-                    foreach(ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
-                    {
-                        //get sources for column level list 
-                        dataSet.source = colInfo2.name;
-                        columnLevel.source = colInfo2.field;
-                        //ADD data to model
-                        dataSetList.Add(dataSet);
-                        columnLevelList.Add(columnLevel);
-                    }
-                    //Add data to list 
-                    col.datasetMapping.Add(dataSet);
-                    col.columnMapping.Add(columnLevel);
-                }
-            }
-            
-            return col; 
         }
 
         private InputOutput GetInputOutputs(IInputsOutputs inOut)
