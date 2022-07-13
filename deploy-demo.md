@@ -30,20 +30,31 @@ From the [Azure Portal](https://portal.azure.com)
     **Note**: If your Cloud Shell disconnects, you will need to rerun this command again to ensure the correct subscription.
 
 1. Create a resource group for the demo deployment by using  
-`az group create --location <ResourceGroupLocation> --resource-group <ResourceGroupName>`
+    ```bash
+    az group create --location <ResourceGroupLocation> --resource-group <ResourceGroupName>
+    ```
 
     **Note**: Save the name of this resource group for use later
 
 ### Clone the repository into Azure cloud shell
 
-1. Change directory to the cloud storage directory (clouddrive)  
-    `cd clouddrive`
-
-1. Clone this repository into the clouddrive directory
+1. Change directory to the cloud storage directory (clouddrive)
 
     ```bash
-    git clone https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
+    cd clouddrive
     ```
+
+1. Clone this repository into the clouddrive directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `1.1.0`)
+
+    ```bash
+    git clone -b <release_tag> https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
+    ```
+
+    > **Note**:<br/>
+    > We highly recommend cloning from the [release tags listed here](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
+    >
+    > **Clone the *main* branch only when using nightly builds.**
+    > By using a nightly build (i.e. the latest commit on main), you gain access to newer / experimental features, however those features may change before the next official release. If you are testing a deployment for production, please clone using [release tags](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
 
 ### Configure application settings file
 
@@ -94,10 +105,5 @@ purview_type_resp_custom_type=$(curl -s -X POST $purview_endpoint/catalog/api/at
         -H "Content-Type: application/json" \
         -d @Custom_Types.json )
 
-purview_type_resp_databricks_type=$(curl -s -X POST $purview_endpoint/catalog/api/atlas/v2/types/typedefs \
-        -H "Authorization: Bearer $acc_purview_token" \
-        -H "Content-Type: application/json" \
-        -d @Databricks_Types.json )
 echo $purview_type_resp_custom_type
-echo $purview_type_resp_databricks_type
 ```

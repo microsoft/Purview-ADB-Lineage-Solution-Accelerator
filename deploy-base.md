@@ -30,13 +30,18 @@ From the [Azure Portal](https://portal.azure.com)
 
     ![CloudShellConfirm.png](./assets/img/deploy/CloudShellConfirm.png)
 
-1. Change directory and clone this repository into the `clouddrive` directory. *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
+1. Change directory and clone this repository into the `clouddrive` directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `1.1.0`). *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
 
     ```powershell
     cd clouddrive
-    git clone https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
-
+    git clone -b <release_tag> https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
     ```
+
+    > **Note**:<br/>
+    > We highly recommend cloning from the [release tags listed here](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
+    >
+    > **Clone the *main* branch only when using nightly builds.**
+    > By using a nightly build (i.e. the latest commit on main), you gain access to newer / experimental features, however those features may change before the next official release. If you are testing a deployment for production, please clone using [release tags](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags).
 
 -----
 
@@ -100,12 +105,7 @@ From the [Azure Portal](https://portal.azure.com)
           -H "Content-Type: application/json" \
           -d @Custom_Types.json )
 
-  purview_type_resp_databricks_type=$(curl -s -X POST $purview_endpoint/catalog/api/atlas/v2/types/typedefs \
-          -H "Authorization: Bearer $acc_purview_token" \
-          -H "Content-Type: application/json" \
-          -d @Databricks_Types.json )
   echo $purview_type_resp_custom_type
-  echo $purview_type_resp_databricks_type
   ```
 
 ## <a id="download-openlineage" />Download the OpenLineage Spark agent and configure with your Azure Databricks clusters
@@ -147,7 +147,7 @@ You will need the default API / Host key configured on your Function app. To ret
     4. Create or modify and interactive or job cluster in your Databricks. Under Advanced Options, add this config to the [Spark Configuration](https://docs.microsoft.com/en-us/azure/databricks/clusters/configure#spark-configuration):
 
         ```text
-        spark.openlineage.version 1 
+        spark.openlineage.version v1 
         spark.openlineage.namespace <ADB-WORKSPACE-ID>#<DB_CLUSTER_ID>
         spark.openlineage.host https://<FUNCTION_APP_NAME>.azurewebsites.net
         spark.openlineage.url.param.code <FUNCTION_APP_DEFAULT_HOST_KEY>
@@ -157,8 +157,9 @@ You will need the default API / Host key configured on your Function app. To ret
     1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
 
     1. To support Spark Jobs, you must:
-        * [Add your Service Principal to Databircks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
-        * [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/service-prin-aad-token#--api-access-for-service-principals-that-are-not-workspace-users)
+        * [Add your Service Principal to Databricks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
+        * [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
+        * [Grant the Service Principal API access to Databricks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/service-prin-aad-token#--api-access-for-service-principals-that-are-not-workspace-users)
     1. You should store the FUNCTION_APP_DEFAULT_HOST_KEY in a secure location. If you will be configuring individual clusters with the OpenLineage agent, you can use Azure Databricks secrets to store the key in Azure KeyVault and retrieve it as part of the cluster initialization script.  For more information on this, see the [Azure documentation](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#--databricks-backed-scopes)
 
 After configuring the secret storage, the API key for OpenLineage can be configured in the Spark config, as in the following example:
