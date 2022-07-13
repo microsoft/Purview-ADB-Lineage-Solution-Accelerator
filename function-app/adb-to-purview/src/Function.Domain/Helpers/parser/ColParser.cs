@@ -44,16 +44,15 @@ namespace Function.Domain.Helpers
                 foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
                 {
                     var dataSet = new DatasetMappingClass();
-                    //Get sink name for datasetlist 
-                    var sinkQN = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name);
                     //Set sink name 
-                    dataSet.sink = sinkQN.QualifiedName;
+                    dataSet.sink = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name).QualifiedName;
                     var columnLevel = new ColumnMappingClass();
                     foreach(ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
                     {
                         //get sources for column level list 
-                        dataSet.source = colInfo2.name;
+                        dataSet.source = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name).QualifiedName;
                         columnLevel.source = colInfo2.field;
+                        columnLevel.sink = colInfo.Key;
                         //ADD data to model
                         dataSetList.Add(dataSet);
                         columnLevelList.Add(columnLevel);
@@ -63,7 +62,6 @@ namespace Function.Domain.Helpers
                     col.columnMapping.Add(columnLevel);
                 }
             }
-            
             return col; 
         }
     }
