@@ -3,7 +3,7 @@ page_type: sample
 languages:
 - csharp
 products:
-- azure-purview
+- microsoft-purview
 - azure-databricks
 ---
 <!-- markdownlint-disable MD033 - HTML rule -->
@@ -14,9 +14,9 @@ Microsoft Solutions / Early Access Engineering
 
 # Azure Databricks to Purview Lineage Connector
 
-**NOTE: In addition to this solution accelerator, Microsoft Purview is creating native models for Azure Databricks (e.g.: Notebooks, jobs, job tasks...) to integrate with Catalog experiences. With native models in Microsoft Purview for Azure Databricks, customers will get enriched experiences such as search, browse, hierarchies, collection etc. If you choose to use this solution accelerator in a Microsoft Purview account before the native models are released, these enriched experiences are not backward compatible. Current models will be released shortly, please reach out to your Microsoft account representative for timeline related questions on the native model support for Azure Databricks in Microsoft Purview.**
+**NOTE: In addition to this solution accelerator, Microsoft Purview is creating native models for Azure Databricks (e.g.: Notebooks, jobs, job tasks...) to integrate with Catalog experiences. With native models in Microsoft Purview for Azure Databricks, customers will get enriched experiences in lineage such as detailed transformations. If you choose to use this solution accelerator in a Microsoft Purview account before the native models are released, these enriched experiences are not backward compatible. Please reach out to your Microsoft account representative for timeline related questions on the upcoming model enrichment for Azure Databricks in Microsoft Purview.**
 
-This solution accelerator, together with the [OpenLineage](http://opennlineage.io) project, provides a connector that will transfer lineage metadata from Spark operations in Azure Databricks to Microsoft Purview, allowing you to see a table-level lineage graph as demonstrated above.
+This solution accelerator, together with the [OpenLineage](http://openlineage.io) project, provides a connector that will transfer lineage metadata from Spark operations in Azure Databricks to Microsoft Purview, allowing you to see a table-level lineage graph as demonstrated above.
 
 ## Contents
 
@@ -49,7 +49,8 @@ Gathering lineage data is performed in the following steps:
   * Azure Data Lake Gen 2
   * Azure Blob Storage
   * Delta Lake
-* Supports Spark 3. (Interactive and Job clusters) / Spark 2.x (Job clusters)
+* Supports Spark 3.1 and 3.0 (Interactive and Job clusters) / Spark 2.x (Job clusters)
+  * Databricks Runtimes between 6.4 and 10.3 are currently supported
 * Can be configured per cluster or for all clusters as a global configuration  
 * Once configured, <span style="color: red;">**does not require any code changes to notebooks or jobs**</span>
 * Can [add new source support through configuration](./extending-source-support.md)  
