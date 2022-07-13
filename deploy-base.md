@@ -30,7 +30,7 @@ From the [Azure Portal](https://portal.azure.com)
 
     ![CloudShellConfirm.png](./assets/img/deploy/CloudShellConfirm.png)
 
-1. Change directory and clone this repository into the `clouddrive` directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `1.0.0`). *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
+1. Change directory and clone this repository into the `clouddrive` directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `1.1.0`). *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
 
     ```powershell
     cd clouddrive
@@ -147,7 +147,7 @@ You will need the default API / Host key configured on your Function app. To ret
     4. Create or modify and interactive or job cluster in your Databricks. Under Advanced Options, add this config to the [Spark Configuration](https://docs.microsoft.com/en-us/azure/databricks/clusters/configure#spark-configuration):
 
         ```text
-        spark.openlineage.version 1 
+        spark.openlineage.version v1 
         spark.openlineage.namespace <ADB-WORKSPACE-ID>#<DB_CLUSTER_ID>
         spark.openlineage.host https://<FUNCTION_APP_NAME>.azurewebsites.net
         spark.openlineage.url.param.code <FUNCTION_APP_DEFAULT_HOST_KEY>

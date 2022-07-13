@@ -182,7 +182,7 @@ cat << EOF > create-cluster.json
     "node_type_id": "Standard_DS3_v2",
     "num_workers": 1,
     "spark_conf": {
-        "spark.openlineage.version" : 1,
+        "spark.openlineage.version" : v1,
         "spark.openlineage.namespace" : "adbpurviewol1#default",
         "spark.openlineage.host" : "https://$FUNNAME.azurewebsites.net",
         "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
