@@ -54,16 +54,18 @@ namespace Function.Domain.Helpers
                         columnLevel.source = colInfo2.field;
                         columnLevel.sink = colInfo.Key;
                         //ADD data to model
+                        dataSetList.GroupBy(x=>x.source);
                         dataSetList.Add(dataSet);
                         columnLevelList.Add(columnLevel);
+                       
                     }
                     //Add data to list 
                     col.datasetMapping.Add(dataSet);
                     col.columnMapping.Add(columnLevel);
                 }
             }
+            var test = col.datasetMapping.GroupBy(x => x.source);
             return col; 
         }
     }
-        
 }
