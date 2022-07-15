@@ -7,7 +7,7 @@ namespace Function.Domain.Models.Purview
     public class ColumnLevelAttributes
     {
         [JsonProperty("DatasetMapping")]
-        public List<DatasetMappingClass> datasetMapping = new List<DatasetMappingClass>();
+        public DatasetMappingClass datasetMapping = new DatasetMappingClass();
         [JsonProperty("ColumnMapping")]
         public List<ColumnMappingClass> columnMapping = new List<ColumnMappingClass>();
 
