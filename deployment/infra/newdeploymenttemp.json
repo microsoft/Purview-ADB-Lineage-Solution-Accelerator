@@ -201,7 +201,7 @@
 						},
 						{
 							"name": "ResourceUri",
-							"value": "https://purview.azure.net"
+							"value": "purview.azure.com"
 						}
 					]
 				}
