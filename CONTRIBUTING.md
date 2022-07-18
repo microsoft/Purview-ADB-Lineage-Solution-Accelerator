@@ -1,9 +1,9 @@
 # Contributing
 
 Welcome, and thank you for your interest in contributing. There are many ways to contribute:
-- [Submit issues](https://github.com/microsoft/solution-accelerator-many-models/issues) to report bugs and make suggestions.
-- Review the [source code changes](https://github.com/microsoft/solution-accelerator-many-models/pulls).
-- Contribute features and fixes by forking the repository and creating a [pull request](https://github.com/microsoft/solution-accelerator-many-models/compare).
+- [Submit issues](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues) to report bugs and make suggestions.
+- Review the [source code changes](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/pulls).
+- Contribute features and fixes by forking the repository and creating a [pull request](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/compare/main...).
 
 
 ## Contributor License Agreement
