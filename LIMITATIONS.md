@@ -61,6 +61,7 @@ Supports Azure SQL DB through the [Apache Spark Connector for Azure SQL DB](http
   * For users and Service Principals with different default schemas, this may result in incorrect lineage.
   * This can be corrected by specifying the database schema in the Spark job.
 * Does not support emitting lineage for cross-database table sources.
+* Default configuration supports using multiple strings divided by dots to define a custom schema.  For example ```myschema.mytable```.  This will not function correctly if table names could contain dot characters in your organization.  In this case, you can delete the "azureSQLNonDboNoDotsInNames" section from the "OlToPurviewMappings" function configuration setting. Note that you would need to use bracket syntax to denote a custom schema.  For example ```[myschema].[my.table]```.
 
 ## Delta Lake File Format
 
