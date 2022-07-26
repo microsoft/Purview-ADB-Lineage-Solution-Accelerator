@@ -26,7 +26,7 @@ namespace Function.Domain.Services
         /// Constructs the OlToPurviewParsingService from the Function framework using DI
         /// </summary>
         /// <param name="loggerFactory">Logger Factory to support DI from function framework or code calling helper classes</param>
-        /// <param name="config">Function framwork config from DI</param>
+        /// <param name="config">Function framework config from DI</param>
         public OlToPurviewParsingService(ILoggerFactory loggerFactory, IConfiguration config)
         {
             _logger = loggerFactory.CreateLogger<OlToPurviewParsingService>();

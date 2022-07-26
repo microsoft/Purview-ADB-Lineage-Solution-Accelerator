@@ -69,7 +69,7 @@ namespace Function.Domain.Helpers
         /// </summary>
         /// <param name="olEvent">The event to store</param>
         /// <param name="jobRunId">The jobRunId of the event</param>
-        /// <param name="envParent">the envrionment facet to store</param>
+        /// <param name="envParent">the environment facet to store</param>
         /// <returns></returns>
         public async Task<bool> CaptureEnvironmentFromStart(Event olEvent, string jobRunId, EnvironmentPropsParent envParent)
         {
@@ -87,10 +87,10 @@ namespace Function.Domain.Helpers
         }
 
         /// <summary>
-        /// Consolodates OpenLineage COMPLETE events with envrionment data from corisponding START events
+        /// Consolidates OpenLineage COMPLETE events with environment data from corresponding START events
         /// </summary>
-        /// <param name="olEvent">The OL COMPLETE event to consolodate</param>
-        /// <param name="jobRunId">The JobRunId to look up the corisponding START event envrionment data</param>
+        /// <param name="olEvent">The OL COMPLETE event to consolidate</param>
+        /// <param name="jobRunId">The JobRunId to look up the corresponding START event environment data</param>
         /// <returns></returns>
         public async Task<Event?> ConsolodateCompleteEvent(Event olEvent, string jobRunId)
         {
@@ -131,7 +131,7 @@ namespace Function.Domain.Helpers
 
         // Uses function storage account to store ol event info which must be
         // combined with other ol event data to make a complete Purview entity
-        // returns true if it is a consolodation event
+        // returns true if it is a consolidation event
         private async Task<bool> ProcessStartEvent(Event olEvent, string jobRunId, EnvironmentPropsParent envParent)
         {
             if (!IsStartEventEnvironment(olEvent))
@@ -183,7 +183,7 @@ namespace Function.Domain.Helpers
                 catch (RequestFailedException)
                 {
                     currentRetry++;
-                    _log.LogWarning($"Start event was missing, retrying to consolodate message. Retry count: {currentRetry}");
+                    _log.LogWarning($"Start event was missing, retrying to consolidate message. Retry count: {currentRetry}");
                     if (currentRetry > retryCount)
                     {
                         return false;
@@ -235,7 +235,7 @@ namespace Function.Domain.Helpers
                 }
                 else
                 {
-                    _log.LogError("OlMessageConsolodation-IsJoinEvent: No Inputs and or Ouputs detected");
+                    _log.LogError("OlMessageConsolodation-IsJoinEvent: No Inputs and or Outputs detected");
                     return false;
                 }
             }

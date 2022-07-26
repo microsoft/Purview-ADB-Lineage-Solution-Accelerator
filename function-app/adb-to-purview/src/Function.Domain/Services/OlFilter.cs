@@ -29,8 +29,8 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="strRequest">This is the OpenLineage data passed from the Spark listener</param>
         /// <returns> 
-        /// true: if the message should be passed on for futher processing
-        /// fales: if the message should be filtered out
+        /// true: if the message should be passed on for further processing
+        /// false: if the message should be filtered out
         /// </returns>
         public bool FilterOlMessage(string strRequest)
         {
@@ -44,7 +44,7 @@ namespace Function.Domain.Services
                 return false;
             }
             catch (Exception ex) {
-                _logger.LogError(ex, $"Error durring event validation: {strRequest}, error: {ex.Message}");
+                _logger.LogError(ex, $"Error during event validation: {strRequest}, error: {ex.Message}");
                 return false;
             }
         }
