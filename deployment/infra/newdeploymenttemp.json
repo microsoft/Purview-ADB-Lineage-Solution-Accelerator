@@ -208,7 +208,7 @@
 						"[concat('Microsoft.Web/sites/', variables('functionAppName'))]"
 					],
 					"properties": {
-						"packageUri": "http://aka.ms/APFunctions1-1"
+						"packageUri": "http://aka.ms/APFunctions2-0"
 					}
 				}
 			]
