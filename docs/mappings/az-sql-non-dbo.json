@@ -1,0 +1,51 @@
+[
+    {
+        "name": "azureSQLNonDbo",
+        "parserConditions": [
+            {
+                "op1": "prefix",
+                "compare": "=",
+                "op2": "sqlserver"
+            },
+            {
+                "op1": "nameGroups",
+                "compare": ">",
+                "op2": "1"
+            }
+        ],
+        "qualifiedName": "mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0]}/{nameGroups[1]}",
+        "purviewDataType": "azure_sql_table",
+        "purviewPrefix": "mssql"
+    },
+    {
+        "name": "synapseSql",
+        "parserConditions": [
+            {
+                "op1": "prefix",
+                "compare": "=",
+                "op2": "sqlserver"
+            },
+            {
+                "op1": "nameSpcBodyParts[0]",
+                "compare": "contains",
+                "op2": "azuresynapse"
+            }
+        ],
+        "qualifiedName": "mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0].parts[0]}",
+        "purviewDataType": "azure_synapse_dedicated_sql_table",
+        "purviewPrefix": "mssql"
+    },
+    {
+        "name": "azureSQL",
+        "parserConditions": [
+            {
+                "op1": "prefix",
+                "compare": "=",
+                "op2": "sqlserver"
+            }
+        ],
+        "qualifiedName": "mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0]}",
+        "purviewDataType": "azure_sql_table",
+        "purviewPrefix": "mssql"
+    }
+]

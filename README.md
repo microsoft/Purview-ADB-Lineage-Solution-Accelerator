@@ -14,9 +14,12 @@ Microsoft Solutions / Early Access Engineering
 
 # Azure Databricks to Purview Lineage Connector
 
-**NOTE: In addition to this solution accelerator, Microsoft Purview is creating native models for Azure Databricks (e.g.: Notebooks, jobs, job tasks...) to integrate with Catalog experiences. With native models in Microsoft Purview for Azure Databricks, customers will get enriched experiences in lineage such as detailed transformations. If you choose to use this solution accelerator in a Microsoft Purview account before the native models are released, these enriched experiences are not backward compatible. Please reach out to your Microsoft account representative for timeline related questions on the upcoming model enrichment for Azure Databricks in Microsoft Purview.**
-
 This solution accelerator, together with the [OpenLineage](http://openlineage.io) project, provides a connector that will transfer lineage metadata from Spark operations in Azure Databricks to Microsoft Purview, allowing you to see a table-level lineage graph as demonstrated above.
+
+> **Note**
+> In addition to this solution accelerator, Microsoft Purview is creating native models for Azure Databricks (e.g.: Notebooks, jobs, job tasks...) to integrate with Catalog experiences. With native models in Microsoft Purview for Azure Databricks, customers will get enriched experiences in lineage such as detailed transformations.
+> If you choose to use this solution accelerator in a Microsoft Purview account before the native models are released, these enriched experiences are not backward compatible.
+> Please reach out to your Microsoft account representative for timeline related questions on the upcoming model enrichment for Azure Databricks in Microsoft Purview.**
 
 ## Contents
 

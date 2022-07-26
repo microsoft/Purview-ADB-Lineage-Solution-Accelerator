@@ -15,6 +15,9 @@ Installing the base connector requires that you have already configured [Databri
 1. [Run the installation script](#run-script)
 1. [Post Installation](#post-install)
 1. [Download and configure OpenLineage Spark agent with your Azure Databricks clusters](#download-openlineage)
+1. [Install OpenLineage on Your Databricks Cluster](#configure-openlineage)
+1. [Support Extracting Lineage from Databricks Jobs](#jobs-lineage)
+1. Optional [Configure Global Init Script](#global-init)
 
 ## <a id="clone-repo" />Clone the repository into Azure cloud shell
 
@@ -67,7 +70,7 @@ From the [Azure Portal](https://portal.azure.com)
 1. Deploy solution resources:
     ```powershell
     az deployment group create \
-    --resource-group <ResorceGroupName> \
+    --resource-group <ResourceGroupName> \
     --template-file "./newdeploymenttemp.json" \
     --parameters purviewName=<ExistingPurviewServiceName>
     ```
@@ -121,49 +124,100 @@ You will need the default API / Host key configured on your Function app. To ret
 
     ![FunctionKeys.png](./assets/img/deploy/FunctionKeys.png)
 
-1. Follow the instructions below and refer to the [OpenLineage Databricks Install Instructions](https://github.com/OpenLineage/OpenLineage/tree/main/integration/spark/databricks#databricks-install-instructions) to enable OpenLineage in Databricks.
-    1. Download the [OpenLineage-Spark 0.8.2 jar](https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.8.2/openlineage-spark-0.8.2.jar) from Maven Central
-    2. Create an init-script named `open-lineage-init-script.sh`
+### <a id="configure-openlineage" />Install OpenLineage on Your Databricks Cluster
 
-        ```text
-        #!/bin/bash
-        STAGE_DIR="/dbfs/databricks/openlineage"
-        cp -f $STAGE_DIR/openlineage-spark-*.jar /mnt/driver-daemon/jars || { echo "Error copying Spark Listener library file"; exit 1;}
-        cat << 'EOF' > /databricks/driver/conf/openlineage-spark-driver-defaults.conf
-        [driver] {
-          "spark.extraListeners" = "io.openlineage.spark.agent.OpenLineageSparkListener"
-        }
-        EOF
-        ```
+Follow the instructions below and refer to the [OpenLineage Databricks Install Instructions](https://github.com/OpenLineage/OpenLineage/tree/main/integration/spark/databricks#databricks-install-instructions) to enable OpenLineage in Databricks.
+1. Download the [OpenLineage-Spark 0.11.0 jar](https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.11.0/openlineage-spark-0.11.0.jar) from Maven Central
+2. Create an init-script named `open-lineage-init-script.sh`
 
-    3. Upload the init script and jar to dbfs using the [Databricks CLI](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/cli/)
+    ```text
+    #!/bin/bash
+    STAGE_DIR="/dbfs/databricks/openlineage"
+    cp -f $STAGE_DIR/openlineage-spark-*.jar /mnt/driver-daemon/jars || { echo "Error copying Spark Listener library file"; exit 1;}
+    cat << 'EOF' > /databricks/driver/conf/openlineage-spark-driver-defaults.conf
+    [driver] {
+        "spark.extraListeners" = "io.openlineage.spark.agent.OpenLineageSparkListener"
+    }
+    EOF
+    ```
 
-        ```text
-        dbfs mkdirs dbfs:/databricks/openlineage
-        dbfs cp --overwrite ./openlineage-spark-*.jar               dbfs:/databricks/openlineage/
-        dbfs cp --overwrite ./open-lineage-init-script.sh           dbfs:/databricks/openlineage/open-lineage-init-script.sh
-        ```
+    > **Warning**
+    > If you are using a windows machine, be sure that you save the init script with linux Line Feed (LF) ending and NOT Microsoft Windows Carriage Return and Line Feed (CRLF) endings.
+    > Using a tool like VS Code or Notepad++, you may change the line endings by selecting CRLF/LF in the bottom right hand corner of the editor.
+    > If you do not have line feed endings, your cluster will fail to start due to an init script error.
 
-    4. Create or modify and interactive or job cluster in your Databricks. Under Advanced Options, add this config to the [Spark Configuration](https://docs.microsoft.com/en-us/azure/databricks/clusters/configure#spark-configuration):
+3. Upload the init script and jar to dbfs using the [Databricks CLI](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/cli/)
 
-        ```text
-        spark.openlineage.version v1 
-        spark.openlineage.namespace <ADB-WORKSPACE-ID>#<DB_CLUSTER_ID>
-        spark.openlineage.host https://<FUNCTION_APP_NAME>.azurewebsites.net
-        spark.openlineage.url.param.code <FUNCTION_APP_DEFAULT_HOST_KEY>
-        ```
+    ```text
+    dbfs mkdirs dbfs:/databricks/openlineage
+    dbfs cp --overwrite ./openlineage-spark-*.jar               dbfs:/databricks/openlineage/
+    dbfs cp --overwrite ./open-lineage-init-script.sh           dbfs:/databricks/openlineage/open-lineage-init-script.sh
+    ```
+
+    > **Note**
+    > If you choose to use the Databricks Filestore UI instead of the CLI to upload the jar, the UI will replace hyphens (-) with underscores (_). This will cause the init script to fail as it expects hyphens in the jar's file name.
+    > Either use the Databricks CLI to ensure the file name is consistent or update the init script to reflect the underscores in the jar name.
+
+4. Create or modify an interactive or job cluster in your Databricks Workspace. Under Advanced Options, add this config to the [Spark Configuration](https://docs.microsoft.com/en-us/azure/databricks/clusters/configure#spark-configuration):
+
+    ```text
+    spark.openlineage.version v1 
+    spark.openlineage.namespace <ADB-WORKSPACE-ID>#<DB_CLUSTER_ID>
+    spark.openlineage.host https://<FUNCTION_APP_NAME>.azurewebsites.net
+    spark.openlineage.url.param.code <FUNCTION_APP_DEFAULT_HOST_KEY>
+    ```
 
     1. The ADB-WORKSPACE-ID value should be the first part of the URL when navigating to Azure Databricks, not the workspace name. For example, if the URL is: _https://adb-4630430682081461.1.azuredatabricks.net/_, the ADB-WORKSPACE-ID should be _adb-4630430682081461.1_.
-    1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
-
-    1. To support Spark Jobs, you must:
-        * [Add your Service Principal to Databricks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
-        * [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
-        * [Grant the Service Principal API access to Databricks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/service-prin-aad-token#--api-access-for-service-principals-that-are-not-workspace-users)
     1. You should store the FUNCTION_APP_DEFAULT_HOST_KEY in a secure location. If you will be configuring individual clusters with the OpenLineage agent, you can use Azure Databricks secrets to store the key in Azure KeyVault and retrieve it as part of the cluster initialization script.  For more information on this, see the [Azure documentation](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#--databricks-backed-scopes)
 
-After configuring the secret storage, the API key for OpenLineage can be configured in the Spark config, as in the following example:
-`spark.openlineage.url.param.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
+    After configuring the secret storage, the API key for OpenLineage can be configured in the Spark config, as in the following example:
+    `spark.openlineage.url.param.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
+    1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
+
+### <a id="jobs-lineage" />Support Extracting Lineage from Databricks Jobs
+
+To support Databricks Jobs, you must add the service principal to your Databricks workspace. To use the below scripts, you must authenticate to Azure Databricks using either [access tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication) or [AAD tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/). The snippets below assume you have generated an access token.
+
+1. [Add your Service Principal to Databricks as a User](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
+    * Create a file named `add-service-principal.json` that contains
+      ```json
+      {
+        "schemas": [ "urn:ietf:params:scim:schemas:core:2.0:ServicePrincipal" ],
+        "applicationId": "<azure-application-id>",
+        "displayName": "<display-name>",
+        "groups": [
+            {
+            "value": "<group-id>"
+            }
+        ],
+        "entitlements": [
+            {
+            "value":"allow-cluster-create"
+            }
+        ]
+      }
+      ```
+    * Provide a group id by executing the `groups` Databricks API and extracting a group id.
+      ```bash
+      curl -X GET \
+      https://<databricks-instance>/api/2.0/preview/scim/v2/Groups \
+      --header 'Authorization: Bearer DATABRICKS_ACCESS_TOKEN' \
+      | jq .
+      ```
+      You may use the admin group id or create a separate group to isolate the service principal.
+
+    * Execute the following bash command after the file above has been created and populated.
+      ```bash
+      curl -X POST \
+      https://<databricks-instance>/api/2.0/preview/scim/v2/ServicePrincipals \
+      --header 'Content-type: application/scim+json' \
+      --header 'Authorization: Bearer DATABRICKS_ACCESS_TOKEN' \
+      --data @add-service-principal.json \
+      | jq .
+      ```
+2. [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
+
+### <a id="global-init"/>Global Init Scripts
 
 You can also configure the OpenLineage listener to run globally, so that any cluster which is created automatically runs the listener.  To do this, you can utilize a [global init script](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#global-init-scripts).
 
