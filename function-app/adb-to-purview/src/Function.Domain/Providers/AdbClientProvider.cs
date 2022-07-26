@@ -32,7 +32,7 @@ namespace Function.Domain.Providers
         /// Constructs the AdbClientProvider object from the Function framework using DI
         /// </summary>
         /// <param name="loggerFactory">Logger Factory to support DI from function framework or code calling helper classes</param>
-        /// <param name="config">Function framwork config from DI</param>
+        /// <param name="config">Function framework config from DI</param>
         public AdbClientProvider(ILoggerFactory loggerFactory, IConfiguration config)
         {
             _log = loggerFactory.CreateLogger<AdbClientProvider>();

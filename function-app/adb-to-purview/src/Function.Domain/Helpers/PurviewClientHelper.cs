@@ -130,7 +130,7 @@ namespace Function.Domain.Helpers
 
                 string responseContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var entitiesFromPurview = JsonConvert.DeserializeObject<PurviewEntitySearchResponseModel>(responseContentString) ?? new PurviewEntitySearchResponseModel();
-                logger.LogInformation($"Purview Loaded Processies: Return Code: {response.StatusCode} - Reason:{response.ReasonPhrase} - Content: {responseContentString}");
+                logger.LogInformation($"Purview Loaded Processes: Return Code: {response.StatusCode} - Reason:{response.ReasonPhrase} - Content: {responseContentString}");
 
                 if (entitiesFromPurview.entities != null)
                 {
@@ -199,7 +199,7 @@ namespace Function.Domain.Helpers
                     }
 
                     string responseContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    logger.LogInformation($"Purview Loaded Processies: Return Code: {response.StatusCode} - Reason:{response.ReasonPhrase} - Content: {responseContentString}");
+                    logger.LogInformation($"Purview Loaded Processes: Return Code: {response.StatusCode} - Reason:{response.ReasonPhrase} - Content: {responseContentString}");
 
                     entityObjectModel = JsonConvert.DeserializeObject<PurviewQueryResponseModel>(responseContentString) ?? new PurviewQueryResponseModel();
                     JToken responsetoken = JToken.Parse(responseContent);
@@ -227,7 +227,7 @@ namespace Function.Domain.Helpers
         }
 
         /// <summary>
-        /// Post APIs request to Microsoft Purview API, only used for advaced search API
+        /// Post APIs request to Microsoft Purview API, only used for advanced search API
         /// </summary>
         /// <param name="correlationId">Correlation ID to be used in the logs</param>
         /// <param name="qualifiedName">Qualified Name to search by</param>
@@ -274,7 +274,7 @@ namespace Function.Domain.Helpers
 
 
                     string responseContentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    logger.LogInformation($"Purview Loaded Processies: Return Code: {response.StatusCode} - Reason:{response.ReasonPhrase} - Content: {responseContentString}");
+                    logger.LogInformation($"Purview Loaded Processes: Return Code: {response.StatusCode} - Reason:{response.ReasonPhrase} - Content: {responseContentString}");
 
                     var entitiesFromPurview = JsonConvert.DeserializeObject<PurviewEntitySearchResponseModel>(responseContentString) ?? new PurviewEntitySearchResponseModel();
                     JToken responsetoken = JToken.Parse(responseContent);
