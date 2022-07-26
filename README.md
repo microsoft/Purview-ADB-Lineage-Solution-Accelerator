@@ -52,8 +52,8 @@ Gathering lineage data is performed in the following steps:
   * Azure Data Lake Gen 2
   * Azure Blob Storage
   * Delta Lake
-* Supports Spark 3.1 and 3.0 (Interactive and Job clusters) / Spark 2.x (Job clusters)
-  * Databricks Runtimes between 6.4 and 10.3 are currently supported
+* Supports Spark 3.0, 3.1, and 3.2 (Interactive and Job clusters) / Spark 2.x (Job clusters)
+  * Databricks Runtimes between 6.4 and 10.4 are currently supported
 * Can be configured per cluster or for all clusters as a global configuration  
 * Once configured, <span style="color: red;">**does not require any code changes to notebooks or jobs**</span>
 * Can [add new source support through configuration](./extending-source-support.md)  
