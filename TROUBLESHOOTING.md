@@ -6,6 +6,11 @@
 
 ### Common Issues
 * [I don't see lineage in Microsoft Purview](#no-lineage)
+* [Databricks Cluster Won't Start](#cluster-fails)
+* [Databricks Driver Logs: EventEmitter Could Not Emit Lineage](#driver-log-eventemitter)
+* [Error Loading to Purview: 403 Forbidden](#pureviewout-load2purview)
+* [Missing OpenLineage to Purview mapping data for this source](#purviewout-olmapping)
+* [Error getting Authentication Token for Databricks API](#purviewout-dbr-auth)
 
 ### Demo Deployment Issues
 * [$'\r': command not found](#demo-command-not-found)
@@ -26,8 +31,20 @@
 1. Open Azure Portal > Resource Group > Function App > Functions
 1. Select either the `OpenLineageIn` or `PurviewOut` function
 1. Click `Monitor` in the left-hand menu
-    1. Click the linked timestamps within `Inovacation Traces` to view details of past events
+    1. Click the linked timestamps within `Invocation Traces` to view details of past events
     1. Click the `Logs` tab to view the live events. (*Ensure both connected and timestamped welcome messages appear.*)
+
+## <a id="cluster-fails" />Databricks Cluster Won't Start
+
+* ### Init Script Fails
+
+    When installing the OpenLineage init script and Jar, the Databricks cluster will not start. You may receive a Databricks Event Log event indicating the init script failed.
+
+    **Solution**: Ensure that the init script uploaded to Databricks uses Line Feed (LF) and does not use Carriage Returns (CRLF). If you are using Windows, your development environment may default to CRLF which is not accepted on Databricks. To fix this, download / edit your init script and use an IDE that supports changing the line endings to LF. For example, VS Code and Notepad++ indicate the line endings in the bottom right corner of the window. Select `CRLF` and change it to `LF`. Save the file and upload to DBFS.
+
+    If the file is already LF, confirm that the OpenLineage Jar was uploaded properly. Ensure its location matches your init script (expected location is `/dbfs/databricks/openlineage`) and that the file pattern is correct (default is `openlineage-spark-*.jar`). If you uploaded the OpenLineage jar via the Databricks UI / DBFS UI, it may have replaced hyphens (-) with underscores (_) causing the wildcard pattern to fail.
+
+    In this case, use the databricks CLI to upload the jar to the expected location to avoid changes in the file name.
 
 ## <a id="no-lineage" />I don't see lineage in Microsoft Purview
 
@@ -52,6 +69,51 @@
 * ### Confirm that you are NOT using Spark Streaming
 
     Spark Structured Streaming and Spark DStreams are [not supported in this release](./LIMITATIONS.md#spark-streaming) of the solution accelerator.
+
+## <a id="driver-log-eventemitter" />Databricks Driver Logs: EventEmitter Could Not Emit Lineage
+
+When reviewing the Driver logs, you see an error in the Log4j output that indicates the EventEmitter class had an exception and could not emit lineage.  You do not see any events in `OpenLineageIn` or `PurviewOut` functions either.
+
+**Solution**: This indicates a problem connecting to the Azure Function from Databricks.
+
+* Confirm `spark.openlineage.url.param.code` and `spark.openlineage.host` values are set and correct.
+* Confirm that the Azure Function is currently on and has the correct API routes for OpenLineageIn
+* Confirm that `spark.openlineage.version` is set correctly.
+
+    |SA Release|OpenLineage Jar|spark.openlineage.version|
+    |----|----|----|
+    |1.0.0|0.8.2|1
+    |1.1.0|0.8.2|1
+    |2.0.0|0.11.0|v1
+
+## <a id="pureviewout-load2purview" />PurviewOut Logs: Error Loading to Purview: 403 Forbidden
+
+When reviewing the Purview Out function logs, you see an error that indicates there was an error loading assets to Microsoft Purview. The errors looks similar to `Error Loading to Purview: Return Code: 403 - Reason:Forbidden`
+
+**Solution**: This indicates authorization is not correct for the Service Principal.
+
+* Your ClientId, ClientSecret or Certificate values are correct
+* Certificate should be of the form: `{"SourceType": "KeyVault","KeyVaultUrl": "https://akv-service-name.vault.azure.net/","KeyVaultCertificateName": "myCertName"}`
+* You have given the Service Principal permission to access Microsoft Purview ( [auth using a service principal](https://docs.microsoft.com/en-us/azure/purview/tutorial-using-rest-apis#set-up-authentication-using-service-principal) )
+
+## <a id="purviewout-olmapping" />PurviewOut Logs: Missing Ol to Purview mapping data for this source
+
+You may be working with data sources that are supported by OpenLineage but not supported by the Solution Accelerator for ingestion into Purview.
+
+**Solution**: 
+* Confirm that the OlToPurviewMappings app setting is populated and matches your release’s version of [OlToPurviewMappings.json](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/blob/release/1.1/deployment/infra/OlToPurviewMappings.json)
+* Review the Databricks Driver Logs and identify the namespace authority (e.g. jdbc, abfss, dbfs) for the OpenLineage Inputs/Outputs being emitted
+* Look for the json after the EventEmitter logging statement. Then look at the inputs / outputs field in the emitted JSON.
+* If the authority is not found in the OlToPurviewMappings JSON, it is an unsupported type. Consider [modifying the OlToPurviewMappings to your need](./extending-source-support.md).
+
+## <a id="purviewout-dbr-auth" />Error getting Authentication Token for Databricks API
+
+The Service Principal is unable to retrieve an access token for Databricks.
+
+**Solution**: Ensure the Service Principal is a user in the Databricks workspace.
+* [Add your Service Principal to Databricks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
+* [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
+
 
 ## <a id="demo-command-not-found" />Demo Deployment: $'\r': command not found
 
