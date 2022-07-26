@@ -192,16 +192,8 @@
 							"value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientsecretkey'),')')]"
 						},
 						{
-							"name": "AuthEndPoint",
-							"value": "https://login.microsoftonline.com/"
-						},
-						{
 							"name": "TenantId",
 							"value": "[subscription().tenantId]"
-						},
-						{
-							"name": "ResourceUri",
-							"value": "purview.azure.com"
 						}
 					]
 				}

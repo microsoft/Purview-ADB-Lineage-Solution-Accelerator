@@ -11,7 +11,7 @@ The following are the stable app settings that should be reviewed.
 |ClientID|Provided during ARM deployment|Yes|The Application Id of the service principal with permission to read call Databricks and Microsoft Purview APIs|
 |ClientSecret|Provided during ARM deployment|*Yes|The secret value for the service principal provided in ClientID|
 |Certificate|Not Applicable|*No|Should be a JSON object: `{"SourceType": "KeyVault","KeyVaultUrl": "https://akv-name.vault.azure.net/","KeyVaultCertificateName": "certificateName"}`
-|ResourceUri | purview.azure.com| No| |
+|ResourceUri | https://purview.azure.com | No| |
 |AuthEndPoint| https://login.microsoftonline.com/| No| |
 |AuthenticationUri| purview.azure.net| No| |
 |EventHubName|Not Applicable|Yes| |
