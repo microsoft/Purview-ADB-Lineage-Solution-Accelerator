@@ -109,9 +109,9 @@ At this time, we encourage clusters running Spark Structured Streaming jobs to n
 
 The solution supports Spark 2 job cluster jobs. Databricks has removed Spark 2 from it's Long Term Support program.
 
-### Spark 3.2+ Support
+### Spark 3.3+ Support
 
-The solution supports Spark 3.0 and 3.1 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.2 on Databricks Runtime 10.4 and higher.
+The solution supports Spark 3.0, 3.1, and 3.2 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.3 on Databricks Runtime 11.0 and higher.
 
 ### Private Endpoints on Microsoft Purview
 
