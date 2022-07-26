@@ -5,12 +5,11 @@
 * [How to debug log files](#debug-logs)
 
 ### Common Issues
-* [Databricks Cluster Won't Start](#cluster-fails)
 * [I don't see lineage in Microsoft Purview](#no-lineage)
 * [Databricks Cluster Won't Start](#cluster-fails)
 * [Databricks Driver Logs: EventEmitter Could Not Emit Lineage](#driver-log-eventemitter)
 * [Error Loading to Purview: 403 Forbidden](#pureviewout-load2purview)
-* [Missing Ol to Purview mapping data for this source](#purviewout-olmapping)
+* [Missing OpenLineage to Purview mapping data for this source](#purviewout-olmapping)
 * [Error getting Authentication Token for Databricks API](#purviewout-dbr-auth)
 
 ### Demo Deployment Issues
@@ -32,7 +31,7 @@
 1. Open Azure Portal > Resource Group > Function App > Functions
 1. Select either the `OpenLineageIn` or `PurviewOut` function
 1. Click `Monitor` in the left-hand menu
-    1. Click the linked timestamps within `Inovacation Traces` to view details of past events
+    1. Click the linked timestamps within `Invocation Traces` to view details of past events
     1. Click the `Logs` tab to view the live events. (*Ensure both connected and timestamped welcome messages appear.*)
 
 ## <a id="cluster-fails" />Databricks Cluster Won't Start
@@ -77,17 +76,17 @@ When reviewing the Driver logs, you see an error in the Log4j output that indica
 
 **Solution**: This indicates a problem connecting to the Azure Function from Databricks.
 
-* Confirm spark.openlineage.url.param.code and spark.openlineage.host values are set and correct.
+* Confirm `spark.openlineage.url.param.code` and `spark.openlineage.host` values are set and correct.
 * Confirm that the Azure Function is currently on and has the correct API routes for OpenLineageIn
-* Confirm that spark.openlineage.version is set correctly.
+* Confirm that `spark.openlineage.version` is set correctly.
 
-    |SA Release|OL Jar|spark.openlineage.version|
+    |SA Release|OpenLineage Jar|spark.openlineage.version|
     |----|----|----|
     |1.0.0|0.8.2|1
     |1.1.0|0.8.2|1
     |2.0.0|0.11.0|v1
 
-## <a id="pureviewout-load2purview" />Error Loading to Purview: 403 Forbidden
+## <a id="pureviewout-load2purview" />PurviewOut Logs: Error Loading to Purview: 403 Forbidden
 
 When reviewing the Purview Out function logs, you see an error that indicates there was an error loading assets to Microsoft Purview. The errors looks similar to `Error Loading to Purview: Return Code: 403 - Reason:Forbidden`
 
@@ -97,7 +96,7 @@ When reviewing the Purview Out function logs, you see an error that indicates th
 * Certificate should be of the form: `{"SourceType": "KeyVault","KeyVaultUrl": "https://akv-service-name.vault.azure.net/","KeyVaultCertificateName": "myCertName"}`
 * You have given the Service Principal permission to access Microsoft Purview ( [auth using a service principal](https://docs.microsoft.com/en-us/azure/purview/tutorial-using-rest-apis#set-up-authentication-using-service-principal) )
 
-## <a id="purviewout-olmapping" />Missing Ol to Purview mapping data for this source
+## <a id="purviewout-olmapping" />PurviewOut Logs: Missing Ol to Purview mapping data for this source
 
 You may be working with data sources that are supported by OpenLineage but not supported by the Solution Accelerator for ingestion into Purview.
 
@@ -105,7 +104,7 @@ You may be working with data sources that are supported by OpenLineage but not s
 * Confirm that the OlToPurviewMappings app setting is populated and matches your release’s version of [OlToPurviewMappings.json](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/blob/release/1.1/deployment/infra/OlToPurviewMappings.json)
 * Review the Databricks Driver Logs and identify the namespace authority (e.g. jdbc, abfss, dbfs) for the OpenLineage Inputs/Outputs being emitted
 * Look for the json after the EventEmitter logging statement. Then look at the inputs / outputs field in the emitted JSON.
-* If the authority is not found in the OlToPurviewMappsings JSON, it is an unsupported type. Consider [modifying the OlToPurviewMappings to your need](./extending-source-support.md).
+* If the authority is not found in the OlToPurviewMappings JSON, it is an unsupported type. Consider [modifying the OlToPurviewMappings to your need](./extending-source-support.md).
 
 ## <a id="purviewout-dbr-auth" />Error getting Authentication Token for Databricks API
 
