@@ -9,7 +9,7 @@
 			"type": "string"
 		},
 		"clientsecret": {
-			"type": "string"
+			"type": "securestring"
 		},
 		"purviewName": {
 			"type": "string",
