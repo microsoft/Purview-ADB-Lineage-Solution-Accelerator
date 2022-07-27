@@ -107,7 +107,8 @@ ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResour
         --parameters clientid="$clientid" \
         --parameters clientsecret="$clientsecret" \
         --parameters purviewName="$purview_account_name"\
-        --parameters resourceTagValues="$resourceTagArm" )
+        --parameters resourceTagValues="$resourceTagArm" \
+	--parameters listenToMessagesFromPurviewKafka="$istenToMessagesFromPurviewKafka")
 
 ol_demo_resources_outputs=$(jq -r '.properties.outputs' <<< $ol_demo_resources_resp)
 
