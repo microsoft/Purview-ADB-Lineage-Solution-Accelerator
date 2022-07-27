@@ -98,6 +98,24 @@ acc_detail=$(az account show)
 subscription_id=$(jq -r '.id' <<< $acc_detail)
 tenant_id=$(jq -r '.tenantId' <<< $acc_detail)
 
+echo "$(info) start deploying purview account"
+purview_details=$(az purview account list --resource-group $RG_NAME)
+purview_result=$(echo $(jq -r --arg purview_acc_name "$purview_account_name" '
+    .[] 
+    | select(.name==$purview_acc_name)' <<< $purview_details))
+
+if [[ $purview_result == "" ]]; then
+	if [[ $resourceTagNonArm == "" ]]; then 	
+    	purview_creation_result=$(az purview account create --location $purviewlocation --name $purview_account_name --resource-group $RG_NAME --managed-group-name $purview_managed_group_name)
+	else
+    	purview_creation_result=$(az purview account create --location $purviewlocation --name $purview_account_name --resource-group $RG_NAME --managed-group-name $purview_managed_group_name --tags $eval $resourceTagNonArm)
+	fi
+    sleep 210
+else
+    echo "$(info) purview account [$purview_account_name] already exists"
+fi
+echo "$(info) purview account [$purview_account_name] has been created (or already exists), continue..."
+
 echo "$(info) start deploying all openlineage required resources"
 echo "including: FunctionApp, EventHub, StorageAccount, etc."
 ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResourcesDeployment \
