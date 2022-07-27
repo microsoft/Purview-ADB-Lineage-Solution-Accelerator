@@ -2,7 +2,6 @@ name: Build and Release
 
 on:
   create:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
     paths:
@@ -19,7 +18,9 @@ env:
 
 jobs:
   build:
-
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'create' && github.ref_type == 'tag')
     name: build-${{matrix.os}}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -149,7 +150,7 @@ jobs:
     needs: [runIntegrationTests]
     runs-on: ubuntu-latest
     environment: 
-      name: Production
+      name: ReleaseEnvironment
     steps:
     - uses: actions/checkout@v3
 
@@ -165,3 +166,25 @@ jobs:
       with:
         artifacts: ~/artifacts/FunctionZip.zip
         token: ${{ secrets.GITHUB_TOKEN }}
+
+  deployProductionEnvironment:
+    name: Release to Production Environment
+    needs: [createRelease]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Production
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: FunctionZip
+        path: ./artifacts
+
+    - name: Azure Functions Action
+      uses: Azure/functions-action@v1.4.6
+      with:
+        app-name: ${{ secrets.FUNC_NAME }}
+        package: ./artifacts/FunctionZip.zip
+        publish-profile: ${{ secrets.PUBLISH_PROFILE }}
