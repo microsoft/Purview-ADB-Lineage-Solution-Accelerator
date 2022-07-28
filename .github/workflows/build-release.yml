@@ -7,8 +7,7 @@ on:
     paths:
       - '**.cs'
       - '**.csproj'
-      - 'tests/jobdefs/'
-      - 'tests/spark-apps/'
+      - 'tests/integration/**'
   workflow_dispatch:
 
 env:
@@ -86,9 +85,6 @@ jobs:
         name: FunctionZip
         path: ./artifacts
 
-    - name: Run a one-line script
-      run: ls -l ./artifacts
-    
     - name: Azure Functions Action
       uses: Azure/functions-action@v1.4.6
       with:

@@ -4,25 +4,6 @@ import os
 
 PURVIEW_NAME = os.environ.get("PURVIEW_INTEGRATION_TARGET")
 
-expected = [
-  "notebook://shared/examples/abfss-in-abfss-out",
-  "notebook://shared/examples/abfss-in-abfss-out-ouath",
-  "notebook://shared/examples/abfss-in-abfss-out-root",
-  "notebook://shared/examples/azuresql-in-azuresql-out",
-  "notebook://shared/examples/delta-in-delta-merge",
-  "notebook://shared/examples/delta-in-delta-out-abfss",
-  "notebook://shared/examples/delta-in-delta-out-fs",
-  "notebook://shared/examples/delta-in-delta-out-mnt",
-  "notebook://shared/examples/intermix-languages",
-  "notebook://shared/examples/mnt-in-mnt-out",
-  "notebook://shared/examples/nested-parent",
-  "notebook://shared/examples/spark-sql-table-in-abfss-out",
-  "notebook://shared/examples/synapse-in-synapse-out",
-  "notebook://shared/examples/synapse-in-wasbs-out",
-  "notebook://shared/examples/synapse-wasbs-in-synapse-out",
-  "notebook://shared/examples/wasbs-in-wasbs-out"
-]
-
 def eval_test_status(expected_qn:str, test_results:str, maximum_string_length:int) -> int:
     """
     Print ❌ for failures and ✅ for success while keeping a count of successes.
@@ -120,7 +101,7 @@ if __name__ == "__main__":
         typeName="databricks_process"
     )
     processes_from_purview_qualifiedNames = []
-    for proc in processes_from_purview["entities"]:
+    for proc in processes_from_purview.get("entities", []):
         processes_from_purview_qualifiedNames.append(proc.get("attributes", {}).get("qualifiedName"))
     
     # Evaluate the processes
