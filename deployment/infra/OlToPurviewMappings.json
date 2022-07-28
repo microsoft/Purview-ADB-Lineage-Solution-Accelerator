@@ -171,19 +171,6 @@
             "purviewPrefix": "https"
         },
         {
-            "name": "cosmos",
-            "parserConditions": [
-                {
-                    "op1": "prefix",
-                    "compare": "=",
-                    "op2": "azurecosmos"
-                }
-            ],
-            "qualifiedName": "https://{nameSpcBodyParts[0]}/{nameSpcBodyParts[1]}/{nameSpcBodyParts[2]}/{nameGroups[0]}",
-            "purviewDataType": "azure_cosmosdb_sqlapi_collection",
-            "purviewPrefix": "https"
-        },
-        {
             "name": "synapseSqlNonDbo",
             "parserConditions": [
                 {
@@ -274,43 +261,86 @@
             "purviewPrefix": "mssql"
         },
         {
-            "name": "db2Jdbc",
+            "name": "azurePostgresNonPublic",
             "parserConditions": [
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "jdbc:db2"
+                    "op2": "postgresql"
+                },
+                {
+                    "op1": "nameGroups[0].parts",
+                    "compare": ">",
+                    "op2": "1"
+                },
+                {
+                    "op1": "nameSpcConParts",
+                    "compare": ">",
+                    "op2": "4"
+                },
+                {
+                    "op1": "nameSpcConParts[3]",
+                    "compare": "=",
+                    "op2": "azure"
                 }
             ],
-            "qualifiedName": "db2://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/databases/{nameSpcNameVals['Database']}/schemas/{nameSpcNameVals['CurrentSchema']}/tables/{nameGroups[0]}",
-            "purviewDataType": "db2_table",
-            "purviewPrefix": "db2"
+            "qualifiedName": "postgresql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}",
+            "purviewDataType": "azure_postgresql_table",
+            "purviewPrefix": "postgresql"
         },
         {
-            "name": "msqlJdbc",
+            "name": "azurePostgres",
             "parserConditions": [
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "jdbc:mysql"
+                    "op2": "postgresql"
+                },
+                {
+                    "op1": "nameSpcConParts",
+                    "compare": ">",
+                    "op2": "4"
+                },
+                {
+                    "op1": "nameSpcConParts[3]",
+                    "compare": "=",
+                    "op2": "azure"
                 }
             ],
-            "qualifiedName": "mysql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcNameVals['Database']}/tables/{nameGroups[0]}",
-            "purviewDataType": "mysql_table",
-            "purviewPrefix": "mysql"
+            "qualifiedName": "postgresql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/public/{nameGroups[0]}",
+            "purviewDataType": "azure_postgresql_table",
+            "purviewPrefix": "postgresql"
         },
         {
-            "name": "oracleJdbc",
+            "name": "postgresNonPublic",
             "parserConditions": [
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "jdbc:oracle:thin:"
+                    "op2": "postgresql"
+                },
+                {
+                    "op1": "nameGroups[0].parts",
+                    "compare": ">",
+                    "op2": "1"
                 }
             ],
-            "qualifiedName": "oracle://{nameSpcBodyParts[0]}/{nameSpcNameVals['Database']}/{nameGroups[0]}",
-            "purviewDataType": "oracle_table",
-            "purviewPrefix": "oracle"
+            "qualifiedName": "postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/{nameGroups[0].parts[0]}/tables/{nameGroups[0].parts[1]}",
+            "purviewDataType": "postgresql_table",
+            "purviewPrefix": "postgresql"
+        },
+        {
+            "name": "postgres",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "postgresql"
+                }
+            ],
+            "qualifiedName": "postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/public/tables/{nameGroups[0]}",
+            "purviewDataType": "postgresql_table",
+            "purviewPrefix": "postgresql"
         }
     ]
 }
