@@ -20,7 +20,7 @@ One of the main functions of the parser code is performing these transformations
 
 To make it easier for users to add support for sources we do not support and have not yet tested, we enabled the creation of these transformations through a Function configuration item called OlToPurviewMappings.
 
-![oltopurviewmappings.png](./assets/img/extend-source/oltopurviewmappings.png)
+![oltopurviewmappings.png](../assets/img/extend-source/oltopurviewmappings.png)
 
 ### Matching input to a specific source with criteria
 
@@ -50,25 +50,25 @@ Once matched on a specific source configuration through criteria, that configura
 
 Continuing with the Azure SQL custom schema example above, the OpenLineage message stores the source data in two fields, 'name' and 'nameSpace'. The example below shows how this data is broken into tokens and how these are referenced in the configuration.
 
-![OLNameBreak.svg](./assets/img/extend-source/OLNameBreak.svg)
+![OLNameBreak.svg](../assets/img/extend-source/OLNameBreak.svg)
 
 These tokens are fed into the defined parser conditions for all sources and matches to the conditions for this Azure SQL custom schema source
 
-![ParserConditions.svg](./assets/img/extend-source/ParserConditions.svg)
+![ParserConditions.svg](../assets/img/extend-source/ParserConditions.svg)
 
 Once the match is made, the rest of the Azure SQL custom schema configuration provides the qualified name pattern and Purview type.
 
-![QualifiedName.svg](./assets/img/extend-source/QualifiedName.svg)
+![QualifiedName.svg](../assets/img/extend-source/QualifiedName.svg)
 
 ### Validating configurations
 
-The configuration format can be complex, so a command line verification tool ([QualifiedNameConfigTester](./function-app/adb-to-purview/tests/tools/QualifiedNameConfigTester)) is provided for easy testing of new source configurations. You can build the utility by opening a terminal in the app directory and running:
+The configuration format can be complex, so a command line verification tool ([QualifiedNameConfigTester](../function-app/adb-to-purview/tests/tools/QualifiedNameConfigTester)) is provided for easy testing of new source configurations. You can build the utility by opening a terminal in the app directory and running:
 
 ```bash
 dotnet build
 ```
 
-Modify the [config.json](./tests/tools/QualifiedNameConfigTester/config.json) file to include your new source configuration, and then run the utility from the bin directory specifying the build file path.  For example:
+Modify the [config.json](../tests/tools/QualifiedNameConfigTester/config.json) file to include your new source configuration, and then run the utility from the bin directory specifying the build file path.  For example:
 
 ```bash
 .\bin\Debug\net6.0\QualifiedNameConfigTester.exe
