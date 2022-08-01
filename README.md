@@ -56,7 +56,7 @@ Gathering lineage data is performed in the following steps:
   * Databricks Runtimes between 6.4 and 10.4 are currently supported
 * Can be configured per cluster or for all clusters as a global configuration  
 * Once configured, <span style="color: red;">**does not require any code changes to notebooks or jobs**</span>
-* Can [add new source support through configuration](./extending-source-support.md)  
+* Can [add new source support through configuration](./docs/extending-source-support.md)  
 
 ## Videos
 
