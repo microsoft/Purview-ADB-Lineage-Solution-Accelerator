@@ -130,7 +130,7 @@ ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResour
         --parameters clientsecret="$clientsecret" \
         --parameters purviewName="$purview_account_name"\
         --parameters resourceTagValues="$resourceTagArm" \
-	--parameters listenToMessagesFromPurviewKafka="$kafkaEndpoint"
+		--parameters listenToMessagesFromPurviewKafka="$kafkaEndpoint")
 
 ol_demo_resources_outputs=$(jq -r '.properties.outputs' <<< $ol_demo_resources_resp)
 
@@ -205,7 +205,7 @@ cat << EOF > create-cluster.json
     "node_type_id": "Standard_DS3_v2",
     "num_workers": 1,
     "spark_conf": {
-        "spark.openlineage.version" : v1,
+        "spark.openlineage.version" : "v1",
         "spark.openlineage.namespace" : "adbpurviewol1#default",
         "spark.openlineage.host" : "https://$FUNNAME.azurewebsites.net",
         "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
@@ -333,27 +333,6 @@ cat << EOF > create-scope.json
 }
 EOF
 ## End of databricks workspace deployment
-
-echo "$(info) start deploying purview account"
-purview_details=$(az purview account list --resource-group $RG_NAME)
-purview_result=$(echo $(jq -r --arg purview_acc_name "$purview_account_name" '
-    .[] 
-    | select(.name==$purview_acc_name)' <<< $purview_details))
-
-if [[ $purview_result == "" ]]; then
-	if [[ $resourceTagNonArm == "" ]]; then 	
-    	purview_creation_result=$(az purview account create --location $purviewlocation --name $purview_account_name --resource-group $RG_NAME --managed-group-name $purview_managed_group_name)
-	else
-    	purview_creation_result=$(az purview account create --location $purviewlocation --name $purview_account_name --resource-group $RG_NAME --managed-group-name $purview_managed_group_name --tags $eval $resourceTagNonArm)
-	fi
-    sleep 210
-else
-    echo "$(info) purview account [$purview_account_name] already exists"
-fi
-echo "$(info) purview account [$purview_account_name] has been created (or already exists), continue..."
-
-# purview_detail=$(az purview account show --resource-group $RG_NAME --name $purview_account_name)
-purview_endpoint="https://$purview_account_name.purview.azure.com"
 
 ## below is all deployment require AAD
 user_detail=$(az ad signed-in-user show)
