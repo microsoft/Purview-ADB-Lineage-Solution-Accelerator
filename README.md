@@ -60,6 +60,7 @@ Gathering lineage data is performed in the following steps:
 
 ## Videos
 
+* [Solution Overview](https://youtu.be/LrtDmLnRse0)
 * [Deploying the Demo](https://youtu.be/pLF0iykhruY)
 * [Troubleshooting](https://youtu.be/kG8Maa1kOx0)
 
