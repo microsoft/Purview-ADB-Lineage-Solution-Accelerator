@@ -22,12 +22,12 @@ namespace Function.Domain.Models.Settings
         public string EventHubConsumerGroup { get; set; } = "read";
         public bool usePurviewTypes { get; set; } = false;
         public bool useResourceSet { get; set; } = true;
-        public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/";
+        public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/{0}";
         public string Authority
         {
             get
             {
-                return string.Format(CultureInfo.InvariantCulture, AuthEndPoint+"{0}", TenantId);
+                return string.Format(CultureInfo.InvariantCulture, AuthEndPoint, TenantId);
             }
         }
         public string AuthenticationUri { get; set; } = "purview.azure.net";
@@ -42,6 +42,13 @@ namespace Function.Domain.Models.Settings
         public int tokenCacheTimeInHours {get;set;} = 6;
         public int dataEntityCacheTimeInSeconds {get;set;} = 60;
         public CertificateDescription? Certificate { get; set; }
+        public string? ListenToMessagesFromPurviewKafka { get; set; }
+        public string KafkaHame { get; set; } = "atlas_entities";
+        public string KafkaConsumerGroup { get; set; } = "$Default";
+        public string ResourceSet { get; set; }= "azure_datalake_gen2_resource_set;azure_blob_resource_set";
+        public string Spark_Entities { get; set; }= "databricks_workspace;databricks_job;databricks_notebook;databricks_notebook_task";
+        public string Spark_Process { get; set; }= "databricks_process";
+        public string? FilterExeption { get; set; }= "{\"attributes\":[{\"typeName\":\"column\"},{\"typeName\":\"tabular_schema\"},{\"typeName\":\"spark_process\"},{\"typeName\":\"spark_application\"},{\"typeName\":\"databricks*\"}]}";
         public string purviewAppDomain()
         {
             return AppDomainUrl;
@@ -73,6 +80,16 @@ namespace Function.Domain.Models.Settings
                             else
                                 p.SetValue(this, val);
             }
+        }
+        private string[] resourceSet={};
+        public bool IsResourceSet_Entity(string entityName)
+        {
+            if (resourceSet.Length == 0)
+                resourceSet = this.ResourceSet.Split(";");
+            var findTypeName = Array.Find<string>(resourceSet!, element => element.Equals(entityName));
+            if (findTypeName == entityName)
+                return true;
+            return false;
         }
         public AppConfigurationSettings()
         {
