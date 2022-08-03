@@ -24,10 +24,10 @@ namespace Function.Domain.Helpers
         private PurviewClient _client;
         private JObject? simpleEntity;
         private JObject? properties;
-
+        private AppConfigurationSettings? config = new AppConfigurationSettings();
         public JObject? Fullentity = new JObject();
-        bool useResourceSet = bool.Parse(Environment.GetEnvironmentVariable("useResourceSet") ?? "true");
-        bool usePurviewTypes = bool.Parse(Environment.GetEnvironmentVariable("usePurviewTypes") ?? "false");
+        bool useResourceSet = true;
+        bool usePurviewTypes = false;
         /// <summary>
         /// Property that contains all Json attributes for the Custom data Entity in Microsoft Purview
         /// </summary>
@@ -50,6 +50,9 @@ namespace Function.Domain.Helpers
         {
             _logger = logger;
             _client = client;
+            useResourceSet = config!.useResourceSet;
+            usePurviewTypes = config!.useResourceSet;
+
             Init(name
             , typeName
             , qualified_name
@@ -89,7 +92,7 @@ namespace Function.Domain.Helpers
         /// <returns>boolean</returns>
         public bool IsSpark_Entity(string typeName)
         {
-            string[]? spark_entities = (Environment.GetEnvironmentVariable("Spark_Entities") ?? "databricks_workspace;databricks_job;databricks_notebook;databricks_notebook_task").Split(";");
+            string[]? spark_entities = config.Spark_Entities.Split(";");
             var findTypeName = Array.Find<string>(spark_entities!, element => element.Equals(typeName));
             if (findTypeName == typeName)
                 return true;
@@ -102,7 +105,7 @@ namespace Function.Domain.Helpers
         /// <returns>boolean</returns>
         public bool IsSpark_Process(string typeName)
         {
-            string[]? spark_entities = (Environment.GetEnvironmentVariable("Spark_Process") ?? "databricks_process").Split(";");
+            string[]? spark_entities = config!.Spark_Process.Split(";");
             var findTypeName = Array.Find<string>(spark_entities!, element => element.Equals(typeName));
             if (findTypeName == typeName)
                 return true;
@@ -323,21 +326,6 @@ namespace Function.Domain.Helpers
             }
 
             List<QueryValeuModel> results = await this._client.Query_entities(filter["filter"]!);
-            if (results.Count == 1)
-            {
-                if (IsSpark_Entity(results[0].entityType))
-                    if (results[0].qualifiedName.ToLower().Trim('/') != this.properties!["attributes"]!["qualifiedName"]!.ToString().ToLower().Trim('/'))
-                    {
-                        this.is_dummy_asset = true;
-                        return obj;
-                    }
-                properties["guid"] = results[0].id;
-                properties["typeName"] = results[0].entityType;
-                properties!["attributes"]!["qualifiedName"] = results[0].qualifiedName;
-                this.Fullentity = await this._client.GetByGuid(results[0].id);
-                this.is_dummy_asset = false;
-                return results[0];
-            }
             if (results.Count > 0)
             {
                 List<QueryValeuModel> validentity = await SelectReturnEntity(results);
@@ -362,6 +350,13 @@ namespace Function.Domain.Helpers
             List<QueryValeuModel> validEntities = new List<QueryValeuModel>();
             foreach (QueryValeuModel entity in results)
             {
+                if (IsSpark_Entity(entity.entityType))
+                    if (results[0].qualifiedName.ToLower().Trim('/') != this.properties!["attributes"]!["qualifiedName"]!.ToString().ToLower().Trim('/'))
+                    {
+                        this.is_dummy_asset = true;
+                        validEntities.Add(entity);
+                    }
+
                 string qualifiednameToCompera = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
                 if ((entity.entityType == "azure_datalake_gen2_resource_set") || (entity.entityType == "azure_blob_resource_set"))
                 {
@@ -578,9 +573,6 @@ namespace Function.Domain.Helpers
             var correlationId = Guid.NewGuid().ToString();
             var token = await this.GetToken();
 
-            //var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("ResourceUri") ?? "purview.azure.com"}";
-            //var purviewApiEndPoint = Environment.GetEnvironmentVariable("purviewApiEndPoint") ?? "{ResourceUri}/catalog/api";
-            //var purviewApiSearchAdvancedMethod = Environment.GetEnvironmentVariable("purviewApiSearchAdvancedMethod") ?? "/atlas/v2/search/advanced";
             var purviewSearchEndpoint = $"{config!.purviewApiEndPoint!.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiSearchAdvancedMethod!}";
 
 
@@ -655,10 +647,6 @@ namespace Function.Domain.Helpers
         {
             var correlationId = Guid.NewGuid().ToString();
             var token = await this.GetToken();
-            //var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("ResourceUri") ?? "purview.azure.com"}";
-            //var purviewApiEndPoint = Environment.GetEnvironmentVariable("purviewApiEndPoint") ?? "{ResourceUri}/catalog/api";
-            //var purviewApiEntityByGUIDMethod = Environment.GetEnvironmentVariable("purviewApiEntityByGUIDMethod") ?? "/atlas/v2/entity/guid/";
-            //var purviewApiEntityByTypeMethod = Environment.GetEnvironmentVariable("purviewApiEntityByTypeMethod") ?? "/atlas/v2/entity/bulk/uniqueAttribute/type/"; ;
             var purviewSearchEndpoint = $"{config!.purviewApiEndPoint.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiEntityByTypeMethod!}"; ;
 
             var deleteEndPoint = $"{config!.purviewApiEndPoint!.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiEntityByGUIDMethod!}";
@@ -704,7 +692,7 @@ namespace Function.Domain.Helpers
 
             if (_cache.Contains("token"))
             {
-                return  ((AuthenticationResult)_cache.Get("token")).AccessToken;
+                return ((AuthenticationResult)_cache.Get("token")).AccessToken;
             }
 
             // Even if this is a console application here, a daemon application is a confidential client application
@@ -757,7 +745,7 @@ namespace Function.Domain.Helpers
             }
 
             //_token = result;
-            var cacheItem = new CacheItem("token",result);  
+            var cacheItem = new CacheItem("token", result);
             _cache.Add(cacheItem, cacheItemPolicy);
             return result.AccessToken;
         }
@@ -779,10 +767,6 @@ namespace Function.Domain.Helpers
 
             _logger.LogInformation($"Sending this payload to Purview: {payloadJson}");
 
-            //var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("ResourceUri") ?? "purview.azure.com"}";
-            //var purviewApiEndPoint = Environment.GetEnvironmentVariable("purviewApiEndPoint") ?? "{ResourceUri}/catalog/api";
-            //var purviewApiEndPoint = config.purviewApiEndPoint;
-            //var purviewApiEntityBulkMethod = Environment.GetEnvironmentVariable("purviewApiEntityBulkMethod") ?? "/atlas/v2/entity/bulk";
             var purviewApiEntityBulkMethod = config!.purviewApiEntityBulkMethod!;
             var purviewEntityEndpoint = $"{config.purviewApiEndPoint.ToString().Replace("{ResourceUri}", config.PurviewApiBaseUrl())}{purviewApiEntityBulkMethod}";
 
@@ -806,9 +790,6 @@ namespace Function.Domain.Helpers
             var correlationId = Guid.NewGuid().ToString();
             var token = await this.GetToken();
 
-            //var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("ResourceUri") ?? "purview.azure.com"}";
-            //var purviewApiEndPoint = Environment.GetEnvironmentVariable("purviewApiEndPoint") ?? "{ResourceUri}/catalog/api";
-            //var purviewApiQueryMethod = Environment.GetEnvironmentVariable("purviewApiQueryMethod") ?? "/search/query?api-version=2021-05-01-preview";
             var purviewSearchEndpoint = $"{config!.purviewApiEndPoint!.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiEntityQueryMethod!}";
 
             List<QueryValeuModel> returnValue = await PurviewclientHelper.QueryEntities(correlationId, token, purviewSearchEndpoint, filter);
@@ -825,9 +806,6 @@ namespace Function.Domain.Helpers
         {
             var token = await this.GetToken();
 
-            //var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("ResourceUri") ?? "purview.azure.com"}";
-            //var purviewApiEndPoint = Environment.GetEnvironmentVariable("purviewApiEndPoint") ?? "{ResourceUri}/catalog/api";
-            //var purviewApiEntityByGUIDMethod = Environment.GetEnvironmentVariable("purviewApiEntityByGUIDMethod") ?? "/atlas/v2/entity/guid/";
             var purviewSearchEndpoint = $"{config!.purviewApiEndPoint!.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiEntityByGUIDMethod!}";
 
             JObject entity = await PurviewclientHelper.GetEntityByGuid(token, purviewSearchEndpoint, guid);
@@ -845,9 +823,6 @@ namespace Function.Domain.Helpers
             var correlationId = Guid.NewGuid().ToString();
             var token = await this.GetToken();
 
-            //var baseurl = $"https://{Environment.GetEnvironmentVariable("PurviewAccountName") ?? ""}.{Environment.GetEnvironmentVariable("ResourceUri") ?? "purview.azure.com"}";
-            //var purviewApiEndPoint = Environment.GetEnvironmentVariable("purviewApiEndPoint") ?? "{ResourceUri}/catalog/api";
-            //var purviewApiEntityByTypeMethod = Environment.GetEnvironmentVariable("purviewApiEntityByTypeMethod") ?? "/atlas/v2/entity/bulk/uniqueAttribute/type/";
             var purviewSearchEndpoint = $"{config!.purviewApiEndPoint!.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiEntityByTypeMethod!}";
 
             List<Asset> entities = await PurviewclientHelper.GetEntityFromPurview(correlationId, quilifiedName.Trim('/').ToLower(), purviewSearchEndpoint, token, typeName);

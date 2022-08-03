@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Function.Domain.Models.OL;
+using Function.Domain.Models;
 
 namespace Function.Domain.Middleware
 {
@@ -18,25 +19,36 @@ namespace Function.Domain.Middleware
 
         public string CorrelationId = "";
 
-    /// <summary>
-    /// Invoke
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="next"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
+        /// <summary>
+        /// Invoke
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="next"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            object runobj = context?.BindingContext?.BindingData["run"] ?? new Object();
-            string runjson = runobj.ToString() ?? "";
-            var runFacet = JsonConvert.DeserializeObject<Run>(runjson) ?? new Run();
+            if (context!.BindingContext!.BindingData!.ContainsKey("run"))
+            {
+                object runobj = context?.BindingContext?.BindingData["run"] ?? new Object();
+                string runjson = runobj.ToString() ?? "";
+                var runFacet = JsonConvert.DeserializeObject<Run>(runjson) ?? new Run();
+                CorrelationId = runFacet.RunId;
+            }
+            else
+            {
+                object runobj = context?.BindingContext?.BindingData["message"] ?? new Object();
+                string messageBody = runobj.ToString() ?? "";
+                Message messageReturn = JsonConvert.DeserializeObject<Message>(messageBody)!;
+               
+                CorrelationId = messageReturn!.entity!.guid!.ToString();
+            }
 
-            CorrelationId = runFacet.RunId;
 
             ILogger logger = context!.GetLogger<ScopedLoggingMiddleware>();
 
