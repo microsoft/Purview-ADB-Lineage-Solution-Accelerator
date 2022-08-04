@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 
 namespace Function.Domain.Models.Settings
 {
+    /// <summary>
+    /// Read Configurations and set default values
+    /// </summary>
     public class AppConfigurationSettings
     {
         public string? APPINSIGHTS_INSTRUMENTATIONKEY { get; set; }

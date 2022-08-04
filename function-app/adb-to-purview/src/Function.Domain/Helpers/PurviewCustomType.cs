@@ -92,7 +92,7 @@ namespace Function.Domain.Helpers
         /// <returns>boolean</returns>
         public bool IsSpark_Entity(string typeName)
         {
-            string[]? spark_entities = config.Spark_Entities.Split(";");
+            string[]? spark_entities = config!.Spark_Entities!.Split(";");
             var findTypeName = Array.Find<string>(spark_entities!, element => element.Equals(typeName));
             if (findTypeName == typeName)
                 return true;
