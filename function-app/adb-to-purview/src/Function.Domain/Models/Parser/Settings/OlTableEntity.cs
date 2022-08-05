@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 
 namespace Function.Domain.Models.Settings
 {
-    // Used to save state of OL messages in Azure Table Storage for later message consolodation with incoming messages
+    // Used to save state of OL messages in Azure Table Storage for later message consolidation with incoming messages
     public class OlTableEntity : ITableEntity
     {
         public string EnvFacet = "";

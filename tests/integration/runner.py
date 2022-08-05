@@ -4,24 +4,20 @@ import os
 
 PURVIEW_NAME = os.environ.get("PURVIEW_INTEGRATION_TARGET")
 
-expected = [
-  "notebook://shared/examples/abfss-in-abfss-out",
-  "notebook://shared/examples/abfss-in-abfss-out-ouath",
-  "notebook://shared/examples/abfss-in-abfss-out-root",
-  "notebook://shared/examples/azuresql-in-azuresql-out",
-  "notebook://shared/examples/delta-in-delta-merge",
-  "notebook://shared/examples/delta-in-delta-out-abfss",
-  "notebook://shared/examples/delta-in-delta-out-fs",
-  "notebook://shared/examples/delta-in-delta-out-mnt",
-  "notebook://shared/examples/intermix-languages",
-  "notebook://shared/examples/mnt-in-mnt-out",
-  "notebook://shared/examples/nested-parent",
-  "notebook://shared/examples/spark-sql-table-in-abfss-out",
-  "notebook://shared/examples/synapse-in-synapse-out",
-  "notebook://shared/examples/synapse-in-wasbs-out",
-  "notebook://shared/examples/synapse-wasbs-in-synapse-out",
-  "notebook://shared/examples/wasbs-in-wasbs-out"
-]
+def eval_test_status(expected_qn:str, test_results:str, maximum_string_length:int) -> int:
+    """
+    Print ❌ for failures and ✅ for success while keeping a count of successes.
+    Returns the number of successes.
+    """
+    success = 0
+    is_found = "❌"
+    if expected_qn in test_results:
+        is_found = "✅"
+        success += 1
+    qn_len = len(expected_qn)
+    padding = ((maximum_string_length - qn_len)+5)*" "
+    print(expected_qn, padding, is_found)
+    return success
 
 
 if __name__ == "__main__":
@@ -88,14 +84,35 @@ if __name__ == "__main__":
     guids = []
     results = [e["qualifiedName"] for e in resp]
 
+    searchable_success = 0
+    expected_processes = []
     for expected_qn in expected:
-        is_found = "❌"
-        if expected_qn in results:
-            is_found = "✅"
-            success += 1
-        qn_len = len(expected_qn)
-        padding = ((maximum_string_length - qn_len)+5)*" "
-        print(expected_qn, padding, is_found)
+        # Ignore the process entities since they don't show up in search
+        # Save them for later querying via the get entities api
+        if "/processes/" in expected_qn:
+            expected_processes.append(expected_qn)
+            continue
+        searchable_success += eval_test_status(expected_qn, results, maximum_string_length)
+    
+    # Get the processes expected from Purview
+    # If this ever gets larger than a hundred entities, may need to batch up calls
+    processes_from_purview = client.get_entity(
+        qualifiedName=expected_processes,
+        typeName="databricks_process"
+    )
+    processes_from_purview_qualifiedNames = []
+    for proc in processes_from_purview.get("entities", []):
+        processes_from_purview_qualifiedNames.append(proc.get("attributes", {}).get("qualifiedName"))
+    
+    # Evaluate the processes
+    process_success = 0
+    for expected_proc_qn in expected_processes:
+        process_success += eval_test_status(
+            expected_qn=expected_proc_qn, 
+            test_results=processes_from_purview_qualifiedNames,
+            maximum_string_length=maximum_string_length
+        )    
 
-    print(f"Summary: {success:0>2}/{len(expected):0>2}")
+    total_successes = searchable_success + process_success
+    print(f"Summary: {total_successes:0>2}/{len(expected):0>2}")
     print(success == len(expected), end="")

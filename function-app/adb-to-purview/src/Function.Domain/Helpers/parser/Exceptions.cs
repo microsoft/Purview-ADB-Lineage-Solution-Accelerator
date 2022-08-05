@@ -3,7 +3,7 @@ using System;
 namespace Function.Domain.Helpers
 {
     /// <summary>
-    /// Exception throuwn when the current runo of the function cannot continue due to missing or invalid configuration.
+    /// Exception thrown when the current run of the function cannot continue due to missing or invalid configuration.
     /// </summary>
     public class ConfigMismatchException : Exception
     {

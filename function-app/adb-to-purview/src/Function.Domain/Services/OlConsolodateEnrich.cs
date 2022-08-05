@@ -11,7 +11,7 @@ using Function.Domain.Helpers.Parser;
 namespace Function.Domain.Services
 {
     /// <summary>
-    /// Service that consolodates OpenLineage Start messages, containing environment data, with Complete messages.  
+    /// Service that consolidates OpenLineage Start messages, containing environment data, with Complete messages.  
     /// Further, this service enriches OpenLineage messages with data from the ADB Jobs API
     /// </summary>
     public class OlConsolodateEnrich : IOlConsolodateEnrich
@@ -27,7 +27,7 @@ namespace Function.Domain.Services
         /// Constructs the OlConsolodateEnrich object from the Function framework using DI
         /// </summary>
         /// <param name="loggerFactory">Logger Factory to support DI from function framework or code calling helper classes</param>
-        /// <param name="configuration">Function framwork config from DI</param>
+        /// <param name="configuration">Function framework config from DI</param>
         public OlConsolodateEnrich(
             ILoggerFactory loggerFactory,
             IConfiguration configuration)
@@ -38,7 +38,7 @@ namespace Function.Domain.Services
         }
 
         /// <summary>
-        /// Consolodates the start and complete events into a single event. This is done because the complete event does not
+        /// Consolidates the start and complete events into a single event. This is done because the complete event does not
         /// have the environment facet attached to it.  The event filter should have already been run for OpenLineage to filter
         /// out unwanted events.
         /// </summary>
@@ -79,7 +79,7 @@ namespace Function.Domain.Services
                         }
                     }
                 }
-                // consolodate and enrich the complete event if possible
+                // consolidate and enrich the complete event if possible
                 else if (_event.EventType == COMPLETE_EVENT_TYPE)
                 {
                     var consolodatedEvent = await olMessageConsolodation.ConsolodateCompleteEvent(_event, _event.Run.RunId);
@@ -105,7 +105,7 @@ namespace Function.Domain.Services
             }
             // Unknown error in consolodation
             catch (Exception ex){
-                _logger.LogError(ex,$"Error consolodating event: {strEvent}, error: {ex.Message}");
+                _logger.LogError(ex,$"Error consolidating event: {strEvent}, error: {ex.Message}");
             }
             return null;
         }
