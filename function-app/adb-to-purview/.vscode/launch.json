@@ -17,6 +17,16 @@
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"
+          },
+          {
+            "name": "QualifiedNameConfigTester (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/tools/QualifiedNameConfigTester/bin/Debug/net6.0/QualifiedNameConfigTester.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/tests/tools/QualifiedNameConfigTester",
+            "stopAtEntry": false,
+            "console": "integratedTerminal"
           }
     ]
 }

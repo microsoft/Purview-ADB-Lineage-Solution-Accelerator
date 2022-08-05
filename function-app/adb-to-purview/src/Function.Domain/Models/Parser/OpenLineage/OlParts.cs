@@ -133,7 +133,8 @@ namespace Function.Domain.Models.OL
             public NameGroup(string name)
             {
                 _name = name;
-                NameParts = name.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+                string[] delims = { ".", "/" };
+                NameParts = name.Split(delims, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
             public string Name => _name;
             public List<string> NameParts = new List<string>();
