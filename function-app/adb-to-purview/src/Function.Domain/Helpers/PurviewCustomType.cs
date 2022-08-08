@@ -270,7 +270,7 @@ namespace Function.Domain.Helpers
                     filter.Add("filter", new JObject());
                     ((JObject)filter!["filter"]!).Add("and", new JArray());
                 }
-                //SUpport for the cases when user use wasbs protocall for a ADLS GEN 2
+                //Support for the cases when user use wasbs protocol for a ADLS GEN 2
                 if ((name.Contains(".dfs.core.windows.net")) || (name.Contains(".blob.core.windows.net")))
                 {
                     string orName = name.Contains(".dfs.core.windows.net") ? name.Replace(".dfs.core.windows.net", ".blob.core.windows.net") : name.Replace(".blob.core.windows.net", ".dfs.core.windows.net");
@@ -638,7 +638,7 @@ namespace Function.Domain.Helpers
         }
 
         /// <summary>
-        /// Delete unused Dumies entities with specific Qualified Name
+        /// Delete unused Dummies entities with specific Qualified Name
         /// </summary>
         /// <param name="quilifiedName">Qualified Name to Delete</param>
         /// <param name="typeName">Type to delete</param>
@@ -733,13 +733,13 @@ namespace Function.Domain.Helpers
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
-                _logger.LogError("Error geting Authentication Token ofr Purview API");
+                _logger.LogError("Error getting Authentication Token of Purview API");
                 return String.Empty;
             }
             catch (Exception coreex)
             {
 
-                _logger.LogError($"Error geting Authentication Token ofr Purview API - Invalid scope. The scope has to be of the form {scopes}");
+                _logger.LogError($"Error getting Authentication Token of Purview API - Invalid scope. The scope has to be of the form {scopes}");
                 _logger.LogError(coreex.Message);
                 return String.Empty;
             }
@@ -815,17 +815,17 @@ namespace Function.Domain.Helpers
         /// <summary>
         /// Get Entity in Microsoft Purview using bulk/uniqueAttribute/type API
         /// </summary>
-        /// <param name="quilifiedName">Qualified Name to Search by</param>
+        /// <param name="qualifiedName">Qualified Name to Search by</param>
         /// <param name="typeName">Type Name to search by</param>
         /// <returns></returns>
-        public async Task<List<Asset>> Get_Entity(string quilifiedName, string typeName)
+        public async Task<List<Asset>> Get_Entity(string qualifiedName, string typeName)
         {
             var correlationId = Guid.NewGuid().ToString();
             var token = await this.GetToken();
 
             var purviewSearchEndpoint = $"{config!.purviewApiEndPoint!.ToString().Replace("{ResourceUri}", config!.PurviewApiBaseUrl())}{config!.purviewApiEntityByTypeMethod!}";
 
-            List<Asset> entities = await PurviewclientHelper.GetEntityFromPurview(correlationId, quilifiedName.Trim('/').ToLower(), purviewSearchEndpoint, token, typeName);
+            List<Asset> entities = await PurviewclientHelper.GetEntityFromPurview(correlationId, qualifiedName.Trim('/').ToLower(), purviewSearchEndpoint, token, typeName);
             return entities;
         }
 
