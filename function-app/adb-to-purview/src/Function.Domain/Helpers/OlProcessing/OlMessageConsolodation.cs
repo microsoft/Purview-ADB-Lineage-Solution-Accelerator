@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Collections.Generic;
 using Function.Domain.Models.OL;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ namespace Function.Domain.Helpers
         private ILogger _log;
         private TableServiceClient _serviceClient;
         private TableClient _tableClient;
+        static Queue<string> _completedRunIds = new Queue<string>();
 
 
         const string STORAGE = "FunctionStorage";
@@ -67,7 +69,7 @@ namespace Function.Domain.Helpers
         /// </summary>
         /// <param name="olEvent">The event to store</param>
         /// <param name="jobRunId">The jobRunId of the event</param>
-        /// <param name="envParent">the envrionment facet to store</param>
+        /// <param name="envParent">the environment facet to store</param>
         /// <returns></returns>
         public async Task<bool> CaptureEnvironmentFromStart(Event olEvent, string jobRunId, EnvironmentPropsParent envParent)
         {
@@ -85,14 +87,18 @@ namespace Function.Domain.Helpers
         }
 
         /// <summary>
-        /// Consolodates OpenLineage COMPLETE events with envrionment data from corisponding START events
+        /// Consolidates OpenLineage COMPLETE events with environment data from corresponding START events
         /// </summary>
-        /// <param name="olEvent">The OL COMPLETE event to consolodate</param>
-        /// <param name="jobRunId">The JobRunId to look up the corisponding START event envrionment data</param>
+        /// <param name="olEvent">The OL COMPLETE event to consolidate</param>
+        /// <param name="jobRunId">The JobRunId to look up the corresponding START event environment data</param>
         /// <returns></returns>
         public async Task<Event?> ConsolodateCompleteEvent(Event olEvent, string jobRunId)
         {
             if (!(await InitTable()))
+            {
+                return null;
+            }
+            if (RunIdProcessed(jobRunId))
             {
                 return null;
             }
@@ -101,14 +107,31 @@ namespace Function.Domain.Helpers
                 return olEvent;
             }
             else {
-                // Return origional event here. If using the old jar, the env facet would be included.
                 return null;
             }   
         }
 
+
+        // Uses a static queue as a circular buffer to keep track of processed JobRunIds. This is used to prevent duplicate 
+        // events from being processed.
+        // This code will change once Open Lineage supports differentiating between complete events.
+        private bool RunIdProcessed(string runId)
+        {
+            bool rtrn = _completedRunIds.Contains(runId);
+            if (!rtrn)
+            {
+                _completedRunIds.Enqueue(runId);
+            }
+            if (_completedRunIds.Count > 10)
+            {
+                _completedRunIds.Dequeue();
+            }
+            return rtrn;
+        }
+
         // Uses function storage account to store ol event info which must be
         // combined with other ol event data to make a complete Purview entity
-        // returns true if it is a consolodation event
+        // returns true if it is a consolidation event
         private async Task<bool> ProcessStartEvent(Event olEvent, string jobRunId, EnvironmentPropsParent envParent)
         {
             if (!IsStartEventEnvironment(olEvent))
@@ -160,7 +183,7 @@ namespace Function.Domain.Helpers
                 catch (RequestFailedException)
                 {
                     currentRetry++;
-                    _log.LogWarning($"Start event was missing, retrying to consolodate message. Retry count: {currentRetry}");
+                    _log.LogWarning($"Start event was missing, retrying to consolidate message. Retry count: {currentRetry}");
                     if (currentRetry > retryCount)
                     {
                         return false;
@@ -212,7 +235,7 @@ namespace Function.Domain.Helpers
                 }
                 else
                 {
-                    _log.LogError("OlMessageConsolodation-IsJoinEvent: No Inputs and or Ouputs detected");
+                    _log.LogError("OlMessageConsolodation-IsJoinEvent: No Inputs and or Outputs detected");
                     return false;
                 }
             }

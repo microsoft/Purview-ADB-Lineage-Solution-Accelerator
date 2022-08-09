@@ -25,12 +25,12 @@ namespace Function.Domain.Models.Settings
         public string EventHubConsumerGroup { get; set; } = "read";
         public bool usePurviewTypes { get; set; } = false;
         public bool useResourceSet { get; set; } = true;
-        public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/{0}";
+        public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/";
         public string Authority
         {
             get
             {
-                return string.Format(CultureInfo.InvariantCulture, AuthEndPoint, TenantId);
+                return string.Format(CultureInfo.InvariantCulture, AuthEndPoint+"{0}", TenantId);
             }
         }
         public string AuthenticationUri { get; set; } = "purview.azure.net";

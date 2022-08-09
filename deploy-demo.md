@@ -44,7 +44,7 @@ From the [Azure Portal](https://portal.azure.com)
     cd clouddrive
     ```
 
-1. Clone this repository into the clouddrive directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `1.1.0`)
+1. Clone this repository into the clouddrive directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `2.0.0`)
 
     ```bash
     git clone -b <release_tag> https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git

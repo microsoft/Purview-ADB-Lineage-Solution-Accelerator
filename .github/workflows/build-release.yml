@@ -2,14 +2,12 @@ name: Build and Release
 
 on:
   create:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
     paths:
       - '**.cs'
       - '**.csproj'
-      - 'tests/jobdefs/'
-      - 'tests/spark-apps/'
+      - 'tests/integration/**'
   workflow_dispatch:
 
 env:
@@ -18,8 +16,20 @@ env:
   TEST: "function-app/adb-to-purview/tests/unit-tests"
 
 jobs:
-  build:
+  meta:
+    name: Meta Information
+    runs-on: ubuntu-latest
+    steps:
+    - name: Metadata about this action
+      run: | 
+        echo "Github Event Name: ${{ github.event_name }}" 
+        echo "Github Ref: ${{ github.ref }}"
+        echo "Github Ref Type: ${{ github.ref_type }}"
 
+  build:
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'create' && github.ref_type == 'tag')
     name: build-${{matrix.os}}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -75,9 +85,6 @@ jobs:
         name: FunctionZip
         path: ./artifacts
 
-    - name: Run a one-line script
-      run: ls -l ./artifacts
-    
     - name: Azure Functions Action
       uses: Azure/functions-action@v1.4.6
       with:
@@ -149,7 +156,7 @@ jobs:
     needs: [runIntegrationTests]
     runs-on: ubuntu-latest
     environment: 
-      name: Production
+      name: ReleaseEnvironment
     steps:
     - uses: actions/checkout@v3
 
@@ -165,3 +172,25 @@ jobs:
       with:
         artifacts: ~/artifacts/FunctionZip.zip
         token: ${{ secrets.GITHUB_TOKEN }}
+
+  deployProductionEnvironment:
+    name: Release to Production Environment
+    needs: [createRelease]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Production
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: FunctionZip
+        path: ./artifacts
+
+    - name: Azure Functions Action
+      uses: Azure/functions-action@v1.4.6
+      with:
+        app-name: ${{ secrets.FUNC_NAME }}
+        package: ./artifacts/FunctionZip.zip
+        publish-profile: ${{ secrets.PUBLISH_PROFILE }}

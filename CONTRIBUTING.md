@@ -1,9 +1,16 @@
 # Contributing
 
 Welcome, and thank you for your interest in contributing. There are many ways to contribute:
-- [Submit issues](https://github.com/microsoft/solution-accelerator-many-models/issues) to report bugs and make suggestions.
-- Review the [source code changes](https://github.com/microsoft/solution-accelerator-many-models/pulls).
-- Contribute features and fixes by forking the repository and creating a [pull request](https://github.com/microsoft/solution-accelerator-many-models/compare).
+- [Submit issues](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues) to report bugs and make suggestions.
+- Review the [source code changes](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/pulls).
+- Contribute features and fixes by forking the repository and creating a [pull request](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/compare/main...).
+
+
+## Contributing New Data Source Parsing
+
+If you are interested in supporting an additional data source, see the [extending source support](./docs/extending-source-support.md) doc. A mapping can be added to the `docs/mappings/` set of json arrays and indexed on the `docs/mappings/README.md`.
+
+If you are interested in contributing a data source to OpenLineage, please see the [OpenLineage contributing guide](https://github.com/OpenLineage/OpenLineage/blob/main/CONTRIBUTING.md).
 
 
 ## Contributor License Agreement
