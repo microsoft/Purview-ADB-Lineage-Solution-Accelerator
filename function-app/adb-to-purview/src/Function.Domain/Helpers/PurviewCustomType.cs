@@ -41,7 +41,7 @@ namespace Function.Domain.Helpers
         /// <param name="name">Name of the Data Entity</param>
         /// <param name="typeName">Type of the Data Entity</param>
         /// <param name="qualified_name">Qualified Name  of the Data Entity</param>
-        /// <param name="data_type">Orignal Type in case Data entity can't be found (Not scanned yet by Microsoft Purview)</param>
+        /// <param name="data_type">Original Type in case Data entity can't be found (Not scanned yet by Microsoft Purview)</param>
         /// <param name="description">Description  of the Data Entity</param>
         /// <param name="guid">GUID  of the Data Entity</param>
         /// <param name="logger">Hand to the logger to be used globally to log information during execution</param>
@@ -68,7 +68,7 @@ namespace Function.Domain.Helpers
         /// <param name="name">Name of the Data Entity</param>
         /// <param name="typeName">Type of the Data Entity</param>
         /// <param name="qualified_name">Qualified Name  of the Data Entity</param>
-        /// <param name="data_type">Orignal Type in case Data entity can't be found (Not scanned yet by Microsoft Purview)</param>
+        /// <param name="data_type">Original Type in case Data entity can't be found (Not scanned yet by Microsoft Purview)</param>
         /// <param name="description">Description  of the Data Entity</param>
         /// <param name="guid">GUID  of the Data Entity</param>
         /// <param name="logger">Hand to the logger to be used globally to log information during execution</param>
@@ -165,7 +165,7 @@ namespace Function.Domain.Helpers
         /// Add Relationship to entity as columns to tables type
         /// </summary>
         /// <param name="Table">Table to be related to</param>
-        /// <returns>Bollean</returns>
+        /// <returns>bool</returns>
         public bool AddToTable(PurviewCustomType Table)
         {
             //Validating if the table attribute exists if not we will initialize
