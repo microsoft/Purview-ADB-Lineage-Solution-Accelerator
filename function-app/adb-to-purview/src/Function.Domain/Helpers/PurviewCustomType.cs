@@ -489,7 +489,7 @@ namespace Function.Domain.Helpers
 
                 if ((name.ToLower().IndexOf(".csv") > -1) || (name.ToLower().IndexOf(".parquet") > -1))
                 {
-                    foreach (char character  in name.ToCharArray())
+                    foreach (char character in name.ToCharArray())
                     {
                         if (isNumber(character.ToString()))
                             return false;
