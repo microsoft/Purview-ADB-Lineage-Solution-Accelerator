@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 
 namespace Function.Domain.Models.Settings
 {
+    /// <summary>
+    /// Read Configurations and set default values
+    /// </summary>
     public class AppConfigurationSettings
     {
         public string? APPINSIGHTS_INSTRUMENTATIONKEY { get; set; }
@@ -42,6 +45,13 @@ namespace Function.Domain.Models.Settings
         public int tokenCacheTimeInHours {get;set;} = 6;
         public int dataEntityCacheTimeInSeconds {get;set;} = 60;
         public CertificateDescription? Certificate { get; set; }
+        public string? ListenToMessagesFromPurviewKafka { get; set; }
+        public string KafkaName { get; set; } = "atlas_entities";
+        public string KafkaConsumerGroup { get; set; } = "$Default";
+        public string ResourceSet { get; set; }= "azure_datalake_gen2_resource_set;azure_blob_resource_set";
+        public string Spark_Entities { get; set; }= "databricks_workspace;databricks_job;databricks_notebook;databricks_notebook_task";
+        public string Spark_Process { get; set; }= "databricks_process";
+        public string? FilterExeption { get; set; }= "{\"attributes\":[{\"typeName\":\"column\"},{\"typeName\":\"tabular_schema\"},{\"typeName\":\"spark_process\"},{\"typeName\":\"spark_application\"},{\"typeName\":\"databricks*\"}]}";
         public string purviewAppDomain()
         {
             return AppDomainUrl;
@@ -73,6 +83,16 @@ namespace Function.Domain.Models.Settings
                             else
                                 p.SetValue(this, val);
             }
+        }
+        private string[] resourceSet={};
+        public bool IsResourceSet_Entity(string entityName)
+        {
+            if (resourceSet.Length == 0)
+                resourceSet = this.ResourceSet.Split(";");
+            var findTypeName = Array.Find<string>(resourceSet!, element => element.Equals(entityName));
+            if (findTypeName == entityName)
+                return true;
+            return false;
         }
         public AppConfigurationSettings()
         {
