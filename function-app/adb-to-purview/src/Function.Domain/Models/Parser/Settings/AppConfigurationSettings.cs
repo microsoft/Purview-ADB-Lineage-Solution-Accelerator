@@ -25,7 +25,7 @@ namespace Function.Domain.Models.Settings
         public string EventHubConsumerGroup { get; set; } = "read";
         public bool usePurviewTypes { get; set; } = false;
         public bool useResourceSet { get; set; } = true;
-        public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/";
+        public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/{0}";
         public string Authority
         {
             get
