@@ -99,7 +99,7 @@ namespace AdbToPurview.Function
         }
 
         [Function("Purview_Kafka_Events")]
-        public async Task Run([EventHubTrigger("%KafkaHame%", IsBatched = false, Connection = "ListenToMessagesFromPurviewKafka", ConsumerGroup = "%KafkaConsumerGroup%")] string messageBody)
+        public async Task Run([EventHubTrigger("%KafkaName%", IsBatched = false, Connection = "ListenToMessagesFromPurviewKafka", ConsumerGroup = "%KafkaConsumerGroup%")] string messageBody)
         {
             var exceptions = new List<Exception>();
             bool gotMessageBody = false;
