@@ -100,7 +100,10 @@ tenant_id=$(jq -r '.tenantId' <<< $acc_detail)
 
 echo "$(info) start deploying all openlineage required resources"
 echo "including: FunctionApp, EventHub, StorageAccount, etc."
-ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResourcesDeployment \
+
+deploy_connector(){
+    ol_demo_resources_resp=$(az deployment group create \
+        --name $1 \
         --resource-group $RG_NAME \
         --template-file newdeploymenttemp.json \
         --parameters prefixName="$prefixName" \
@@ -108,8 +111,34 @@ ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResour
         --parameters clientsecret="$clientsecret" \
         --parameters purviewName="$purview_account_name"\
         --parameters resourceTagValues="$resourceTagArm" )
+}
+deploy_status(){
+    ol_demo_resources_state=$(az deployment group show \
+        --name $1 \
+        --resource-group $RG_NAME \
+        --query properties.provisioningState | jq -r '.')
+}
+
+echo "$(info) Starting deploying connector resources"
+deploy_connector "DatabricksToPurviewConnector001"
+deploy_status "DatabricksToPurviewConnector001"
+
+echo "Deployment Status: $ol_demo_resources_state"
+
+if [[ $ol_demo_resources_state == "Failed" ]]; then
+    echo "$(info) The deployment failed. Need to retry one time."
+    deploy_connector "DatabricksToPurviewConnector002"
+    deploy_status "DatabricksToPurviewConnector002"
+    echo "Deployment Status for Try#2: $ol_demo_resources_state"
+    if [[ $ol_demo_resources_state == "Failed" ]]; then
+        echo "The connector failed to deploy the Azure Resources. Please review deployment logs for troubleshooting."
+        return 1 2>/dev/null
+        exit 1
+    fi
+fi;
 
 ol_demo_resources_outputs=$(jq -r '.properties.outputs' <<< $ol_demo_resources_resp)
+echo $ol_demo_resources_outputs
 
 # echo $ol_resources_resp
 FUNNAME=$(jq -r '.functionAppName.value' <<< $ol_demo_resources_outputs)
