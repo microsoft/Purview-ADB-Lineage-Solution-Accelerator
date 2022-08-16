@@ -192,7 +192,7 @@ echo $adb_ws_id
 echo $adb_ws_url
 
 if [[ $adbtoken == "" ]]; then
-    echo "trying to get retrieve databricks token if you have permission"
+    echo "trying to retrieve databricks token if you have permission"
     sleep 10
     global_adb_token=$(az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d -o tsv --query '[accessToken]')
     az_token=$(az account get-access-token --resource https://management.core.windows.net/ -o tsv --query '[accessToken]')
@@ -362,10 +362,10 @@ purview_endpoint="https://$purview_account_name.purview.azure.com"
 ## below is all deployment require AAD
 echo "$(info) attempt to get the user's object id for key vault assignment"
 user_detail=$(az ad signed-in-user show)
-user_object_id=$(echo $(jq -r '.id' <<< $user_detail))
+user_object_id=$(echo $(jq -r '.objectId' <<< $user_detail))
 
 echo "$(info) attempt to assign user's object id to key vault"
-kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --secret-permissions get list --object-id $user_object_id)
+kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --resource-group $RG_NAME --secret-permissions get list --object-id $user_object_id)
 
 echo "$(info) create secret scope for Databricks cluster"
 if [[ $az_token == "" ]]; then
