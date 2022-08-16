@@ -414,7 +414,7 @@ echo "$(info) cluster created"
 
 az purview account add-root-collection-admin --account-name $purview_account_name --resource-group $RG_NAME --object-id $user_object_id
 
-spID=$(az resource list -n $purview_account_name --query [*].identity.principalId --out tsv)
+spID=$(az resource list -n $purview_account_name -l $purviewlocation -g $RG_NAME --query [*].identity.principalId --out tsv)
 storageId=$(az storage account show -n $ADLSNAME -g $RG_NAME --query id --out tsv)
 az role assignment create --assignee $spID --role 'Storage Blob Data Reader' --scope $storageId
 
