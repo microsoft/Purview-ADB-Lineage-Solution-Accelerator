@@ -138,9 +138,7 @@ if [[ $ol_demo_resources_state == "Failed" ]]; then
 fi;
 
 ol_demo_resources_outputs=$(jq -r '.properties.outputs' <<< $ol_demo_resources_resp)
-echo $ol_demo_resources_outputs
 
-# echo $ol_resources_resp
 FUNNAME=$(jq -r '.functionAppName.value' <<< $ol_demo_resources_outputs)
 KVNAME=$(jq -r '.kvName.value' <<< $ol_demo_resources_outputs)
 ADLSNAME=$(jq -r '.storageAccountName.value' <<< $ol_demo_resources_outputs)
@@ -362,13 +360,14 @@ echo "$(info) purview account [$purview_account_name] has been created (or alrea
 purview_endpoint="https://$purview_account_name.purview.azure.com"
 
 ## below is all deployment require AAD
+echo "$(info) attempt to get the user's object id for key vault assignment"
 user_detail=$(az ad signed-in-user show)
 user_object_id=$(echo $(jq -r '.id' <<< $user_detail))
-echo "objectId"
-echo "$user_object_id"
 
+echo "$(info) attempt to assign user's object id to key vault"
 kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --secret-permissions get list --object-id $user_object_id)
 
+echo "$(info) create secret scope for Databricks cluster"
 if [[ $az_token == "" ]]; then
     adb_scope_creation_resp=$(echo $(curl -s \
         -X POST https://$adb_ws_url/api/2.0/secrets/scopes/create \
@@ -397,6 +396,7 @@ else
     echo $adb_scope_creation_resp
 fi
 
+echo "$(info) begin databricks demo cluster creation"
 if [[ $az_token == "" ]]; then
     curl -X POST https://$adb_ws_url/api/2.0/clusters/create \
         -H "Authorization: Bearer $global_adb_token" \
@@ -412,8 +412,10 @@ fi
 echo ""
 echo "$(info) cluster created"
 
+echo "$(info) provide user with root collection access"
 az purview account add-root-collection-admin --account-name $purview_account_name --resource-group $RG_NAME --object-id $user_object_id
 
+echo "$(info) provide purview with access to demo storage account"
 spID=$(az resource list -n $purview_account_name -l $purviewlocation -g $RG_NAME --query [*].identity.principalId --out tsv)
 storageId=$(az storage account show -n $ADLSNAME -g $RG_NAME --query id --out tsv)
 az role assignment create --assignee $spID --role 'Storage Blob Data Reader' --scope $storageId
