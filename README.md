@@ -116,7 +116,7 @@ You should see several items listed under the heading of "Custom source types". 
 
 **When filing a new issue, [please include associated log message(s) from Azure Functions](./TROUBLESHOOTING.md#debug-logs).** This will allow the core team to debug within our test environment to validate the issue and develop a solution.
 
-If you have any issues, please start with the [Troubleshooting Doc](./TROUBLESHOOTING.md) and note the [limitations](./LIMITATIONS.md) which affect what sort of lineage can be collected. If the problem persists, please raise an [Issue on Github](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues).
+If you have any issues, please start with the [Troubleshooting Doc](./TROUBLESHOOTING.md) and note the [limitations](./LIMITATIONS.md) which affect what sort of lineage can be collected. If the problem persists, please raise an [Issue on GitHub](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues).
 
 ## Limitations
 
