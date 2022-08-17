@@ -2,6 +2,11 @@
 
 This directory contains a "gallery" of sample OpenLineage to Purview Mappings that can be used in the `OlToPurviewMappings` App Setting on the solution's Azure Function.
 
+## Azure Data Lake Gen 1
+
+* [ADLS Gen 1 Path](./adlsg1.json)
+    * Supports mapping the `adl://` path to an ADLS Gen 1 Path in Purview.
+
 ## Azure SQL
 
 * [Prioritize Azure SQL Non DBO](./az-sql.json)
