@@ -178,6 +178,10 @@ namespace Function.Domain.Helpers
 
         private string GetDynamicValue(ConfigValue configValue, Dictionary<string,object> olDynParts)
         {
+            if (configValue.BaseOp == "AdbWorkspaceUrl")
+            {
+                return _configuration.AdbWorkspaceUrl;
+            }
             string? rtrn = "";
             object op1 = olDynParts[configValue.BaseOp];
             if (op1.GetType() == typeof(List<string>))

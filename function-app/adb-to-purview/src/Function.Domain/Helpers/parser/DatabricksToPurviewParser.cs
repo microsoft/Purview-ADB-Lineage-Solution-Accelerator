@@ -53,9 +53,11 @@ namespace Function.Domain.Helpers
                 throw ex;
             }
             _eEvent = eEvent;
+            _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
+            _parserConfig.AdbWorkspaceUrl = _adbWorkspaceUrl;
             _qnParser = new QnParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.MountPoints);
-            _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
+
         }
 
         /// <summary>

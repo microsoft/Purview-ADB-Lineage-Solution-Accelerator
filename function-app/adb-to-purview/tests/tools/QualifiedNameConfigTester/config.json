@@ -26,7 +26,7 @@
                 "op2": "hive/warehouse"
             }
         ],
-        "qualifiedName": "{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}/{nameGroups[0].parts[2]}/{nameGroups[0].parts[3]}.{nameGroups[0].parts[4]}@adb-6661806988411828.8.azuredatabrick.net",
+        "qualifiedName": "{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}/{nameGroups[0].parts[2]}/{nameGroups[0].parts[3]}.{nameGroups[0].parts[4]}@{AdbWorkspaceUri}}",
         "purviewDataType": "hive_table",
         "purviewPrefix": "hive"
     },
