@@ -20,6 +20,7 @@
 
 ### Other Issues
 * [VS Code Pop-Up: "Some projects have trouble loading" when opening the folder](#vscode-popup)
+* [Driver Crashing with OpenLineage Installed](#driver-crash)
 
 -----
 
@@ -117,7 +118,7 @@ The Service Principal is unable to retrieve an access token for Databricks.
 
 ## <a id="demo-command-not-found" />Demo Deployment: $'\r': command not found
 
-When running the `openlineage-deployment.sh` script, you received either ``$'\r': command not found` or `syntax error near unexpected token $'\r'`. This can occur when you have used git to clone the shell script (.sh) to a Windows OS file system with [git core.autocrlf enabled](https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings). This will only occur if you cloned the repo locally rather than using the Bash cloud shell.
+When running the `openlineage-deployment.sh` script, you received either `$'\r': command not found` or `syntax error near unexpected token $'\r'`. This can occur when you have used git to clone the shell script (.sh) to a Windows OS file system with [git core.autocrlf enabled](https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings). This will only occur if you cloned the repo locally rather than using the Bash cloud shell.
 
 **Solution**: Use the [Azure Cloud shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview) to do your deployment. Alternatively, if you must use a Windows OS machine, use your preferred file editor to remove `\r\n` and replace with `\n`. Lastly, you may consider using the zip file download rather than the git clone option provided by GitHub.
 
@@ -144,3 +145,11 @@ The demo deployment appears to be successful but when reviewing the sample noteb
 When opening the cloned repo in VS Code, you may see a pop up saying "Some projects have trouble loading". This is due to Auth libraries not yet being specifically available for dotnet 6.0.
 
 **Solution**: You can safely ignore these warnings.
+
+## <a id="driver-crash" />Driver Crashes When Using OpenLineage
+
+### When using SaveAsTable and Overwrite Mode
+
+When using OpenLineage `0.11.0` with Databricks Runtime `10.4` and executing a command like `df.write.mode("overwrite").saveAsTable("default.mytable")`, the driver crashes. This is due to a bug in OpenLineage which did not separate out certain commands for Spark 3.2 vs Spark 3.1.
+
+**Solution**: You can use `mode("append")` to add data to the table instead. Alternatively, you may explore using OpenLineage `0.12.0` which has resolved this issue. However, the Solution Accelerator is not fully tested on `0.12.0` and may have other issues in our supported use cases.
