@@ -100,7 +100,9 @@ tenant_id=$(jq -r '.tenantId' <<< $acc_detail)
 
 echo "$(info) start deploying all openlineage required resources"
 echo "including: FunctionApp, EventHub, StorageAccount, etc."
-ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResourcesDeployment \
+deploy_connector(){
+    ol_demo_resources_resp=$(az deployment group create \
+        --name $1 \
         --resource-group $RG_NAME \
         --template-file newdeploymenttemp.json \
         --parameters prefixName="$prefixName" \
@@ -108,6 +110,31 @@ ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResour
         --parameters clientsecret="$clientsecret" \
         --parameters purviewName="$purview_account_name"\
         --parameters resourceTagValues="$resourceTagArm" )
+}
+deploy_status(){
+    ol_demo_resources_state=$(az deployment group show \
+        --name $1 \
+        --resource-group $RG_NAME \
+        --query properties.provisioningState | jq -r '.')
+}
+
+echo "$(info) Starting deploying connector resources"
+deploy_connector "DatabricksToPurviewConnector001"
+deploy_status "DatabricksToPurviewConnector001"
+
+echo "Deployment Status: $ol_demo_resources_state"
+
+if [[ $ol_demo_resources_state == "Failed" ]]; then
+    echo "$(info) The deployment failed. Need to retry one time."
+    deploy_connector "DatabricksToPurviewConnector002"
+    deploy_status "DatabricksToPurviewConnector002"
+    echo "Deployment Status for Try#2: $ol_demo_resources_state"
+    if [[ $ol_demo_resources_state == "Failed" ]]; then
+        echo "The connector failed to deploy the Azure Resources. Please review deployment logs for troubleshooting."
+        return 1 2>/dev/null
+        exit 1
+    fi
+fi;
 
 ol_demo_resources_outputs=$(jq -r '.properties.outputs' <<< $ol_demo_resources_resp)
 
@@ -335,10 +362,10 @@ purview_endpoint="https://$purview_account_name.purview.azure.com"
 ## below is all deployment require AAD
 user_detail=$(az ad signed-in-user show)
 user_object_id=$(echo $(jq -r '.id' <<< $user_detail))
-echo "objectId"
-echo "$user_object_id"
 
-kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --secret-permissions get list --object-id $user_object_id)
+echo "$(info) attempt to assign user's object id to key vault"
+kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --resource-group $RG_NAME --secret-permissions get list --object-id $user_object_id)
+
 
 if [[ $az_token == "" ]]; then
     adb_scope_creation_resp=$(echo $(curl -s \
@@ -385,7 +412,7 @@ echo "$(info) cluster created"
 
 az purview account add-root-collection-admin --account-name $purview_account_name --resource-group $RG_NAME --object-id $user_object_id
 
-spID=$(az resource list -n $purview_account_name --query [*].identity.principalId --out tsv)
+spID=$(az resource list -n $purview_account_name -l $purviewlocation -g $RG_NAME --query [*].identity.principalId --out tsv)
 storageId=$(az storage account show -n $ADLSNAME -g $RG_NAME --query id --out tsv)
 az role assignment create --assignee $spID --role 'Storage Blob Data Reader' --scope $storageId
 
