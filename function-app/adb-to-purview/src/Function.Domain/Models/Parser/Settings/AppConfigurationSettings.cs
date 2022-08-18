@@ -30,6 +30,8 @@ namespace Function.Domain.Models.Settings
         {
             get
             {
+                if(AuthEndPoint.IndexOf("{0}")<0)
+                    return string.Concat(   AuthEndPoint, TenantId);    
                 return string.Format(CultureInfo.InvariantCulture, AuthEndPoint, TenantId);
             }
         }
