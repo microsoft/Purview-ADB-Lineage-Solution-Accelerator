@@ -189,7 +189,7 @@
 							"value": "[variables('purviewAccountName')]"
 						},
 						{
-							"name":"KafkaEndpoint",
+							"name":"listenToMessagesFromPurviewKafka",
 							"value":"[variables('kafkaEndpoint')]"
 						},
 						{
