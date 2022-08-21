@@ -91,6 +91,10 @@ As a result, this solution attempts to find the best matching *existing* asset. 
 
 The solution currently does not provide column level mapping within the Microsoft Purview lineage tab.
 
+### Data Factory
+
+The solution currently reflects the unfriendly job name provided by Data Factory to Databricks as noted in [issue 72](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues/72#issuecomment-1211202405). You will see jobs with names similar to `ADF_<factory name>_<pipeline name>_<activity name>_<guid>`.
+
 ### Hive Metastore / Delta Table Names
 
 The solution currently does not support emitting the Hive Metastore / Delta table SQL names. For example, if you have a Delta table name `default.events` and it's physical location is `abfss://container@storage/path`, the solution will report `abfss://container@storage/path`.

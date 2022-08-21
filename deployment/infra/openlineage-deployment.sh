@@ -122,7 +122,10 @@ echo "$(info) purview account [$purview_account_name] has been created (or alrea
 
 echo "$(info) start deploying all openlineage required resources"
 echo "including: FunctionApp, EventHub, StorageAccount, etc."
-ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResourcesDeployment \
+
+deploy_connector(){
+    ol_demo_resources_resp=$(az deployment group create \
+        --name $1 \
         --resource-group $RG_NAME \
         --template-file newdeploymenttemp.json \
         --parameters prefixName="$prefixName" \
@@ -131,10 +134,34 @@ ol_demo_resources_resp=$(az deployment group create --name OpenLineageDemoResour
         --parameters purviewName="$purview_account_name"\
         --parameters resourceTagValues="$resourceTagArm" \
 		--parameters listenToMessagesFromPurviewKafka="$kafkaEndpoint")
+}
+deploy_status(){
+    ol_demo_resources_state=$(az deployment group show \
+        --name $1 \
+        --resource-group $RG_NAME \
+        --query properties.provisioningState | jq -r '.')
+}
+
+echo "$(info) Starting deploying connector resources"
+deploy_connector "DatabricksToPurviewConnector001"
+deploy_status "DatabricksToPurviewConnector001"
+
+echo "Deployment Status: $ol_demo_resources_state"
+
+if [[ $ol_demo_resources_state == "Failed" ]]; then
+    echo "$(info) The deployment failed. Need to retry one time."
+    deploy_connector "DatabricksToPurviewConnector002"
+    deploy_status "DatabricksToPurviewConnector002"
+    echo "Deployment Status for Try#2: $ol_demo_resources_state"
+    if [[ $ol_demo_resources_state == "Failed" ]]; then
+        echo "The connector failed to deploy the Azure Resources. Please review deployment logs for troubleshooting."
+        return 1 2>/dev/null
+        exit 1
+    fi
+fi;
 
 ol_demo_resources_outputs=$(jq -r '.properties.outputs' <<< $ol_demo_resources_resp)
 
-# echo $ol_resources_resp
 FUNNAME=$(jq -r '.functionAppName.value' <<< $ol_demo_resources_outputs)
 KVNAME=$(jq -r '.kvName.value' <<< $ol_demo_resources_outputs)
 ADLSNAME=$(jq -r '.storageAccountName.value' <<< $ol_demo_resources_outputs)
@@ -188,7 +215,7 @@ echo $adb_ws_id
 echo $adb_ws_url
 
 if [[ $adbtoken == "" ]]; then
-    echo "trying to get retrieve databricks token if you have permission"
+    echo "trying to retrieve databricks token if you have permission"
     sleep 10
     global_adb_token=$(az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d -o tsv --query '[accessToken]')
     az_token=$(az account get-access-token --resource https://management.core.windows.net/ -o tsv --query '[accessToken]')
@@ -335,13 +362,14 @@ EOF
 ## End of databricks workspace deployment
 
 ## below is all deployment require AAD
+echo "$(info) attempt to get the user's object id for key vault assignment"
 user_detail=$(az ad signed-in-user show)
 user_object_id=$(echo $(jq -r '.id' <<< $user_detail))
-echo "objectId"
-echo "$user_object_id"
 
-kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --secret-permissions get list --object-id $user_object_id)
+echo "$(info) attempt to assign user's object id to key vault"
+kv_add_user_ap=$(az keyvault set-policy --name $KVNAME --resource-group $RG_NAME --secret-permissions get list --object-id $user_object_id)
 
+echo "$(info) create secret scope for Databricks cluster"
 if [[ $az_token == "" ]]; then
     adb_scope_creation_resp=$(echo $(curl -s \
         -X POST https://$adb_ws_url/api/2.0/secrets/scopes/create \
@@ -370,6 +398,7 @@ else
     echo $adb_scope_creation_resp
 fi
 
+echo "$(info) begin databricks demo cluster creation"
 if [[ $az_token == "" ]]; then
     curl -X POST https://$adb_ws_url/api/2.0/clusters/create \
         -H "Authorization: Bearer $global_adb_token" \
@@ -385,9 +414,11 @@ fi
 echo ""
 echo "$(info) cluster created"
 
+echo "$(info) provide user with root collection access"
 az purview account add-root-collection-admin --account-name $purview_account_name --resource-group $RG_NAME --object-id $user_object_id
 
-spID=$(az resource list -n $purview_account_name --query [*].identity.principalId --out tsv)
+echo "$(info) provide purview with access to demo storage account"
+spID=$(az resource list -n $purview_account_name -l $purviewlocation -g $RG_NAME --query [*].identity.principalId --out tsv)
 storageId=$(az storage account show -n $ADLSNAME -g $RG_NAME --query id --out tsv)
 az role assignment create --assignee $spID --role 'Storage Blob Data Reader' --scope $storageId
 

@@ -56,10 +56,11 @@ Gathering lineage data is performed in the following steps:
   * Databricks Runtimes between 6.4 and 10.4 are currently supported
 * Can be configured per cluster or for all clusters as a global configuration  
 * Once configured, <span style="color: red;">**does not require any code changes to notebooks or jobs**</span>
-* Can [add new source support through configuration](./extending-source-support.md)  
+* Can [add new source support through configuration](./docs/extending-source-support.md)  
 
 ## Videos
 
+* [Solution Overview](https://youtu.be/LrtDmLnRse0)
 * [Deploying the Demo](https://youtu.be/pLF0iykhruY)
 * [Troubleshooting](https://youtu.be/kG8Maa1kOx0)
 
@@ -115,7 +116,7 @@ You should see several items listed under the heading of "Custom source types". 
 
 **When filing a new issue, [please include associated log message(s) from Azure Functions](./TROUBLESHOOTING.md#debug-logs).** This will allow the core team to debug within our test environment to validate the issue and develop a solution.
 
-If you have any issues, please start with the [Troubleshooting Doc](./TROUBLESHOOTING.md) and note the [limitations](./LIMITATIONS.md) which affect what sort of lineage can be collected. If the problem persists, please raise an [Issue on Github](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues).
+If you have any issues, please start with the [Troubleshooting Doc](./TROUBLESHOOTING.md) and note the [limitations](./LIMITATIONS.md) which affect what sort of lineage can be collected. If the problem persists, please raise an [Issue on GitHub](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues).
 
 ## Limitations
 
