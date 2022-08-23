@@ -54,7 +54,7 @@ namespace Function.Domain.Helpers
             }
             _eEvent = eEvent;
             _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
-            _parserConfig.AdbWorkspaceUrl = _adbWorkspaceUrl;
+            _parserConfig.AdbWorkspaceUrl = this.GetDatabricksWorkspace().Attributes.Name;
             _qnParser = new QnParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.MountPoints);
 

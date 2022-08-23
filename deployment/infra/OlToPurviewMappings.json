@@ -341,6 +341,47 @@
             "qualifiedName": "postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/public/tables/{nameGroups[0]}",
             "purviewDataType": "postgresql_table",
             "purviewPrefix": "postgresql"
+        },
+        {
+            "name": "hiveManagedTableNotDefault",
+            "parserConditions":[
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "dbfs"
+                },
+                {
+                    "op1": "nameGroups[0]",
+                    "compare": "contains",
+                    "op2": "hive/warehouse"
+                },
+                {
+                    "op1": "nameGroups[0].parts",
+                    "compare": ">",
+                    "op2": "4"
+                }
+            ],
+            "qualifiedName": "{nameGroups[0].parts[3]}.{nameGroups[0].parts[5]}@{AdbWorkspaceUrl}",
+            "purviewDataType": "hive_table",
+            "purviewPrefix": "hive"
+        },
+        {
+            "name": "hiveManagedTableDefault",
+            "parserConditions":[
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "dbfs"
+                },
+                {
+                    "op1": "nameGroups[0]",
+                    "compare": "contains",
+                    "op2": "hive/warehouse"
+                }
+            ],
+            "qualifiedName": "default.{nameGroups[0].parts[3]}@{AdbWorkspaceUrl}",
+            "purviewDataType": "hive_table",
+            "purviewPrefix": "hive"
         }
     ]
 }
