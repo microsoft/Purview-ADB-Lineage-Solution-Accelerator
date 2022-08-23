@@ -23,8 +23,8 @@ namespace Function.Domain.Models.OL
             (string olPrefix, string olConnection) = GetPrefixConn(nameSpace);
             this.Prefix = olPrefix;
 
-            char[] seperators = { '@', ':', '/', ';', ',' };
-            var initSplits = olConnection.Split(seperators, StringSplitOptions.RemoveEmptyEntries);
+            char[] separators = { '@', ':', '/', ';', ',' };
+            var initSplits = olConnection.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             foreach (var initSplit in initSplits)
             {
                 if (!AddConStringNameValues(initSplit, ref this._olNameSpaceParts.NameSpaceConnNameValues))

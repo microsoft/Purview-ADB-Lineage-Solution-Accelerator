@@ -61,6 +61,7 @@ Supports Azure SQL DB through the [Apache Spark Connector for Azure SQL DB](http
   * For users and Service Principals with different default schemas, this may result in incorrect lineage.
   * This can be corrected by specifying the database schema in the Spark job.
 * Does not support emitting lineage for cross-database table sources.
+* Default configuration supports using multiple strings divided by dots to define a custom schema.  For example ```myschema.mytable```.  This will not function correctly if table names could contain dot characters in your organization.  In this case, you can delete the "azureSQLNonDboNoDotsInNames" section from the "OlToPurviewMappings" function configuration setting. Note that you would need to use bracket syntax to denote a custom schema.  For example ```[myschema].[my.table]```.
 
 ## Delta Lake File Format
 
@@ -90,6 +91,10 @@ As a result, this solution attempts to find the best matching *existing* asset. 
 
 The solution currently does not provide column level mapping within the Microsoft Purview lineage tab.
 
+### Data Factory
+
+The solution currently reflects the unfriendly job name provided by Data Factory to Databricks as noted in [issue 72](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues/72#issuecomment-1211202405). You will see jobs with names similar to `ADF_<factory name>_<pipeline name>_<activity name>_<guid>`.
+
 ### Hive Metastore / Delta Table Names
 
 The solution currently does not support emitting the Hive Metastore / Delta table SQL names. For example, if you have a Delta table name `default.events` and it's physical location is `abfss://container@storage/path`, the solution will report `abfss://container@storage/path`.
@@ -108,9 +113,9 @@ At this time, we encourage clusters running Spark Structured Streaming jobs to n
 
 The solution supports Spark 2 job cluster jobs. Databricks has removed Spark 2 from it's Long Term Support program.
 
-### Spark 3.2+ Support
+### Spark 3.3+ Support
 
-The solution supports Spark 3.0 and 3.1 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.2 on Databricks Runtime 10.4 and higher.
+The solution supports Spark 3.0, 3.1, and 3.2 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.3 on Databricks Runtime 11.0 and higher.
 
 ### Private Endpoints on Microsoft Purview
 

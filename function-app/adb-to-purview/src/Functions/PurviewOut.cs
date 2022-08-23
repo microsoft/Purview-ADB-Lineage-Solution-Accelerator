@@ -36,7 +36,7 @@ namespace AdbToPurview.Function
                 var enrichedEvent = await _olConsolodateEnrich.ProcessOlMessage(input);
                 if (enrichedEvent == null)
                 {
-                    _logger.LogInformation($"Start event or no context found - eventData: {input}");
+                    _logger.LogInformation($"Start event, duplicate event, or no context found - eventData: {input}");
                     return "";
                 }
                 var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent);

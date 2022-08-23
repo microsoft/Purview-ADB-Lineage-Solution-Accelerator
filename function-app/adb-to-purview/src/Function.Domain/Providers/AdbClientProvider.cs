@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
 using Function.Domain.Models.Adb;
+using Function.Domain.Models.Settings;
+using Microsoft.Identity.Client;
+using Microsoft.Identity.Web;
 
 namespace Function.Domain.Providers
 {
@@ -17,9 +20,7 @@ namespace Function.Domain.Providers
     /// </summary>
     class AdbClientProvider : IAdbClientProvider
         {
-        private string _tenantId;
-        private string _clientId;
-        private string _clientSecret;
+        private AppConfigurationSettings? config = new AppConfigurationSettings();
 
         // static for simple function cache
         private static JwtSecurityToken? _managementToken;
@@ -31,64 +32,66 @@ namespace Function.Domain.Providers
         /// Constructs the AdbClientProvider object from the Function framework using DI
         /// </summary>
         /// <param name="loggerFactory">Logger Factory to support DI from function framework or code calling helper classes</param>
-        /// <param name="config">Function framwork config from DI</param>
+        /// <param name="config">Function framework config from DI</param>
         public AdbClientProvider(ILoggerFactory loggerFactory, IConfiguration config)
         {
             _log = loggerFactory.CreateLogger<AdbClientProvider>();
             _client  = new HttpClient();
-            _tenantId = config["TenantId"];
-            _clientId = config["ClientId"];
-            _clientSecret = config["ClientSecret"];
         }
         private async Task GetBearerTokenAsync()
         {
-            try {
-                var BaseAddress = $"https://login.microsoftonline.com/{_tenantId}/oauth2/v2.0/token";
-                var form = new Dictionary<string, string>
-                {
-                    {"grant_type", "client_credentials"},
-                    {"scope", "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d/.default"},
-                    {"client_id", _clientId },
-                    {"client_secret", _clientSecret}
-                };
+            // Even if this is a console application here, a daemon application is a confidential client application
+            IConfidentialClientApplication app;
 
-                var tokenResponse = await _client.PostAsync(BaseAddress, new FormUrlEncodedContent(form));
+            if (config!.IsAppUsingClientSecret())
+            {
+                // Even if this is a console application here, a daemon application is a confidential client application
+                app = ConfidentialClientApplicationBuilder.Create(config.ClientID)
+                    .WithClientSecret(config.ClientSecret)
+                    .WithAuthority(new Uri(config.Authority))
+                    .Build();
+            }
+            else
+            {
+                ICertificateLoader certificateLoader = new DefaultCertificateLoader();
+                certificateLoader.LoadIfNeeded(config!.Certificate!);
 
-                tokenResponse.EnsureSuccessStatusCode();
-                JObject? resultjson = JObject.Parse(tokenResponse.Content.ReadAsStringAsync().Result);
-                if (resultjson is not null)
-                {
-                    _bearerToken = new JwtSecurityToken((resultjson.SelectToken("access_token") ?? "").ToString());
+                app = ConfidentialClientApplicationBuilder.Create(config.ClientID)
+                    .WithCertificate(config!.Certificate!.Certificate)
+                    .WithAuthority(new Uri(config.Authority))
+                    .Build();
+            }
+
+            string[] scopes = new string[] { "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d/.default" };
+
+            AuthenticationResult? result;
+            try
+            {
+                foreach(string s in scopes){
+                    _log.LogInformation(s);
                 }
+                _log.LogInformation(config.ClientID);
+                _log.LogInformation(config.Authority);
+                
+                result = await app.AcquireTokenForClient(scopes).ExecuteAsync();
             }
-            catch (Exception ex) 
+            catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
-                _log.LogError(ex, $"AdbClient-GetBearerTokenAsync: error, message: {ex.Message}");
+                // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
+                // Mitigation: change the scope to be as expected
+                _log.LogError("Error getting Authentication Token for Databricks API");
+                return;
             }
-        }
-        private async Task GetManagementTokenAsync()
-        {
-            try {
-                var BaseAddress = $"https://login.microsoftonline.com/{_tenantId}/oauth2/token";
-                var form = new Dictionary<string, string>
-                {
-                    {"Authorization: Bearer", _bearerToken!.RawData},
-                    {"grant_type", "client_credentials"},
-                    {"resource", "https://management.core.windows.net/"},
-                    {"client_id", _clientId },
-                    {"client_secret", _clientSecret}
-                };
-
-                var tokenResponse = await _client.PostAsync(BaseAddress, new FormUrlEncodedContent(form));
-
-                tokenResponse.EnsureSuccessStatusCode();
-                JObject? resultjson = JObject.Parse(tokenResponse.Content.ReadAsStringAsync().Result);
-                _managementToken = new JwtSecurityToken((resultjson.SelectToken("access_token") ?? "").ToString());
-            }
-            catch (Exception ex)
+            catch (Exception coreex)
             {
-                _log.LogError(ex, $"AdbClient-GetManagementTokenAsync: error, message: {ex.Message}");
+
+                _log.LogError($"Error getting Authentication Token for Databricks API");
+                _log.LogError(coreex.Message);
+                return;
             }
+
+            _bearerToken = new JwtSecurityToken(result.AccessToken);
+
         }
 
         /// <summary>
@@ -110,24 +113,12 @@ namespace Function.Domain.Providers
                 }
             }
 
-            if (isTokenExpired(_managementToken))
-            {
-                await GetManagementTokenAsync();
-
-                if (_managementToken is null) 
-                {
-                    _log.LogError("AdbClient-GetSingleAdbJobAsync: unable to get management token");
-                    return null;
-                }
-            }
-
             var request = new HttpRequestMessage() {
                 RequestUri = new Uri($"https://{adbWorkspaceUrl}.azuredatabricks.net/api/2.1/jobs/runs/get?run_id={runId}"),
                 Method = HttpMethod.Get,
             };
             request.Headers.Authorization  =
                 new AuthenticationHeaderValue("Bearer", _bearerToken!.RawData);
-            request.Headers.TryAddWithoutValidation("X-Databricks-Azure-SP-Management-Token", _managementToken!.RawData);
 
             AdbRoot? resultAdbRoot = null;
            try {

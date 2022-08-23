@@ -71,6 +71,10 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("sqlserver://purview-to-adb-sql.database.windows.net;database=purview-to-adb-sqldb;", 
                     "[mytest].[tablename.will.mark]", 
                     "mssql://purview-to-adb-sql.database.windows.net/purview-to-adb-sqldb/mytest/tablename.will.mark")]
+        // Azure SQL Non DBO Schema - dots only
+        [InlineData("sqlserver://purview-to-adb-sql.database.windows.net;database=purview-to-adb-sqldb;", 
+                    "mytest.tablename",
+                    "mssql://purview-to-adb-sql.database.windows.net/purview-to-adb-sqldb/mytest/tablename")]
         // Synapse Non DBO Schema
         [InlineData("sqlserver://purviewadbsynapsews.sql.azuresynapse.net:1433;database=SQLPool1;", 
                     "sales.region", 
