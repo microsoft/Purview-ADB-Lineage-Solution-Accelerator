@@ -45,13 +45,15 @@ namespace Function.Domain.Helpers
                 foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
                 {
                   var dataSet = new DatasetMappingClass();
-                    dataSet.sink = $"{colId.NameSpace}, {colId.Name}";
+                    //dataSet.sink = $"{colId.NameSpace}, {colId.Name}";
+                    dataSet.sink = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name).QualifiedName;
                     var columnLevels = new List<ColumnMappingClass>();
                     foreach (ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
                     {
                         var columnLevel = new ColumnMappingClass();
                         //get sources for column level list 
-                        dataSet.source = $"{colInfo2.nameSpace}, {colInfo2.name}";
+                        dataSet.source = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name).QualifiedName;
+                        //dataSet.source = "*";
                         columnLevel.source = colInfo2.field;
                         columnLevel.sink = colInfo.Key;
                         columnLevels.Add(columnLevel);

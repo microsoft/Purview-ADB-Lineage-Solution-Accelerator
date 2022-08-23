@@ -101,6 +101,7 @@ namespace Function.Domain.Helpers
             DatabricksWorkspace databricksWorkspace = new DatabricksWorkspace();
             databricksWorkspace.Attributes.Name = $"{_adbWorkspaceUrl}.azuredatabricks.net";
             databricksWorkspace.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net";
+            //databricksWorkspace.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             
             return databricksWorkspace;
         }
@@ -286,7 +287,7 @@ namespace Function.Domain.Helpers
             }
 
             databricksProcess.Attributes = GetProcAttributes(taskQn, inputs,outputs,_eEvent.OlEvent);
-            databricksProcess.ColumnLevel = _colParser.GetColIdentifiers();
+            //databricksProcess.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn; 
             return databricksProcess;
         }
@@ -297,6 +298,7 @@ namespace Function.Domain.Helpers
             var pa = new DatabricksProcessAttributes();
             pa.Name = sparkEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.SparkDatabricksNotebookPath + sparkEvent.Outputs[0].Name;
             pa.QualifiedName = $"{taskQn}/processes/{GetInputsOutputsHash(inputs, outputs)}";
+            pa.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             pa.SparkPlan = sparkEvent.Run.Facets.SparkLogicalPlan.ToString(Formatting.None);
             pa.Inputs = inputs;
             pa.Outputs = outputs;
