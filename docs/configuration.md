@@ -11,8 +11,8 @@ The following are the stable app settings that should be reviewed.
 |ClientID|Provided during ARM deployment|Yes|The Application Id of the service principal with permission to read call Databricks and Microsoft Purview APIs|
 |ClientSecret|Provided during ARM deployment|*Yes|The secret value for the service principal provided in ClientID|
 |Certificate|Not Applicable|*No|Should be a JSON object: `{"SourceType": "KeyVault","KeyVaultUrl": "https://akv-name.vault.azure.net/","KeyVaultCertificateName": "certificateName"}`
-|ResourceUri | https://purview.azure.com | No| |
-|AuthEndPoint| https://login.microsoftonline.com/| No| |
+|ResourceUri | <https://purview.azure.com> | No| |
+|AuthEndPoint| <https://login.microsoftonline.com/>| No| |
 |AuthenticationUri| purview.azure.net| No| |
 |EventHubName|Not Applicable|Yes| |
 |ListenToMessagesFromEventHub|Not Applicable|Yes| |
@@ -45,7 +45,7 @@ The following app settings are experimental and may be removed in future release
 |Configuration|Value|Config Location| Note|
 |----|----|----|---|
 |spark.openlineage.url.param.code| Function Key |*Cluster Spark Config or Init Script||
-|spark.openlineage.host| https://FUNCTION_APP_NAME.azurewebsites.net|Cluster Spark Config or Init Script||
+|spark.openlineage.host| <https://FUNCTION_APP_NAME.azurewebsites.net>|Cluster Spark Config or Init Script||
 |spark.openlineage.namespace| WORKSPACE_ID#CLUSTER_ID |Cluster Spark Config or Init Script||
 |spark.openlineage.version| v1 |Cluster Spark Config or Init Script| Should be v1 for OpenLineage jar 0.9.0+. Should be 1 for OpenLineage jar 0.8.2 and earlier.|
 

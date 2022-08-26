@@ -23,7 +23,6 @@ namespace Function.Domain.Providers
         private AppConfigurationSettings? config = new AppConfigurationSettings();
 
         // static for simple function cache
-        private static JwtSecurityToken? _managementToken;
         private static JwtSecurityToken? _bearerToken;
         private HttpClient _client;
         private ILogger _log;
