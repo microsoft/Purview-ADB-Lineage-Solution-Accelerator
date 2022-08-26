@@ -52,6 +52,13 @@ namespace Function.Domain.Helpers
                     {
                         var columnLevel = new ColumnMappingClass();
                         //get sources for column level list 
+                        foreach(var x in _olEvent.Inputs)
+                        {
+                            if(colInfo2.name.Contains(x.Name))
+                            {
+                                colInfo2.name = x.Name;
+                            }
+                        }
                         dataSet.source = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name).QualifiedName;
                         //dataSet.source = "*";
                         columnLevel.source = colInfo2.field;
