@@ -341,6 +341,19 @@
             "qualifiedName": "postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/public/tables/{nameGroups[0]}",
             "purviewDataType": "postgresql_table",
             "purviewPrefix": "postgresql"
+        },
+        {
+            "name": "azureMySql",
+            "parserConditions" : [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "mysql"
+                }
+            ],
+            "qualifiedName": "mysql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_mysql_table",
+            "purviewPrefix": "mysql"
         }
     ]
 }
