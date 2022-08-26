@@ -382,6 +382,19 @@
             "qualifiedName": "default.{nameGroups[0].parts[3]}@{AdbWorkspaceUrl}",
             "purviewDataType": "hive_table",
             "purviewPrefix": "hive"
+        },
+        {
+            "name": "azureMySql",
+            "parserConditions" : [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "mysql"
+                }
+            ],
+            "qualifiedName": "mysql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_mysql_table",
+            "purviewPrefix": "mysql"
         }
     ]
 }
