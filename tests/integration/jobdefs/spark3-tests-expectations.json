@@ -8,7 +8,7 @@
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-oauth",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-oauth/processes/56EE0B098A9A3D07DC11F4C6EA9BF71C->E6B1D99B74724B48DAB2BCB79142CB65",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/azuresql-in-out",
-  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/azuresql-in-out/processes/AB68701A689D997891027657AA191E05->1A1EF10BC89D10CA52B3559833DAC1F3",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/azuresql-in-out/processes/03CC0799BCA86B4A823AD9B6C9A772A1->1A1EF10BC89D10CA52B3559833DAC1F3",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-abfss",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-abfss/processes/EEDA606783A7DD68C6A6C60221608209->0533EFDC2210DD1546DACD3291D14EE9",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-fs",
