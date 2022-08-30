@@ -9,5 +9,7 @@ namespace Function.Domain.Models.Purview
         public string Name = "";
         [JsonProperty("qualifiedName")]
         public string QualifiedName = "";
+        // [JsonProperty("columnMapping")]
+        // public string ColumnMapping = "";
     }
 }

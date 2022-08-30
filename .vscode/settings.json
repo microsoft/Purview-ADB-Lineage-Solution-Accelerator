@@ -1,0 +1,3 @@
+{
+    "azureFunctions.projectSubpath": "function-app\\adb-to-purview\\src\\bin\\Debug\\net6.0"
+}
