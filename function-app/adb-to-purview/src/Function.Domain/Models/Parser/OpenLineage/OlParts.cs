@@ -60,6 +60,11 @@ namespace Function.Domain.Models.OL
             var splitString = inString.Split('=');
             if (splitString.Length == 2)
             {
+                // Special case for jdbc database value as it can be either "database" or "databaseName"
+                if (splitString[0].ToLower() == "databasename")
+                {
+                    splitString[0] = "database";
+                }
                 valDict.Add(splitString[0], splitString[1]);
                 return true;
             }

@@ -65,6 +65,10 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("sqlserver://purview-to-adb-sql.database.windows.net:1433;database=purview-to-adb-sqldb;encrypt=true;", 
                     "borrower_with_pid", 
                     "mssql://purview-to-adb-sql.database.windows.net/purview-to-adb-sqldb/dbo/borrower_with_pid")]
+        // Azure SQL - databaseName
+        [InlineData("sqlserver://purview-to-adb-sql.database.windows.net:1433;databaseName=purview-to-adb-sqldb;encrypt=true;", 
+                    "borrower_with_pid", 
+                    "mssql://purview-to-adb-sql.database.windows.net/purview-to-adb-sqldb/dbo/borrower_with_pid")]
         // Synapse
         [InlineData("sqlserver://purviewadbsynapsews.sql.azuresynapse.net:1433;database=SQLPool1;", 
                     "exampleinputA", 
