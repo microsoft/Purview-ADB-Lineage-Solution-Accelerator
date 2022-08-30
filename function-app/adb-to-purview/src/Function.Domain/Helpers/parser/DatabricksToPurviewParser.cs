@@ -23,6 +23,7 @@ namespace Function.Domain.Helpers
         private readonly ILoggerFactory _loggerFactory;
         private readonly ParserSettings _parserConfig;
         private readonly IQnParser _qnParser;
+        private readonly IColParser _colParser;
         private readonly EnrichedEvent _eEvent;
         private readonly string _adbWorkspaceUrl;
         const string SETTINGS = "OlToPurviewMappings";
@@ -55,6 +56,10 @@ namespace Function.Domain.Helpers
             _eEvent = eEvent;
             _qnParser = new QnParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.MountPoints);
+            _colParser = new ColParser(_parserConfig, _loggerFactory,
+                                      _eEvent.OlEvent,
+                                      _qnParser);
+
             _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
         }
 
@@ -96,6 +101,7 @@ namespace Function.Domain.Helpers
             DatabricksWorkspace databricksWorkspace = new DatabricksWorkspace();
             databricksWorkspace.Attributes.Name = $"{_adbWorkspaceUrl}.azuredatabricks.net";
             databricksWorkspace.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net";
+            //databricksWorkspace.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             
             return databricksWorkspace;
         }
@@ -266,6 +272,7 @@ namespace Function.Domain.Helpers
         public DatabricksProcess GetDatabricksProcess(string taskQn)
         {
             var databricksProcess = new DatabricksProcess();
+            //var ColumnAttributes = new ColumnLevelAttributes();
 
             var inputs = new List<InputOutput>();
             foreach (IInputsOutputs input in _eEvent.OlEvent!.Inputs)
@@ -278,21 +285,23 @@ namespace Function.Domain.Helpers
             {
                 outputs.Add(GetInputOutputs(output));
             }
-            
+
             databricksProcess.Attributes = GetProcAttributes(taskQn, inputs,outputs,_eEvent.OlEvent);
+            //databricksProcess.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn; 
             return databricksProcess;
         }
 
+        
         private DatabricksProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent)
         {
             var pa = new DatabricksProcessAttributes();
             pa.Name = sparkEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.SparkDatabricksNotebookPath + sparkEvent.Outputs[0].Name;
             pa.QualifiedName = $"{taskQn}/processes/{GetInputsOutputsHash(inputs, outputs)}";
+            pa.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             pa.SparkPlan = sparkEvent.Run.Facets.SparkLogicalPlan.ToString(Formatting.None);
             pa.Inputs = inputs;
             pa.Outputs = outputs;
-
             return pa;
         }
 
@@ -305,6 +314,13 @@ namespace Function.Domain.Helpers
 
             return inputOutputId;
         }
+
+        // private ColumnLevelAttributes GetColumnLevelAttributes(IInputsOutputs inOut)
+        // {
+        //     var id = _colParser.GetColIdentifiers(_eEvent.OlEvent.Outputs);
+        //     var columnLevelId = new ColumnLevelAttributes();
+        //     return columnLevelId;
+        // } 
 
         private string GetInputsOutputsHash(List<InputOutput> inputs, List<InputOutput> outputs)
         {
