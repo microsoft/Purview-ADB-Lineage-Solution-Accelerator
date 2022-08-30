@@ -92,7 +92,8 @@ namespace UnitTests.Function.Domain.Helpers
         // Synapse Non DBO Schema
         [InlineData("sqlserver://purviewadbsynapsews.sql.azuresynapse.net:1433;database=SQLPool1;", 
                     "sales.region", 
-                    "mssql://purviewadbsynapsews.sql.azuresynapse.net/SQLPool1/sales/region")]         
+                    "mssql://purviewadbsynapsews.sql.azuresynapse.net/SQLPool1/sales/region")]
+
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
         {
             var rslt = _qnparser.GetIdentifiers(nameSpace, name);
