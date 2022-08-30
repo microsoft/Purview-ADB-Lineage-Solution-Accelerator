@@ -1,6 +1,7 @@
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using Function.Domain.Helpers;
 using Function.Domain.Models.Settings;
 using Function.Domain.Models.OL;
@@ -20,13 +21,22 @@ namespace UnitTests.Function.Domain.Helpers
         public QnParserTests()
         {
             var mockLoggerFactory = new NullLoggerFactory();
-            _config = JsonConvert.DeserializeObject<ParserSettings>(UnitTestData.SharedTestData.SettingsString) ?? new ParserSettings();
-            _qnparser = new QnParser(_config, mockLoggerFactory,_mounts_info);
+                _config = JsonConvert.DeserializeObject<ParserSettings>(File.ReadAllText("../../../../../../../deployment/infra/OlToPurviewMappings.json")) ?? new ParserSettings();
+                _config.AdbWorkspaceUrl = "adb-unit-test.1.azuredatabricks.net";
+                _qnparser = new QnParser(_config, mockLoggerFactory, _mounts_info);
         }
 
 
         //Tests Qualified Name parsing for each scenario
         [Theory]
+        // Hive not default
+        [InlineData("dbfs", 
+                    "/user/hive/warehouse/notdefault.db/hiveexamplea", 
+                    "notdefault.hiveexamplea@adb-unit-test.1.azuredatabricks.net")] 
+        // Hive default
+        [InlineData("dbfs", 
+                    "/user/hive/warehouse/hiveexampleoutput000", 
+                    "default.hiveexampleoutput000@adb-unit-test.1.azuredatabricks.net")] 
         // WASBS Blob - only supported in Azure Storage, not ADLS Gen2
         [InlineData("wasbs://rawdata@purviewexamplessa.blob.core.windows.net", 
                     "/retail", 
@@ -47,10 +57,10 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("abfss://rawdata@purviewexamplessa.blob.core.windows.net", 
                     "/retail", 
                     "https://purviewexamplessa.dfs.core.windows.net/rawdata/retail")]
-        // Cosmos
-        [InlineData("azurecosmos://purview-to-adb-cdb.documents.azure.com/dbs/NewWriteScalaDB", 
-                    "/colls/NewWriteScalaCon", 
-                    "https://purview-to-adb-cdb.documents.azure.com/dbs/NewWriteScalaDB/colls/NewWriteScalaCon")]
+        // // Cosmos
+        // [InlineData("azurecosmos://purview-to-adb-cdb.documents.azure.com/dbs/NewWriteScalaDB", 
+        //             "/colls/NewWriteScalaCon", 
+        //             "https://purview-to-adb-cdb.documents.azure.com/dbs/NewWriteScalaDB/colls/NewWriteScalaCon")]
         // Azure SQL
         [InlineData("sqlserver://purview-to-adb-sql.database.windows.net:1433;database=purview-to-adb-sqldb;encrypt=true;", 
                     "borrower_with_pid", 

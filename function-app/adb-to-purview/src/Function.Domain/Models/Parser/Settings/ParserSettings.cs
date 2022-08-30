@@ -6,6 +6,7 @@ namespace Function.Domain.Models.Settings
     public class ParserSettings
     {
         public List<OlToPurviewMapping> OlToPurviewMappings = new List<OlToPurviewMapping>();
+        public string AdbWorkspaceUrl = "";
     }
 
 }

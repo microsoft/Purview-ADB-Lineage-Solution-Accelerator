@@ -54,13 +54,17 @@ namespace Function.Domain.Helpers
                 throw ex;
             }
             _eEvent = eEvent;
+            _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
+            _parserConfig.AdbWorkspaceUrl = this.GetDatabricksWorkspace().Attributes.Name;
             _qnParser = new QnParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent.Run.Facets.EnvironmentProperties!.EnvironmentProperties.MountPoints);
+
             _colParser = new ColParser(_parserConfig, _loggerFactory,
                                       _eEvent.OlEvent,
                                       _qnParser);
 
             _adbWorkspaceUrl = _eEvent.OlEvent.Job.Namespace.Split('#')[0];
+
         }
 
         /// <summary>

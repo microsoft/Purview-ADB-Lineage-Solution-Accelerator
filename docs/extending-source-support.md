@@ -77,3 +77,38 @@ Modify the [config.json](../tests/tools/QualifiedNameConfigTester/config.json) f
 The utility will prompt you for nameSpace and name OpenLineage values, and then show the resulting conversion and Purview type.
 
 The utility uses the same code as the function application for evaluating qualified names, so you can be confident that the output generated from the configuration tool will match the configuration results in the function.
+
+### Example
+
+Here is an example which uses the available tokens to demonstrate how you can build qualified names.
+
+#### Inputs from OpenLineage
+
+```config
+NameSpace: test://part1/part2/part3/part4@mycon.one.two;one=1;two=2/
+Name: [myname.test][for.you]
+```
+
+#### Test Configuration
+
+```json
+{
+    "name": "test",
+    "parserConditions": [
+        {
+            "op1": "prefix",
+            "compare": "=",
+            "op2": "test"
+        }
+    ],
+    "qualifiedName": " {prefix} : {nameSpcBodyParts[0]} : {nameSpcBodyParts[1]} : {nameSpcBodyParts[2]} : {nameSpcBodyParts[3]} : {nameSpcConParts[0]} : {nameSpcConParts[1]} : {nameSpcNameVals['one']} : {nameSpcNameVals['two']} : {nameGroups[0]} : {nameGroups[1]} : {nameGroups[0].parts[0]} : {nameGroups[0].parts[1]}",
+    "purviewDataType": "azure_blob_path",
+    "purviewPrefix": "https"
+}
+```
+
+#### Resulting Output
+
+```config
+{"QualifiedName":" test : part1 : part2 : part3 : part4 : mycon : one : 1 : 2 : myname.test : for.you : myname : test","PurviewType":"azure_blob_path"}
+```
