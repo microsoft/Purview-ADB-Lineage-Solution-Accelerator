@@ -33,7 +33,7 @@ From the [Azure Portal](https://portal.azure.com)
 
     ![CloudShellConfirm.png](./assets/img/deploy/CloudShellConfirm.png)
 
-1. Change directory and clone this repository into the `clouddrive` directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `2.0.0`). *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
+1. Change directory and clone this repository into the `clouddrive` directory using the latest [release tag](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/tags) (i.e. `2.x.x`). *If this directory is not available please follow these steps to [mount a new clouddrive](https://docs.microsoft.com/en-us/azure/cloud-shell/persisting-shell-storage#mount-a-new-clouddrive)*
 
     ```powershell
     cd clouddrive
@@ -127,7 +127,7 @@ You will need the default API / Host key configured on your Function app. To ret
 ### <a id="configure-openlineage" />Install OpenLineage on Your Databricks Cluster
 
 Follow the instructions below and refer to the [OpenLineage Databricks Install Instructions](https://github.com/OpenLineage/OpenLineage/tree/main/integration/spark/databricks#databricks-install-instructions) to enable OpenLineage in Databricks.
-1. Download the [OpenLineage-Spark 0.11.0 jar](https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.11.0/openlineage-spark-0.11.0.jar) from Maven Central
+1. Download the [OpenLineage-Spark 0.13.0 jar](https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.13.0/openlineage-spark-0.13.0.jar) from Maven Central
 2. Create an init-script named `open-lineage-init-script.sh`
 
     ```text

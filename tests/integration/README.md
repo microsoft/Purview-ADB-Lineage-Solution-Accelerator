@@ -4,7 +4,6 @@ The `run-test.sh` script will run each spark job as defined in the jobdefs folde
 
 A related `*-expectations.json` file should exist for every test definition. It provides the expected qualified names to search for.
 
-
 ## Notes
 
 * Synapse Output does not test the Process currently as the output asset is always different due to the TempFolder naming convention
