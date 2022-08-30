@@ -152,4 +152,4 @@ When opening the cloned repo in VS Code, you may see a pop up saying "Some proje
 
 When using OpenLineage `0.11.0` with Databricks Runtime `10.4` and executing a command like `df.write.mode("overwrite").saveAsTable("default.mytable")`, the driver crashes. This is due to a bug in OpenLineage which did not separate out certain commands for Spark 3.2 vs Spark 3.1.
 
-**Solution**: You can use `mode("append")` to add data to the table instead. Alternatively, you may explore using OpenLineage `0.12.0` which has resolved this issue. However, the Solution Accelerator is not fully tested on `0.12.0` and may have other issues in our supported use cases.
+**Solution**: Upgrade to OpenLineage `0.13.0` which has a fix for the issue.

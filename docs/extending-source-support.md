@@ -68,7 +68,7 @@ The configuration format can be complex, so a command line verification tool ([Q
 dotnet build
 ```
 
-Modify the [config.json](../tests/tools/QualifiedNameConfigTester/config.json) file to include your new source configuration, and then run the utility from the bin directory specifying the build file path.  For example:
+Modify the [config.json](../function-app/adb-to-purview/tests/tools/QualifiedNameConfigTester/config.json) file to include your new source configuration, and then run the utility from the bin directory specifying the build file path.  For example:
 
 ```bash
 .\bin\Debug\net6.0\QualifiedNameConfigTester.exe

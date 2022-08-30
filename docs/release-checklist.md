@@ -1,10 +1,10 @@
 # Release Checklist
 
-* [ ] Update [deploy-base.md](../deploy-base.md) to reflect the newest version.
-* [ ] Update [deploy-demo.md](../deploy-demo.md) to reflect the newest version.
-* [ ] Create a new aka.ms url to point to the next release (e.g. )
+* [ ] Create a branch to prepare for release (e.g. `feature/prepareForReleaseX-Y`). Make the following changes on the newly created branch.
+* [ ] Create a new aka.ms url to point to the next release (e.g. aka.ms/APFunctions{MAJOR}-{MINOR} aka.ms/APFunctions2-1)
 * [ ] Update the [newdeploymenttemp.json](../deployment/infra/newdeploymenttemp.json) with the new aka.ms url.
-* [ ] Create a git tag with pattern X.Y.Z where X, Y, and Z follow the [semver pattern](https://semver.org/). Then push the tag to the origin git repo (github).
+* [ ] Perform the Pull Request from `feature/prepareForReleaseX-Y` into `main`
+* [ ] On `main` Create a git tag with pattern X.Y.Z where X, Y, and Z follow the [semver pattern](https://semver.org/). Then push the tag to the origin git repo (github).
     * ```bash
       git tag X.Y.Z
       git push origin --tags
