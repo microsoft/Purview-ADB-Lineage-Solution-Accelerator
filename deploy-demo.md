@@ -89,6 +89,17 @@ From the [Azure Portal](https://portal.azure.com)
 
 1. The Purview types will be deployed and the deployment will finish
 
+> **Note**:<br/>
+> At this point, you should confirm resources deployed successfully.
+> In particular, check the Azure Function and inside its Functions tab, you should see an OpenLineageIn and PurviewOut function. If you have an error like `Microsoft.Azure.WebJobs.Extensions.FunctionMetadataLoader: The file 'C:\home\site\wwwroot\worker.config.json' was not found.` please restart or start and stop the function to resolve the issue.
+> Lastly check the Azure Function Configuration tab and check if all the Key Vault Referenced app settings have a green checkmark. If not, wait an additional 2-5 minutes and refresh the screen. If Key Vault references are not all green, check that the Key Vault has an access policy referencing the Azure Function.
+
+1. Finally, run the Databricks notebook provided in your new workspace and observe lineage in Microsoft Purview once the Databricks notebook has finished running all cells.
+
+1. If you do not see any lineage please follow the steps in the [troubleshooting guide](./TROUBLESHOOTING.md).
+
+1. If you are interested in demonstrating lineage from Databricks jobs, please follow the [steps in the connector only deployment](./deploy-base.md#jobs-lineage).
+
 ### Post Installation
 
 Note: If your original bash shell gets closed or goes away while you are completing the manual installation steps above, you can manually run the final part of the installation by running the following from a cloud bash shell in the same subscription context:
