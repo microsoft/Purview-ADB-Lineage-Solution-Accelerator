@@ -55,6 +55,12 @@
 
     **Solution**: Refresh the page using the Refresh button in the Purview UI. You may consider returning to the page after a minute or two and attempting the refresh again.
 
+* ### Confirm the Azure Function Code Was Deployed
+
+    Navigate to the Azure Function and check if you are receiving the alert `Microsoft.Azure.WebJobs.Extensions.FunctionMetadataLoader: The file 'C:\home\site\wwwroot\worker.config.json' was not found.`.
+    
+    **Solution**: Restart or start and stop the function to resolve the issue. If the issue persists, consider deploying the function code via [VS Code](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code?tabs=csharp) or the [Azure CLI](https://docs.microsoft.com/en-us/azure/azure-functions/deployment-zip-push#cli).
+
 * ### Check Azure Key Vault References Are Active
 
     The connector uses [Key Vault References](https://docs.microsoft.com/en-us/azure/app-service/app-service-key-vault-references) inside the Azure Functions used to translate OpenLineage to Apache Atlas standards. When first launching the services, the Key Vault references may not have activated / synced.  You will see red "x" marks in the [Function App's Configuration menu](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal).

@@ -80,6 +80,11 @@ From the [Azure Portal](https://portal.azure.com)
         * Resource Tags (optional, in the following format: `{"Name":"Value","Name2":"Value2"}`, otherwise leave blank)
         * This deployment will take approximately 5 minutes.
 
+> **Note**:<br/>
+> At this point, you should confirm resources deployed successfully.
+> In particular, check the Azure Function and inside its Functions tab, you should see an OpenLineageIn and PurviewOut function. If you have an error like `Microsoft.Azure.WebJobs.Extensions.FunctionMetadataLoader: The file 'C:\home\site\wwwroot\worker.config.json' was not found.` please restart or start and stop the function to resolve the issue.
+> Lastly check the Azure Function Configuration tab and check if all the Key Vault Referenced app settings have a green checkmark. If not, wait an additional 2-5 minutes and refresh the screen. If Key Vault references are not all green, check that the Key Vault has an access policy referencing the Azure Function.
+
 ## <a id="post-install" />Post Installation
 
 1. If needed, change into the deployment directory:
@@ -174,6 +179,12 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
     `spark.openlineage.url.param.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
     1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
 
+5. At this point, you can run a Databricks notebook on an "all-purpose cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks notebook has finished running all cells.
+
+6. If you do not see any lineage please follow the steps in the [troubleshooting guide](./TROUBLESHOOTING.md).
+
+7. To support Databricks lineage from Databricks jobs, see the following section below.
+
 ### <a id="jobs-lineage" />Support Extracting Lineage from Databricks Jobs
 
 To support Databricks Jobs, you must add the service principal to your Databricks workspace. To use the below scripts, you must authenticate to Azure Databricks using either [access tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication) or [AAD tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/). The snippets below assume you have generated an access token.
@@ -216,6 +227,10 @@ To support Databricks Jobs, you must add the service principal to your Databrick
       | jq .
       ```
 2. [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
+
+3. At this point, you can run a Databricks job on a "job cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks job has finished.
+
+4. If you do not see any lineage please follow the steps in the [troubleshooting guide](./TROUBLESHOOTING.md).
 
 ### <a id="global-init"/>Global Init Scripts
 
