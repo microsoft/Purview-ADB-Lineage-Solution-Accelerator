@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 az config set extension.use_dynamic_install=yes_without_prompt
 source ./settings.sh
 # read parameters

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
 using Function.Domain.Providers;

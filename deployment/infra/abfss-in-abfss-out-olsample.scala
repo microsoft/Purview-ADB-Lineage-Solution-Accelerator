@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Databricks notebook source
 import org.apache.spark.sql.types.{StructType, StructField, IntegerType, StringType}
 

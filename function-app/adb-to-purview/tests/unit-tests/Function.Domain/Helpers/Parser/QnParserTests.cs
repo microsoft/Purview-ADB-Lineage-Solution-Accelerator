@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;

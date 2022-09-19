@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Function.Domain.Models;
 using Function.Domain.Models.OL;
 using Function.Domain.Models.Settings;

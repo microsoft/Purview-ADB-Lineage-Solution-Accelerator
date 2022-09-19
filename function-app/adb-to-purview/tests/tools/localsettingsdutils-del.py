@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # copy file to localsettingsdutils.py and fill in the below values
 
 PURVIEW_NAME = "<insert_purview_account_name>"

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # PyApacheAtlas packages
 # Connect to Atlas via a Service Principal
 from pyapacheatlas.auth import ServicePrincipalAuthentication
