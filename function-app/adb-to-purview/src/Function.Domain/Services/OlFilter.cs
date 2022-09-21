@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Function.Domain.Models.OL;
 using Function.Domain.Helpers.Parser;
+using Newtonsoft.Json.Linq;
+using Function.Domain.Models.Settings;
 
 namespace Function.Domain.Services
 {
@@ -13,6 +15,7 @@ namespace Function.Domain.Services
     {
         private ILogger _logger;
         private ILoggerFactory _loggerFactory;
+        private AppConfigurationSettings? _appSettingsConfig = new AppConfigurationSettings();
 
         /// <summary>
         /// Constructor for the OlFilter Service
@@ -64,7 +67,13 @@ namespace Function.Domain.Services
         {
             try{
                 var trimString = TrimPrefix(strEvent);
-                return JsonConvert.DeserializeObject<Event>(trimString);
+                var _event = JsonConvert.DeserializeObject<Event>(trimString);
+                int planSize = System.Text.Encoding.Unicode.GetByteCount(_event!.Run.Facets.SparkLogicalPlan.ToString());
+                if (planSize > _appSettingsConfig!.maxQueryPlanSize){
+                    _logger.LogWarning("Query Plan size exceeded maximum. Removing query plan from OpenLineage Event");
+                    _event.Run.Facets.SparkLogicalPlan = new JObject();
+                }
+                return _event;
             }
             catch (JsonSerializationException ex) {
                 _logger.LogWarning($"Json Serialization Issue: {strEvent}, error: {ex.Message} path: {ex.Path}");
