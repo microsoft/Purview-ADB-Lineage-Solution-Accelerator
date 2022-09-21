@@ -10,6 +10,8 @@ using Function.Domain.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Function.Domain.Helpers.Parser;
+using Newtonsoft.Json.Linq;
+using Function.Domain.Models.Settings;
 
 namespace Function.Domain.Services
 {
@@ -24,6 +26,7 @@ namespace Function.Domain.Services
         private readonly ILogger<OlConsolodateEnrich> _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
+        private AppConfigurationSettings? _appSettingsConfig = new AppConfigurationSettings();
         private Event _event = new Event();
 
         /// <summary>
@@ -54,6 +57,9 @@ namespace Function.Domain.Services
             try
             {
                 _event = JsonConvert.DeserializeObject<Event>(trimString) ?? new Event();
+                if (System.Text.Encoding.Unicode.GetByteCount(_event.Run.Facets.SparkLogicalPlan.ToString()) > _appSettingsConfig!.maxQueryPlanSize){
+                    _event.Run.Facets.SparkLogicalPlan = new JObject();
+                }
             }
             catch (JsonSerializationException ex) {
                 _logger.LogWarning(ex,$"Unrecognized Message: {strEvent}, error: {ex.Message} path: {ex.Path}");
