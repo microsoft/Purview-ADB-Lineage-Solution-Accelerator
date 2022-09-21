@@ -54,7 +54,9 @@ namespace Function.Domain.Services
             try
             {
                 _event = JsonConvert.DeserializeObject<Event>(trimString) ?? new Event();
-                if (System.Text.Encoding.Unicode.GetByteCount(_event.Run.Facets.SparkLogicalPlan.ToString()) > _appSettingsConfig!.maxQueryPlanSize){
+                int planSize = System.Text.Encoding.Unicode.GetByteCount(_event.Run.Facets.SparkLogicalPlan.ToString());
+                if (planSize > _appSettingsConfig!.maxQueryPlanSize){
+                    _logger.LogWarning("Query Plan size exceeded maximum. Removing query plan from OpenLineage Event");
                     _event.Run.Facets.SparkLogicalPlan = new JObject();
                 }
             }
