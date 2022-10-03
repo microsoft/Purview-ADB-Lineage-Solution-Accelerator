@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 # Run each test and wait for completion
 # run-test.sh [ALL|regex] workspaceId
 # Use ALL to run all tests or provide a regex to match the test definitions you want processed

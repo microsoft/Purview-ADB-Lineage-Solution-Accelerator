@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Function.Domain.Models.Purview;
 using Function.Domain.Models.Adb;
 

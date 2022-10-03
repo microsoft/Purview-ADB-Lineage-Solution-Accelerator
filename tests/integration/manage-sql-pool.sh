@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 # Script to start and stop a given SQL Pool
 # manage-sql-pool.sh [start|stop] subscriptionId resourceGroupName workspaceName sqlPoolName
 # If you use stop and the pool is resuming, exit 201
