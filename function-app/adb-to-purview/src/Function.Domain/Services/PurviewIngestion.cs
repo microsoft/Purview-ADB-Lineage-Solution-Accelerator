@@ -78,7 +78,6 @@ namespace Function.Domain.Services
         public async Task<bool> SendToPurview(JObject json)
         {
             var entities = get_attribute("entities", json);
-            bool hasProcess = false;
 
             if (entities == null)
             {
@@ -99,7 +98,6 @@ namespace Function.Domain.Services
                     if (Validate_Process_Json(entity))
                     {
                         JObject new_entity = await Validate_Process_Entities(entity);
-                        hasProcess = Process_Json(new_entity);
                         to_purview_Json.Add(new_entity);
                     }
                     else
@@ -153,40 +151,38 @@ namespace Function.Domain.Services
 
                 HttpResponseMessage results;
                 string? payload = "";
-                if (!hasProcess)
+
+                if (inputs_outputs.Count > 0)
                 {
-                    if (inputs_outputs.Count > 0)
+                    JArray tempEntities = new JArray();
+                    foreach (var newEntity in inputs_outputs)
                     {
-                        JArray tempEntities = new JArray();
-                        foreach (var newEntity in inputs_outputs)
+                        if (newEntity.is_dummy_asset)
                         {
-                            if (newEntity.is_dummy_asset)
-                            {
-                                if (!usePurviewTypes)
-                                    newEntity.Properties["attributes"]!["qualifiedName"] = newEntity.Properties["attributes"]!["qualifiedName"]!.ToString().ToLower();
-                                tempEntities.Add(newEntity.Properties);
-                            }
+                            if (!usePurviewTypes)
+                                newEntity.Properties["attributes"]!["qualifiedName"] = newEntity.Properties["attributes"]!["qualifiedName"]!.ToString().ToLower();
+                            tempEntities.Add(newEntity.Properties);
                         }
-                        payload = "{\"entities\": " + tempEntities.ToString() + "}";
-                        JObject? Jpayload = JObject.Parse(payload);
-                        Log("Info", $"Entities to load: {Jpayload.ToString()}");
-                        results = await _purviewClient.Send_to_Purview(payload);
-                        if (results != null)
+                    }
+                    payload = "{\"entities\": " + tempEntities.ToString() + "}";
+                    JObject? Jpayload = JObject.Parse(payload);
+                    Log("Info", $"Input/Output Entities to load: {Jpayload.ToString()}");
+                    results = await _purviewClient.Send_to_Purview(payload);
+                    if (results != null)
+                    {
+                        if (results.ReasonPhrase != "OK")
                         {
-                            if (results.ReasonPhrase != "OK")
-                            {
-                                Log("Error", $"Error Loading to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
-                            }
-                            else
-                            {
-                                var data = await results.Content.ReadAsStringAsync();
-                                Log("Info", $"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
-                            }
+                            Log("Error", $"Error Loading Input/Outputs to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                         else
                         {
-                            Log("Error", $"Error Loading to Purview!");
+                            var data = await results.Content.ReadAsStringAsync();
+                            Log("Info", $"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
                         }
+                    }
+                    else
+                    {
+                        Log("Error", $"Error Loading to Purview!");
                     }
                 }
                 if (to_purview_Json.Count > 0)
@@ -194,13 +190,13 @@ namespace Function.Domain.Services
                     Log("Debug", to_purview_Json.ToString());
                     payload = "{\"entities\": " + to_purview_Json.ToString() + "}";
                     JObject? Jpayload = JObject.Parse(payload);
-                    Log("Info", $"Processes to load: {Jpayload.ToString()}");
+                    Log("Info", $"To Purview Json Entities to load: {Jpayload.ToString()}");
                     results = await _purviewClient.Send_to_Purview(payload);
                     if (results != null)
                     {
                         if (results.ReasonPhrase != "OK")
                         {
-                            Log("Error", $"Error Loading to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                            Log("Error", $"Error Loading to Purview JSON Entiitesto Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                     }
                     else
@@ -441,18 +437,6 @@ namespace Function.Domain.Services
 
             return true;
         }
-        /// <summary>
-        /// Responsible to track and corelate Column Linage
-        /// </summary>
-        /// <param name="Process">Microsoft Purview Process entity</param>
-        /// <returns>Boolean</returns>
-        public bool Process_Json(JObject Process)
-        {
-            Hashtable cols = generate_dummy_columns(Process);
-            if (cols.Keys.Count == 0)
-                return false;
-            return true;
-        }
 
         /// <summary>
         /// Get Safe attributes in a Json object without needing to check if exists
@@ -475,126 +459,6 @@ namespace Function.Domain.Services
         {
 
             return initGuid--;
-        }
-
-        // 
-        //         Read over the json section with the column mappings to determine
-        //         all columns needed to be created and the source that each column belongs 
-        //         
-        private Hashtable generate_dummy_columns(JObject col_json_obj)
-        {
-            string source = "";
-            var sink = "";
-            //reference to all column mappings
-            columnmapping = new Hashtable();
-            PurviewCustomType sourceEntity;
-            PurviewCustomType sinkEntity;
-            //column mapping attribute is a string but the content is a Json, so
-            //we need to load back into a json variable to be able to read it better
-            //then having to parse a string.
-            var mapping_values = col_json_obj["attributes"]?["columnMapping"];
-            if (mapping_values?.ToString() != "")
-            {
-                var mapping = JArray.Parse(mapping_values!.ToString());
-                foreach (var k in mapping)
-                {
-                    Log("debug", String.Format("generate_dummy_columns - DatasetMapping {0}", k.ToString()));
-                    //each section should have a DatasetMapping with information about 
-                    //column and Source and Sink.
-                    if (k.SelectToken("DatasetMapping") != null)
-                    {
-                        source = k!["DatasetMapping"]!["Source"]!.ToString();
-                        sourceEntity = entities[source];
-
-                        sink = k!["DatasetMapping"]!["Sink"]!.ToString();
-                        sinkEntity = entities[sink];
-
-                        //initialize all mappings based on source and sink
-                        // so we can attached the columns
-                        if (sourceEntity.is_dummy_asset)
-                        {
-                            //entities.Add(sourceEntity);
-                            to_purview_Json.Add(sourceEntity.Properties);
-                            if (!columnmapping.ContainsKey(source))
-                            {
-                                columnmapping.Add(source, new Hashtable());
-                                ((Hashtable)columnmapping[source]!).Add("cols", new List<string>());
-                            }
-                        }
-
-
-                        if (sinkEntity.is_dummy_asset)
-                        {
-                            //entities.Add(sinkEntity);
-                            to_purview_Json.Add(sinkEntity.Properties);
-                            if (!columnmapping.ContainsKey(sink))
-                            {
-                                columnmapping.Add(sink, new Hashtable());
-                                to_purview_Json.Add(sinkEntity.Properties);
-                                ((Hashtable)columnmapping[sink]!).Add("cols", new List<string>());
-                            }
-                        }
-                        Log("debug", "generate_dummy_columns - mapping columns");
-                        //loop through and get all columns and attache to the Source
-                        //or Sink, creating the mapping
-                        foreach (var colmap in k["ColumnMapping"]!)
-                        {
-                            if (sourceEntity.is_dummy_asset)
-                            {
-                                //Log("debug", String.Format("generate_dummy_columns - mapping: {0}", colmap));
-                                if (columnmapping.Contains(source))
-                                {
-                                    if (!((List<string>)((Hashtable)columnmapping![source!]!)["cols"]!).Contains(colmap["Source"]!.ToString()))
-                                    {
-                                        //((List<string>)((Hashtable)columnmapping[source])["cols"]).Add(colmap["Source"].ToString());
-                                        PurviewCustomType colEntity = new PurviewCustomType(
-                                            colmap["Source"]!.ToString(),
-                                            "purview_custom_connector_generic_column",
-                                            $"{source}#{colmap["Source"]!.ToString()}",
-                                            "string",
-                                            "This is a dummy column.",
-                                            NewGuid()
-                                            , _logger
-                                            , _purviewClient
-                                        );
-                                        colEntity.AddToTable(sourceEntity);
-                                        to_purview_Json.Add(colEntity.Properties);
-                                        //entities.Add(colEntity);
-                                        Log("debug", String.Format("generate_dummy_columns - Adding Col {0}", colmap["Source"]));
-                                    }
-                                }
-                            }
-
-                            if (sinkEntity.is_dummy_asset)
-                            {
-                                if (columnmapping.Contains(sink))
-                                {
-                                    if (!((List<string>)((Hashtable)columnmapping[sink]!)["cols"]!).Contains(colmap["Sink"]!.ToString()))
-                                    {
-                                        PurviewCustomType colEntity = new PurviewCustomType(
-                                            colmap["Sink"]!.ToString(),
-                                            "purview_custom_connector_generic_column",
-                                            $"{sink}#{colmap["Sink"]!.ToString()}",
-                                            "string",
-                                            "This is a dummy column.",
-                                            NewGuid()
-                                            , _logger
-                                            , _purviewClient
-                                        );
-                                        colEntity.AddToTable(sinkEntity);
-                                        to_purview_Json.Add(colEntity.Properties);
-                                        //entities.Add(colEntity);
-                                        //((List<string>)((Hashtable)columnmapping[sink])["cols"]).Add(colmap["Sink"].ToString());
-                                        Log("debug", String.Format("generate_dummy_columns - Adding Col {0}", colmap["Sink"]));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                //Log("info", String.Format("Source {0}, # cols: {1}", source, ((List<string>)((Hashtable)columnmapping[source])["cols"]).Count));
-            }
-            return columnmapping;
         }
 
         private void Remove_Unused_Dummy_Entitites()
