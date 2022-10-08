@@ -20,7 +20,9 @@ namespace UnitTests.Function.Domain.Helpers
                 new MountPoint(){MountPointName="/mnt/outputdata",Source="abfss://outputdata@purviewexamplessa.dfs.core.windows.net/"},
                 new MountPoint(){MountPointName="/databricks-results",Source="databricks-results"},
                 new MountPoint(){MountPointName="/databricks-results",Source="databricks-results"},
-                new MountPoint(){MountPointName="/mnt/purview2/",Source="abfss://purview2@purviewexamplessa.dfs.core.windows.net/"}
+                new MountPoint(){MountPointName="/mnt/purview2/",Source="abfss://purview2@purviewexamplessa.dfs.core.windows.net/"},
+                new MountPoint(){MountPointName="/mnt/x/",Source="abfss://x@xsa.dfs.core.windows.net/"},
+                new MountPoint(){MountPointName="/mnt/x/y",Source="abfss://y@ysa.dfs.core.windows.net/"}
             };
         }
     }
