@@ -9,7 +9,7 @@ def eval_test_status(expected_qn:str, test_results:str, maximum_string_length:in
     Print ❌ for failures and ✅ for success while keeping a count of successes.
     Returns the number of successes.
     """
-    success = 0
+
     is_found = "❌"
     if expected_qn in test_results:
         is_found = "✅"
@@ -115,4 +115,4 @@ if __name__ == "__main__":
 
     total_successes = searchable_success + process_success
     print(f"Summary: {total_successes:0>2}/{len(expected):0>2}")
-    print(success == len(expected), end="")
+    print(total_successes == len(expected), end="")

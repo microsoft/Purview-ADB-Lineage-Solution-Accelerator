@@ -13,7 +13,7 @@
     "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/hive_mgd_not_default-in-hive_mgd_not_default-out-insert/processes/ABC9D8E9383FFB2295BA21732E71BDE5->819BA9557FE05FAFFCD1E6C8C8B12239",
     "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/hive+mgd+not+default-in-hive+mgd+not+default-out-insert",
     "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/hive_mnt-in-hive_mnt-out-insert",
-    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/hive_mnt-in-hive_mnt-out-insert/processes/B5EA0788D2DFDD6724C9638A23C72530->C45E275909E82D362F516CB3DF62F01E",
+    "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/hive_mnt-in-hive_mnt-out-insert/processes/B5EA0788D2DFDD6724C9638A23C72530->C45E275909E82D362F516CB3DF62F01E",
     "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/hive+mnt-in-hive+mnt-out-insert",
     "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-hive_saveAsTable-out",
     "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-hive_saveAsTable-out/processes/B97ED17F23A32D631D1A53C1AE3A009A->7799B858F5B94A237932CDF9F987F8E0",
