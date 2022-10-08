@@ -291,6 +291,19 @@ namespace Function.Domain.Helpers
                     ((JArray)((JObject)orcondition!)["or"]!).Add(condition);
                     ((JArray)((JObject)filter!["filter"]!)["and"]!).Add(orcondition);
                 }
+                //Support for the case for hive managed tables
+                else if ((name.Contains("@adb-")) && (name.TrimEnd().EndsWith(".azuredatabricks.net")))
+                {
+                    // The @ symbol along with the the azuredatabricks.net information appears to
+                    // match on a lot of random values. Splitting on @ symbol prevents the wild matches
+                    foreach(string hiveTablePart in name.Split("@")){
+                        var condition = new JObject();
+                        condition.Add("attributeName", "qualifiedName");
+                        condition.Add("operator", "contains");
+                        condition.Add("attributeValue", hiveTablePart);
+                        ((JArray)((JObject)filter!["filter"]!)["and"]!).Add(condition);
+                    };
+                }
                 else
                 {
                     var condition = new JObject();
