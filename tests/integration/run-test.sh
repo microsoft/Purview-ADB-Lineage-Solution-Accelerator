@@ -76,13 +76,9 @@ for fn in `ls ./tests/integration/jobdefs`; do
     done
     # Check to see if the Purview instance has our expectations
     test_checker=$(python ./tests/integration/runner.py $TESTS_DIRECTORY/$expectation_file_name $WORKSPACE_ID $temp_job_id)
-    echo $test_checker
-    is_sucessful=""
-    for elem in $test_checker; do
-        is_sucessful=$elem
-    done
     
-    if [[ $is_successful == "True" ]]
+    pattern=$'True$'
+    if [[ $test_checker =~ ${pattern} ]]
     then
         echo "$fn was successful!"
     else
