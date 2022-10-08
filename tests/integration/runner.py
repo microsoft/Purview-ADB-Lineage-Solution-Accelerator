@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     resp = client.discovery.search_entities(
         "*", search_filter={"or": type_search_filter})
-    success = 0
+
     guids = []
     results = [e["qualifiedName"] for e in resp]
 
@@ -118,4 +118,4 @@ if __name__ == "__main__":
 
     total_successes = searchable_success + process_success
     print(f"Summary: {total_successes:0>2}/{len(expected):0>2}")
-    print(success == len(expected), end="")
+    print(total_successes == len(expected), end="")
