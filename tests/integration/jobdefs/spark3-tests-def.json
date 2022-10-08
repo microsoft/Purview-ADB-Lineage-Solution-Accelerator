@@ -25,7 +25,7 @@
                     }
                 ],
                 "notebook_task": {
-                    "notebook_path": "/Shared/examples/abfss-in-abfss-out-ouath"
+                    "notebook_path": "/Shared/examples/abfss-in-abfss-out-oauth"
                 },
                 "existing_cluster_id": "<CLUSTER_ID>",
                 "timeout_seconds": 0,
