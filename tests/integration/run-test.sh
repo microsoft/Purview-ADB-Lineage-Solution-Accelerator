@@ -78,6 +78,7 @@ for fn in `ls ./tests/integration/jobdefs`; do
     test_checker=$(python ./tests/integration/runner.py $TESTS_DIRECTORY/$expectation_file_name $WORKSPACE_ID $temp_job_id)
     
     pattern=$'True$'
+    echo "$test_checker"
     if [[ $test_checker =~ ${pattern} ]]
     then
         echo "$fn was successful!"
