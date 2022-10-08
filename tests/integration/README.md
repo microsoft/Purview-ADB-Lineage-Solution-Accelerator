@@ -13,7 +13,7 @@ A related `*-expectations.json` file should exist for every test definition. It 
 
 |Name|Input|Output|Spark 2|Spark 3|Note|
 |----|----|----|----|----|----|
-|abfss-in-abfss-out-ouath.scala|ABFS|ABFS|✅|✅|Uses Oauth|
+|abfss-in-abfss-out-oauth.scala|ABFS|ABFS|✅|✅|Uses Oauth|
 |abfss-in-abfss-out-root.scala|ABFS|ABFS||✅|Writes to root of container|
 |abfss-in-abfss-out.scala|ABFS|ABFS|✅|✅||
 |azuresql-in-azuresql-out.scala|AzSQL|AzSQL||✅||
