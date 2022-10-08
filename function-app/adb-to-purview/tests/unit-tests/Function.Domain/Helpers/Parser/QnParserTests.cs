@@ -77,6 +77,14 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("dbfs", 
                     "/mnt/rawdata/retail", 
                     "https://purviewexamplessa.dfs.core.windows.net/rawdata/retail")]  
+        // DBFS mount - Shortest String Match
+        [InlineData("dbfs", 
+                    "/mnt/x/abc", 
+                    "https://xsa.dfs.core.windows.net/x/abc")]  
+        // DBFS mount - Longest String Match
+        [InlineData("dbfs", 
+                    "/mnt/x/y/abc", 
+                    "https://ysa.dfs.core.windows.net/y/abc")]  
         // DBFS mount trailing slash in def
         [InlineData("dbfs", 
                     "/mnt/purview2", 

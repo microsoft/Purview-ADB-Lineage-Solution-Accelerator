@@ -86,24 +86,16 @@ namespace Function.Domain.Helpers
             string path = "";
             MountPoint? mountPoint;
             string mountPointSource = "";
-            bool gotMountPoint = false;
-            foreach (var dir in potentialMounts)
-            {
-                if (dir != "")
+            // Iterate backwards from the potentialMounts to find
+            // the longest path that matches to a mount point
+            for(int pos = potentialMounts.Length; pos > 0; pos--){
+                potentialMountPoint = string.Join("/", potentialMounts.Take(pos) );
+                if ((mountPoint = _mountsInfo.Where(m => m.MountPointName.Trim('/') == potentialMountPoint.Trim('/')).SingleOrDefault()) != null)
                 {
-                    if (!gotMountPoint)
-                    {
-                        potentialMountPoint += $"/{dir}";
-                        if ((mountPoint = _mountsInfo.Where(m => m.MountPointName.Trim('/') == potentialMountPoint.Trim('/')).SingleOrDefault()) != null)
-                        {
-                            mountPointSource = mountPoint.Source;
-                            gotMountPoint = true;
-                        }
-                    }
-                    else
-                    {
-                        path += $"/{dir}";
-                    }
+                    mountPointSource = mountPoint.Source;
+                    path = "/"+name.Replace(mountPoint.MountPointName.Trim('/'), "");
+                    path.Replace("//","/");
+                    break;
                 }
             }
             return (mountPointSource.Trim('/'), path);
