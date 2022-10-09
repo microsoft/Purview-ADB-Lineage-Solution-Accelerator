@@ -225,6 +225,9 @@ else
 fi
 
 # creating json for cluster configuration
+# Demo Cluster configuration should include adb_ws_url in namespace to ensure
+# support for managed hive tables out of the box
+adb_ws_url_id=$(echo $adb_ws_url |  sed 's/.azuredatabricks.net//g')
 cat << EOF > create-cluster.json
 {
     "cluster_name": "$CLUSTERNAME",
@@ -233,7 +236,7 @@ cat << EOF > create-cluster.json
     "num_workers": 1,
     "spark_conf": {
         "spark.openlineage.version" : "v1",
-        "spark.openlineage.namespace" : "adbpurviewol1#default",
+        "spark.openlineage.namespace" : "$adb_ws_url_id#default",
         "spark.openlineage.host" : "https://$FUNNAME.azurewebsites.net",
         "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
     },
