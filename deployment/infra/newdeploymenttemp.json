@@ -125,7 +125,8 @@
 			"tags": "[parameters('resourceTagValues')]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-				"[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+				"[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
 			],
 			"properties": {
 				"serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
