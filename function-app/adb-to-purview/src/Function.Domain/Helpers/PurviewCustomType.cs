@@ -375,7 +375,12 @@ namespace Function.Domain.Helpers
                 {
                     if (qualifiedNameToCompare.ToLower().Trim() == this.to_compare_QualifiedName.ToLower().Trim())
                     {
+                        // In case we have a period in the resource set name, it's pushing the resource set lower
+                        if (entity.SearchScore == 1.0){
+                            validEntities.Insert(0,entity);
+                        } else{
                         validEntities.Add(entity);
+                        }
                     }
                 }
                 else
