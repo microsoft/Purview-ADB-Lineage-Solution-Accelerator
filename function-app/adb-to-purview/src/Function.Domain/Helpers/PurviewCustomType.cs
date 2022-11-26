@@ -364,6 +364,7 @@ namespace Function.Domain.Helpers
         private async Task<List<QueryValeuModel>> SelectReturnEntity(List<QueryValeuModel> results)
         {
             List<QueryValeuModel> validEntities = new List<QueryValeuModel>();
+            bool resourceSetHasBeenSeen = false;
             foreach (QueryValeuModel entity in results)
             {
                 if (IsSpark_Entity(entity.entityType))
@@ -378,8 +379,19 @@ namespace Function.Domain.Helpers
                 {
                     if (qualifiedNameToCompare.ToLower().Trim() == this.to_compare_QualifiedName.ToLower().Trim())
                     {
+                        // In case we have a period in the resource set name, it's pushing the resource set lower
+                        // Only insert the first resource set seen and trust that it is ordered appropriately
+                        // Search score doesn't matter in this case since a search with no keywords and only
+                        // filters will have a 1.0 for all results
+                        if (!(resourceSetHasBeenSeen) && config!.prioritizeFirstResourceSet){
+                            validEntities.Insert(0,entity);
+                        } else{
                         validEntities.Add(entity);
+                        }
                     }
+                    // Assuming the order of entities are sorted by highest likely match,
+                    // if we 've seen any resource set, it should be the most likely to have matched.
+                    resourceSetHasBeenSeen = true;
                 }
                 else
                 {
