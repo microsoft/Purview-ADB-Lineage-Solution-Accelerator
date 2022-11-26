@@ -66,6 +66,8 @@ From the [Azure Portal](https://portal.azure.com)
     ```powershell
     cd Purview-ADB-Lineage-Solution-Accelerator/deployment/infra/
     ```
+    > **Note**:<br/>
+    > If your organization requires private endpoints for Azure Storage and Azure Event Hubs, you may need to follow the [private endpoint guidance](./docs/private-endpoints.md) and modify the provided arm template.
 
 1. Deploy solution resources:
     ```powershell

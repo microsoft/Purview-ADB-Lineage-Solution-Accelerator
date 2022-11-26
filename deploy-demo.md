@@ -80,6 +80,8 @@ From the [Azure Portal](https://portal.azure.com)
 **Note**: Running this script will create all the services noted above, including Azure Databricks and an Azure Databricks cluster which will start after deployment.  This cluster is configured to auto terminate after 15 minutes but some Azure charges will accrue.
 
 1. Navigate to `cd clouddrive/Purview-ADB-Lineage-Solution-Accelerator/deployment/infra`
+    > **Note**:<br/>
+    > If your organization requires private endpoints for Azure Storage and Azure Event Hubs, you may need to follow the [private endpoint guidance](./docs/private-endpoints.md) and modify the provided arm template.
 
 1. Run `./openlineage-deployment.sh`
 
