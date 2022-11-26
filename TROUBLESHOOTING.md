@@ -11,6 +11,7 @@
 * [Error Loading to Purview: 403 Forbidden](#pureviewout-load2purview)
 * [Missing OpenLineage to Purview mapping data for this source](#purviewout-olmapping)
 * [Error getting Authentication Token for Databricks API](#purviewout-dbr-auth)
+* [Function Application Code Did Not Deploy](#appcode-not-deployed)
 
 ### Demo Deployment Issues
 * [$'\r': command not found](#demo-command-not-found)
@@ -121,6 +122,21 @@ The Service Principal is unable to retrieve an access token for Databricks.
 * [Add your Service Principal to Databricks](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
 * [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
 
+
+## <a id="appcode-not-deployed" />Function Application Code Did Not Deploy
+
+When running the `openlineage-deployment.sh` script or `newdeploymenttemp.json`, your deployment succeeds but the Azure Function deployed does not include the OpenLineageIn or PurviewOut functions.
+
+Solution: First, attempt the deployment a second time. It may just be an intermittent issue. Secondly, if the Function service deployed successfully (including the app settings), you may consider manually deploying the Azure Function application code.
+
+* Download the latest release zip file (see list of all releases on Github).
+* Using the Azure CLI to deploy the zip file to the Function service: 
+  ```
+  az functionapp deployment source config-zip \
+  -g <RESOURCE_GROUP_NAME> \
+  -n <FUNCTION_SERVICE_NAME> \
+  --src <PATH_TO_RELEASE_ZIP_FILE>
+  ```
 
 ## <a id="demo-command-not-found" />Demo Deployment: $'\r': command not found
 
