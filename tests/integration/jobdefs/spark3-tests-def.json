@@ -184,6 +184,20 @@
                 "existing_cluster_id": "<CLUSTER_ID>",
                 "timeout_seconds": 0,
                 "email_notifications": {}
+            },
+            {
+                "task_key": "output-with-period",
+                "depends_on": [
+                    {
+                        "task_key": "nested-parent"
+                    }
+                ],
+                "notebook_task": {
+                    "notebook_path": "/Shared/examples/name-with-periods"
+                },
+                "existing_cluster_id": "<CLUSTER_ID>",
+                "timeout_seconds": 0,
+                "email_notifications": {}
             }
         ],
         "format": "MULTI_TASK"
