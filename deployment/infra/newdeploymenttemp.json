@@ -20,6 +20,19 @@
 		},
 		"resourceTagValues": {
 			"type": "object"
+		},
+		"functionSku": {
+			"type": "string",
+			"defaultValue": "Dynamic",
+			"metadata": {
+				"description": "The tier for the Azure Function."
+			},
+			"allowedValues": [
+				"Dynamic",
+				"EP1",
+				"EP2",
+				"EP3"
+			]
 		}
 	},
 	"variables": {
@@ -53,7 +66,9 @@
 		"functionStorageSecret": "functionStorageSecret",
 		"storageAccountSecret": "storageAccountSecret",
 		"OLOutputAPIKeySecretName": "Ol-Output-Api-Key",
-		"containerName": "eventhubdata"
+		"containerName": "eventhubdata",
+		"functionSkuDynamic":{"name": "Y1","tier": "Dynamic"},
+		"functionSkuElasticPremium":{"tier": "ElasticPremium","name": "[parameters('functionSku')]","family": "EP"}
 	},
 	"resources": [
 		{
@@ -98,10 +113,7 @@
 			"apiVersion": "2020-06-01",
 			"name": "[variables('hostingPlanName')]",
 			"location": "[resourceGroup().location]",
-			"sku": {
-				"name": "Y1",
-				"tier": "Dynamic"
-			},
+			"sku": "[if(equals(parameters('functionSku'), 'Dynamic'), variables('functionSkuDynamic'), variables('functionSkuElasticPremium'))]",
 			"tags": "[parameters('resourceTagValues')]",
 			"properties": {
 				"name": "[variables('hostingPlanName')]",
