@@ -20,11 +20,7 @@
 		},
 		"resourceTagValues": {
 			"type": "object"
-		},
-		"listenToMessagesFromPurviewKafka": {
-			"type": "string"
-		}		
-		
+		}
 	},
 	"variables": {
 		"paramName": "[parameters('prefixName')]",
@@ -47,7 +43,6 @@
 		"openlineageNameEventHubConsumerGroup": "[replace(replace(toLower(concat(concat('consumergroup',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
 		"openlineageKeyVaultName": "[replace(replace(toLower(concat(concat('keyvaut',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
 		"purviewAccountName": "[parameters('purviewName')]",
-		"kafkaEndpoint":"[parameters('listenToMessagesFromPurviewKafka')]",
 		"eventHubSku": "Standard",
 		"captureEnabled": true,
 		"captureEncodingFormat": "Avro",
@@ -188,10 +183,6 @@
 						{
 							"name": "PurviewAccountName",
 							"value": "[variables('purviewAccountName')]"
-						},
-						{
-							"name":"listenToMessagesFromPurviewKafka",
-							"value":"[variables('kafkaEndpoint')]"
 						},
 						{
 							"name": "ClientID",

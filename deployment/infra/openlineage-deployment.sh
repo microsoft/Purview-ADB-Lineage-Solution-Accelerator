@@ -118,10 +118,7 @@ if [[ $purview_result == "" ]]; then
 else
     echo "$(info) purview account [$purview_account_name] already exists"
 fi
-getKafkaEndpoints=$(az purview account list-key --name $purview_account_name --resource-group $RG_NAME)
-kafkaEndpoint=$(echo $getKafkaEndpoints | jq -r '.atlasKafkaPrimaryEndpoint')
 
-echo "$listenToMessagesFromPurviewKafka"
 echo "$(info) purview account [$purview_account_name] has been created (or already exists), continue..."
 
 echo "$(info) start deploying all openlineage required resources"
@@ -136,8 +133,7 @@ deploy_connector(){
         --parameters clientid="$clientid" \
         --parameters clientsecret="$clientsecret" \
         --parameters purviewName="$purview_account_name"\
-        --parameters resourceTagValues="$resourceTagArm" \
-		--parameters listenToMessagesFromPurviewKafka="$kafkaEndpoint")
+        --parameters resourceTagValues="$resourceTagArm")
 }
 deploy_status(){
     ol_demo_resources_state=$(az deployment group show \
