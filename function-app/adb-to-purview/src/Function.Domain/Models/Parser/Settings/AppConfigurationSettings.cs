@@ -49,7 +49,6 @@ namespace Function.Domain.Models.Settings
         public int tokenCacheTimeInHours {get;set;} = 6;
         public int dataEntityCacheTimeInSeconds {get;set;} = 60;
         public CertificateDescription? Certificate { get; set; }
-        public string? ListenToMessagesFromPurviewKafka { get; set; }
         public string KafkaName { get; set; } = "atlas_entities";
         public string KafkaConsumerGroup { get; set; } = "$Default";
         public string ResourceSet { get; set; }= "azure_datalake_gen2_resource_set;azure_blob_resource_set";
