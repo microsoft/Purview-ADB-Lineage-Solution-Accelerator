@@ -10,7 +10,7 @@ You may need to modify the `deployment/infra/newdeploymenttemp.json` template fo
 
 1. The Azure Function should be deployed as an Elastic Premium instance instead of the Dynamic instance.
     * The `deployment/infra/newdeploymenttemp.json` takes a `functionSku` parameter which can have any of the values: `Dynamic, EP1, EP2, EP3` and will deploy an Azure Function with that SKU.
-    * The Azure Function should then be manually injected into the VNET that has connectivity to Azure Databricks and Microsoft Purview.
+    * The Azure Function should then be [manually injected into the VNET](https://learn.microsoft.com/en-us/azure/azure-functions/functions-create-vnet#integrate-the-function-app) that has connectivity to Azure Databricks and Microsoft Purview.
 1. The `functionstorage{uniqueid}` storage account requires two private endpoints
     * One private endpoint with a target sub-resource of `table`.
     * One private endpoint with a target sub-resource of `blob`.
