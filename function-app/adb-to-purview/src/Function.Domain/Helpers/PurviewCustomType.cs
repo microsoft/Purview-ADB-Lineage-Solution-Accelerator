@@ -367,6 +367,7 @@ namespace Function.Domain.Helpers
             bool resourceSetHasBeenSeen = false;
             foreach (QueryValeuModel entity in results)
             {
+                _logger.LogDebug($"Working on {entity.entityType} with score {entity.SearchScore}");
                 if (IsSpark_Entity(entity.entityType))
                     if (results[0].qualifiedName.ToLower().Trim('/') != this.properties!["attributes"]!["qualifiedName"]!.ToString().ToLower().Trim('/'))
                     {
