@@ -16,7 +16,9 @@ public struct AuthenticationConstants
 public struct PurviewAPIConstants
 { 
     //Purview API Constants
-    public const string DefaultSearchLimit = "1000";
+    // Setting to 1000 (the max) will force the search scores to be 1 and thus suboptimal search results
+    // Reducing from 1000 to 100 will enable better search results
+    public const string DefaultSearchLimit = "100";
     public const string DefaultOffset = "100";
 }
 

@@ -170,7 +170,9 @@ namespace Function.Domain.Helpers
             PurviewQueryResponseModel entityObjectModel = new PurviewQueryResponseModel();
             List<QueryValeuModel> entities = new List<QueryValeuModel>();
             int offset = 0;
-            int totalEntities = 1000;
+            // Setting to 1000 (the max) will force the search scores to be 1 and thus suboptimal search results
+            // Reducing from 1000 to 100 will enable better search results
+            int totalEntities = 100;
             int numberEntities = 1;
             bool printNumberEntitiesOnSearch = true;
             try
