@@ -62,6 +62,41 @@ namespace Function.Domain.Helpers
             // Get a dictionary assigning the configuration string keys to each of the olParts
             var olDynParts = olParts.GetDynamicPairs(JSON_KEY_NAMES);
 
+            _logger.LogError("------------------------------------");
+            foreach (string k in JSON_KEY_NAMES) {
+                _logger.LogError("key: "+ k);
+                if (k == "prefix") {
+                    _logger.LogError("" + olDynParts[k]);
+                }
+                else if (k == "nameSpcNameVals" ){
+                    foreach (KeyValuePair<string, string> kvp in (Dictionary<string, string>)olDynParts[k])
+                    {
+                        _logger.LogError("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
+                    }
+                }
+                else if (k == "nameGroups") {
+                    // list of nameGroup objects
+                    List<OlNameParts.NameGroup> ngs = (List<OlNameParts.NameGroup>)olDynParts[k];
+                    foreach (OlNameParts.NameGroup ng in ngs) {
+                        string nm = ng.Name;
+                        List<string> nmparts = ng.NameParts;
+                        foreach (string nmp in nmparts) {
+                            _logger.LogError("Namegroup name: {0}, name part: {1}",nm, nmp);
+                        }
+                    }
+                }
+                else { // list
+                    List<string> vals = (List<string>)olDynParts[k];
+                    int length = vals.Count;
+                    for (int i=0; i<length; i++)
+                    {
+                        _logger.LogError("else vals, index: {0}, val: {1}",i, vals[i]);
+                    }
+                }
+            }
+            _logger.LogError("------------------------------------");
+
+
             // Retrieve the relevant mapping of for the particular nameSpace and name from the configuration, by 
             // matching based on the conditions specified in the configuration.
             var mapping = GetMapping(olDynParts);

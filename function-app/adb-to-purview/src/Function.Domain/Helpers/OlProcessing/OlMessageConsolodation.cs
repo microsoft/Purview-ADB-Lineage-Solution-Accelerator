@@ -240,36 +240,27 @@ namespace Function.Domain.Helpers
                 }
                 olEvent.Run.Facets.EnvironmentProperties = envFacet;
 
-                // clean up table over time. TODO: How do we delete both entities (env and inputs??) Current code based on RunId, but we have 2 events with the run id now.
-                // try
-                // {
-                //     var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
-                // }
-                // catch (Exception ex)
-                // {
-                //     _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
-                // }
-
             // Add Inputs to event if not already there (will only be done for DataSourceV2 sources)
             if (olEvent.Inputs.Count == 0) {
                 var inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
 
                 if (inputs is null)
                     {
-                        _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs for datasource v2 COMPLETE event");
+                        _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs found for datasource v2 COMPLETE event");
                         return false;
                     }
                     olEvent.Inputs = inputs;
 
-                    // clean up table over time
-                    try
-                    {
-                        var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
-                    }
+            }
+
+            // clean up table over time. 
+            try
+            {
+                var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
             }
 
             return true;
