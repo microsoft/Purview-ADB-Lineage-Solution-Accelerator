@@ -24,7 +24,6 @@ namespace Function.Domain.Services
     public class PurviewIngestion : IPurviewIngestion
     {
         private bool useResourceSet = bool.Parse(Environment.GetEnvironmentVariable("useResourceSet") ?? "true");
-        private bool usePurviewTypes = bool.Parse(Environment.GetEnvironmentVariable("usePurviewTypes") ?? "false");
         private PurviewClient _purviewClient;
         private Int64 initGuid = -1000;
         //stores all mappings of columns for Origin and destination assets
@@ -159,8 +158,7 @@ namespace Function.Domain.Services
                     {
                         if (newEntity.is_dummy_asset)
                         {
-                            if (!usePurviewTypes)
-                                newEntity.Properties["attributes"]!["qualifiedName"] = newEntity.Properties["attributes"]!["qualifiedName"]!.ToString().ToLower();
+                            newEntity.Properties["attributes"]!["qualifiedName"] = newEntity.Properties["attributes"]!["qualifiedName"]!.ToString().ToLower();
                             tempEntities.Add(newEntity.Properties);
                         }
                     }
@@ -308,16 +306,9 @@ namespace Function.Domain.Services
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
             if (sourceEntity.is_dummy_asset)
             {
-                if (usePurviewTypes)
-                {
-                    outPutInput["typeName"] = originalTypeName;
-                    sourceEntity.Properties["typeName"] = originalTypeName;
-                }
-                else
-                {
-                    outPutInput["typeName"] = sourceEntity.Properties["typeName"];
-                    outPutInput["uniqueAttributes"]!["qualifiedName"] = sourceEntity.Properties!["attributes"]!["qualifiedName"]!.ToString().ToLower();
-                }
+                outPutInput["typeName"] = sourceEntity.Properties["typeName"];
+                outPutInput["uniqueAttributes"]!["qualifiedName"] = sourceEntity.Properties!["attributes"]!["qualifiedName"]!.ToString().ToLower();
+
                 inputs_outputs.Add(sourceEntity);
                 Log("Info", $"{inorout} Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
             }
