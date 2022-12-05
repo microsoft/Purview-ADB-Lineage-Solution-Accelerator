@@ -30,7 +30,6 @@ namespace Function.Domain.Helpers
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         public JObject? Fullentity = new JObject();
         bool useResourceSet = true;
-        bool usePurviewTypes = false;
         /// <summary>
         /// Property that contains all Json attributes for the Custom data Entity in Microsoft Purview
         /// </summary>
@@ -54,7 +53,6 @@ namespace Function.Domain.Helpers
             _logger = logger;
             _client = client;
             useResourceSet = config!.useResourceSet;
-            usePurviewTypes = config!.useResourceSet;
 
             Init(name
             , typeName
