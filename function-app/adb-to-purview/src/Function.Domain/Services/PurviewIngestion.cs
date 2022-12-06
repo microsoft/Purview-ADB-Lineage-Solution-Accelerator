@@ -271,8 +271,18 @@ namespace Function.Domain.Services
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
 
             Process["guid"] = sourceEntity.Properties["guid"];
+
+            String proctype = Process["typeName"]!.ToString();
+            if (sourceEntity.Properties.ContainsKey("typeName")){
+                String sourcetype = sourceEntity.Properties["typeName"]!.ToString();
+                Log("Info", $"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was {sourcetype}");
+            }else{
+                Log("Info", $"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was not set");
+            }
+
             if (sourceEntity.is_dummy_asset)
             {
+                Log("Info", "IN DUMMY ASSET AND ABOUT TO OVERWRITE");
                 sourceEntity.Properties["typeName"] = Process["typeName"]!.ToString();
                 if (!entities.ContainsKey(qualifiedName))
                     entities.Add(qualifiedName, sourceEntity);
