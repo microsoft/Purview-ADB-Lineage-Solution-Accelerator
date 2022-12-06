@@ -61,7 +61,7 @@ namespace Function.Domain.Helpers
             , description
             , guid
             );
-            _logger.LogInformation($"New Entity Initialized in the process with a passed Purview Client: Nome:{name} - qualified_name:{qualified_name} - Guid:{guid}");
+            _logger.LogInformation($"New Entity Initialized in the process with a passed Purview Client: Nome:{name} - qualified_name:{qualified_name} - Type: {typeName} - Guid:{guid}");
         }
         /// <summary>
         /// Creation of a Microsoft Purview Custom Type entity that initialize all attributes needed
@@ -339,12 +339,17 @@ namespace Function.Domain.Helpers
                 }
             }
 
+            String _fqn = properties!["attributes"]!["qualifiedName"]!.ToString();
             List<QueryValeuModel> results = await this._client.Query_entities(filter["filter"]!);
+            _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {results.Count} candidate matches");
             if (results.Count > 0)
             {
+                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first match has a fqn of {results[0].qualifiedName} and type of {results[0].entityType}");
                 List<QueryValeuModel> validentity = await SelectReturnEntity(results);
+                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {validentity.Count} valid entity matches");
                 if (validentity.Count > 0)
                 {
+                    _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first valid match has a fqn of {validentity[0].qualifiedName} and type of {validentity[0].entityType}");
                     obj = validentity[0];
                     properties["guid"] = validentity[0].id;
                     properties["typeName"] = validentity[0].entityType;
@@ -352,9 +357,16 @@ namespace Function.Domain.Helpers
                     this.Fullentity = await this._client.GetByGuid(validentity[0].id);
                     this.is_dummy_asset = false;
                 }
+                // If there are matches but there are none that are valid, it should still be a dummy asset
+                else
+                {
+                    _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Changing type to dummy type because zero valid entities");
+                    properties["typeName"] = EntityType;
+                }
             }
             else
             {
+                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Changing type to dummy type because zero search results in general");
                 properties["typeName"] = EntityType;
             }
             return obj;
@@ -362,10 +374,10 @@ namespace Function.Domain.Helpers
         private async Task<List<QueryValeuModel>> SelectReturnEntity(List<QueryValeuModel> results)
         {
             List<QueryValeuModel> validEntities = new List<QueryValeuModel>();
-            bool resourceSetHasBeenSeen = false;
+            bool matchingResourceSetHasBeenSeen = false;
             foreach (QueryValeuModel entity in results)
             {
-                _logger.LogDebug($"Working on {entity.entityType} with score {entity.SearchScore}");
+                _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Type: {entity.entityType} search score: {entity.SearchScore}");
                 if (IsSpark_Entity(entity.entityType))
                     if (results[0].qualifiedName.ToLower().Trim('/') != this.properties!["attributes"]!["qualifiedName"]!.ToString().ToLower().Trim('/'))
                     {
@@ -376,21 +388,26 @@ namespace Function.Domain.Helpers
                 string qualifiedNameToCompare = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
                 if ((entity.entityType == "azure_datalake_gen2_resource_set") || (entity.entityType == "azure_blob_resource_set"))
                 {
-                    if (qualifiedNameToCompare.ToLower().Trim() == this.to_compare_QualifiedName.ToLower().Trim())
+                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {qualifiedNameToCompare}");
+                    if (ResourceSet_QualifiedNames_Match(this.to_compare_QualifiedName, qualifiedNameToCompare))
                     {
-                        // In case we have a period in the resource set name, it's pushing the resource set lower
+                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS FQN comparison is true");
+                        // In case where the search score is the same for multiple values, we cannot trust Microsoft Purview's ordering.
+                        // For example if we have a period in the resource set name or there are multiple assets with very similar names,
+                        // it's pushing the resource set of interest lower in the results (since ordering could be entirely random).
                         // Only insert the first resource set seen and trust that it is ordered appropriately
-                        // Search score doesn't matter in this case since a search with no keywords and only
-                        // filters will have a 1.0 for all results
-                        if (!(resourceSetHasBeenSeen) && config!.prioritizeFirstResourceSet){
+                        if (config!.prioritizeFirstResourceSet && !(matchingResourceSetHasBeenSeen)){
+                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been inserted first");
                             validEntities.Insert(0,entity);
+                            // Assuming the order of entities are sorted by highest likely match,
+                            // if we 've seen any resource set, it should be the most likely to have matched.
+                            matchingResourceSetHasBeenSeen = true;
                         } else{
-                        validEntities.Add(entity);
+                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been added to the list");
+                            validEntities.Add(entity);
                         }
                     }
-                    // Assuming the order of entities are sorted by highest likely match,
-                    // if we 've seen any resource set, it should be the most likely to have matched.
-                    resourceSetHasBeenSeen = true;
+                    
                 }
                 else
                 {
@@ -559,6 +576,15 @@ namespace Function.Domain.Helpers
                 }
                 return string.Join("/", this.qNames!);
             }
+        }
+
+        // For resource sets, since Microsoft Purview cannot register the same storage account for
+        // both ADLS G2 and Blob Storage, we need to match against either pattern (dfs.core.windows.net
+        // or blob.core.windows.net) since we cannot be certain which one the end user has scanned.
+        private bool ResourceSet_QualifiedNames_Match(string entityOfInterestQualifiedName, string candidateQualifiedName){
+            string _entityOfInterestFQN = entityOfInterestQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
+            string _candidateFQN = candidateQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
+            return _entityOfInterestFQN == _candidateFQN;
         }
     }
 
