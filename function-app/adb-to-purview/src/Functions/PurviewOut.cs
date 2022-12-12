@@ -36,18 +36,22 @@ namespace AdbToPurview.Function
             [EventHubTrigger("%EventHubName%", IsBatched = false ,Connection = "ListenToMessagesFromEventHub", ConsumerGroup = "%EventHubConsumerGroup%")] string input)
         {
             try{
+                _logger.LogInformation("step 1");
                 var enrichedEvent = await _olConsolodateEnrich.ProcessOlMessage(input);
                 if (enrichedEvent == null)
                 {
                     _logger.LogInformation($"Start event, duplicate event, or no context found - eventData: {input}");
                     return "";
                 }
+                _logger.LogInformation("step 2");
+
                 var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent);
                 if (purviewEvent == null)
                 {
                     _logger.LogWarning("No Purview Event found");
                     return "unable to parse purview event";
                 }
+                _logger.LogInformation("step 3");
 
                 _logger.LogInformation($"PurviewOut-ParserService: {purviewEvent}");
                 var jObjectPurviewEvent = JsonConvert.DeserializeObject<JObject>(purviewEvent) ?? new JObject();

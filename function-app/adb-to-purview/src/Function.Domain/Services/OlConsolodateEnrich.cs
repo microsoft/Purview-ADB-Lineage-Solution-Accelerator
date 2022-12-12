@@ -69,7 +69,9 @@ namespace Function.Domain.Services
 
             var validateOlEvent = new ValidateOlEvent(_loggerFactory);
             var olMessageConsolodation = new OlMessageConsolodation(_loggerFactory, _configuration);
+
             var olEnrichMessage = new OlMessageEnrichment(_loggerFactory, _configuration);
+
 
             // Validate the event
             if (!validateOlEvent.Validate(_event))

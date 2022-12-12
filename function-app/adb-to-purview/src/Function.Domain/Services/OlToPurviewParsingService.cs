@@ -49,17 +49,20 @@ namespace Function.Domain.Services
                 _logger.LogWarning($"OlToPurviewParsingService-GetPurviewFromOlEventAsync: Event data is not valid - eventData: {JsonConvert.SerializeObject(eventData)}");
                 return null;
             }
-
             IDatabricksToPurviewParser parser = new DatabricksToPurviewParser(_loggerFactory, _config, eventData);
 
             if (eventData.IsInteractiveNotebook)
             {
                 return ParseInteractiveNotebook(parser);
+                
+
             }
+
             else if (parser.GetJobType() == JobType.JobNotebook)
             {
                 return ParseJobNotebook(parser);
             }
+
             else
             {
                 return ParseJobTask(parser);
@@ -71,7 +74,6 @@ namespace Function.Domain.Services
             var databricksWorkspace = parser.GetDatabricksWorkspace();
             var databricksNotebook = parser.GetDatabricksNotebook(databricksWorkspace.Attributes.QualifiedName, true);
             var databricksProcess = parser.GetDatabricksProcess(databricksNotebook.Attributes.QualifiedName);
-
             var databricksWorkspaceStr = JsonConvert.SerializeObject(databricksWorkspace);
             var databricksNotebookStr = JsonConvert.SerializeObject(databricksNotebook);
             var databricksProcessStr = JsonConvert.SerializeObject(databricksProcess);

@@ -280,8 +280,8 @@ namespace Function.Domain.Helpers
         {
             var databricksProcess = new DatabricksProcess();
             //var ColumnAttributes = new ColumnLevelAttributes();
-
             var inputs = new List<InputOutput>();
+            _logger.LogInformation("Number of inputs: {}", _eEvent.OlEvent!.Inputs.Count);
             foreach (IInputsOutputs input in _eEvent.OlEvent!.Inputs)
             {
                 inputs.Add(GetInputOutputs(input));
@@ -292,10 +292,9 @@ namespace Function.Domain.Helpers
             {
                 outputs.Add(GetInputOutputs(output));
             }
-
             databricksProcess.Attributes = GetProcAttributes(taskQn, inputs,outputs,_eEvent.OlEvent);
             //databricksProcess.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
-            databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn; 
+            databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn;
             return databricksProcess;
         }
 

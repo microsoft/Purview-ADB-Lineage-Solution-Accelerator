@@ -155,9 +155,10 @@ namespace Function.Domain.Helpers
                     await _tableClient.AddEntityAsync(entity);
                 }
                 else {
+                // Store only env facet.
                     var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
                     {
-                        { "Inputs", JsonConvert.SerializeObject(olEvent.Inputs) }
+                        { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) }
 
                     };
                     await _tableClient.AddEntityAsync(entity);
@@ -216,6 +217,7 @@ namespace Function.Domain.Helpers
             {
                 try
                 {
+                    _log.LogInformation("Trying to get inputs");
                     te_inputs = await _tableClient.GetEntityAsync<TableEntity>(TABLE_PARTITION, olEvent.Run.RunId, new string[] { "Inputs" });
                     break;
                 }
