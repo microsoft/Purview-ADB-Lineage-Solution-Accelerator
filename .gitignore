@@ -161,3 +161,4 @@ build
 
 # Ignore local settings
 localsettingsdutils.py
+*.ini

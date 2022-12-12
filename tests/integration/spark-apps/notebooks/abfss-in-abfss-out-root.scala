@@ -9,7 +9,7 @@ val ouptutContainerName = "writetoroot"
 val abfssRootPath = "abfss://"+storageContainerName+"@"+storageServiceName+".dfs.core.windows.net"
 val outputAbfssRootPath = "abfss://"+ouptutContainerName+"@"+storageServiceName+".dfs.core.windows.net/root"
 
-val storageKey = dbutils.secrets.get("purview-to-adb-scope", "storage-service-key")
+val storageKey = dbutils.secrets.get("purview-to-adb-kv", "storage-service-key")
 
 spark.conf.set("fs.azure.account.key."+storageServiceName+".dfs.core.windows.net", storageKey)
 

@@ -4,7 +4,7 @@
         "num_workers": 1,
         "spark_version": "9.1.x-scala2.12",
         "spark_conf": {
-            "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-scope/Ol-Output-Api-Key}}",
+            "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}",
             "spark.openlineage.host": "https://YOURFUNCTION.azurewebsites.net",
             "spark.openlineage.namespace": "adb-123.1#ABC123",
             "spark.openlineage.version": "1"

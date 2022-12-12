@@ -11,13 +11,13 @@ val storageServiceName = sys.env("STORAGE_SERVICE_NAME")
 val storageContainerName = "rawdata"
 val abfssRootPath = "abfss://"+storageContainerName+"@"+storageServiceName+".dfs.core.windows.net"
 
-val storageKey = dbutils.secrets.get("purview-to-adb-scope", "example-sa-key")
+val storageKey = dbutils.secrets.get("purview-to-adb-kv", "storage-service-key")
 
 spark.conf.set("fs.azure.account.auth.type."+storageServiceName+".dfs.core.windows.net", "OAuth")
 spark.conf.set("fs.azure.account.oauth.provider.type."+storageServiceName+".dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
-spark.conf.set("fs.azure.account.oauth2.client.id."+storageServiceName+".dfs.core.windows.net", dbutils.secrets.get("purview-to-adb-scope", "project-spn-client-id"))
-spark.conf.set("fs.azure.account.oauth2.client.secret."+storageServiceName+".dfs.core.windows.net", dbutils.secrets.get("purview-to-adb-scope", "project-spn-secret"))
-spark.conf.set("fs.azure.account.oauth2.client.endpoint."+storageServiceName+".dfs.core.windows.net", "https://login.microsoftonline.com/"+dbutils.secrets.get("purview-to-adb-scope", "tenant-id")+"/oauth2/token")
+spark.conf.set("fs.azure.account.oauth2.client.id."+storageServiceName+".dfs.core.windows.net", dbutils.secrets.get("purview-to-adb-kv", "clientIdKey"))
+spark.conf.set("fs.azure.account.oauth2.client.secret."+storageServiceName+".dfs.core.windows.net", dbutils.secrets.get("purview-to-adb-kv", "clientSecretKey"))
+spark.conf.set("fs.azure.account.oauth2.client.endpoint."+storageServiceName+".dfs.core.windows.net", "https://login.microsoftonline.com/"+dbutils.secrets.get("purview-to-adb-kv", "tenant-id")+"/oauth2/token")
 
 // COMMAND ----------
 

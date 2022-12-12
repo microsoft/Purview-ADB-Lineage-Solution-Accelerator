@@ -1,0 +1,366 @@
+{
+    "dataset": {
+        "exampleInputA": {
+            "schema": [
+                "id",
+                "postalCode",
+                "street"
+            ],
+            "data": [
+                [
+                    1,
+                    "555",
+                    "742 Evergreen Terrace"
+                ]
+            ]
+        },
+        "exampleInputB": {
+            "schema": [
+                "id",
+                "city",
+                "stateAbbreviation"
+            ],
+            "data": [
+                [
+                    1,
+                    "Springfield",
+                    "??"
+                ]
+            ]
+        }
+    },
+    "jobs": {
+        "jarjobs-abfssInAbfssOut": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/eighteen/",
+                "exampleInputA"
+            ]
+        ],
+        "pythonscript-pythonscript.py": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/twenty/",
+                "exampleInputA"
+            ]
+        ],
+        "wheeljobs-abfssintest": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/seventeen/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/seventeen/",
+                "exampleInputB"
+            ]
+        ],
+        "abfss-in-abfss-out-oauth.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/two/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/two/",
+                "exampleInputB"
+            ]
+        ],
+        "abfss-in-abfss-out-root.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/three/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/three/",
+                "exampleInputB"
+            ]
+        ],
+        "abfss-in-abfss-out.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/one/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/one/",
+                "exampleInputB"
+            ]
+        ],
+        "abfss-in-hive+notmgd+saveAsTable-out.scala": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/abfss-in-hive+notmgd+saveAsTable-out/",
+                "exampleInputA"
+            ]
+        ],
+        "abfss-in-hive+saveAsTable-out.scala": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/abfss-in-hive+saveAsTable-out/",
+                "exampleInputA"
+            ]
+        ],
+        "azuresql-in-azuresql-out.scala": [
+            [
+                "azuresql",
+                "table",
+                "dbo",
+                "exampleInputA"
+            ],
+            [
+                "azuresql",
+                "table",
+                "dbo",
+                "exampleInputB"
+            ],
+            [
+                "azuresql",
+                "table",
+                "dbo.exampleInputC"
+            ],
+            [
+                "azuresql",
+                "table",
+                "dbo.exampleOutput"
+            ]
+        ],
+        "call-via-adf-spark2.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/thirteen/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/thirteen/",
+                "exampleInputB"
+            ]
+        ],
+        "call-via-adf-spark3.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/fourteen/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/fourteen/",
+                "exampleInputB"
+            ]
+        ],
+        "delta-in-delta-merge.scala": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/sixteen/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/sixteen/",
+                "exampleInputB"
+            ]
+        ],
+        "delta-in-delta-out-abfss.scala": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/four/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/four/",
+                "exampleInputB"
+            ]
+        ],
+        "delta-in-delta-out-fs.scala": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/five/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/five/",
+                "exampleInputB"
+            ]
+        ],
+        "delta-in-delta-out-mnt.scala": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/six/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/six/",
+                "exampleInputB"
+            ]
+        ],
+        "hive-in-hive-out-insert.py": [
+            [
+                "noop"
+            ]
+        ],
+        "hive+abfss-in-hive+abfss-out-insert.py": [
+            [
+                "storage",
+                "delta",
+                "rawdata/testcase/twentyone/",
+                "exampleInputA"
+            ]
+        ],
+        "hive+mgd+not+default-in-hive+mgd+not+default-out-insert.py": [
+            [
+                "noop"
+            ]
+        ],
+        "hive+mnt-in-hive+mnt-out-insert.py": [
+            [
+                "noop"
+            ]
+        ],
+        "intermix-languages.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/fifteen/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/fifteen/",
+                "exampleInputB"
+            ]
+        ],
+        "mnt-in-mnt-out.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/seven/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/seven/",
+                "exampleInputB"
+            ]
+        ],
+        "name-with-periods.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/namewithperiods/",
+                "exampleInputA"
+            ]
+        ],
+        "nested-child.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/eight/",
+                "exampleInputA"
+            ]
+        ],
+        "nested-parent.scala": [
+            [
+                "noop"
+            ]
+        ],
+        "spark-sql-table-in-abfss-out.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/nine/",
+                "exampleInputB"
+            ]
+        ],
+        "synapse-in-synapse-out.scala": [
+            [
+                "synapse",
+                "table",
+                "dbo",
+                "exampleInputA"
+            ],
+            [
+                "synapse",
+                "table",
+                "Sales",
+                "Region"
+            ]
+        ],
+        "synapse-in-wasbs-out.scala": [
+            [
+                "synapse",
+                "table",
+                "dbo",
+                "exampleInputA"
+            ],
+            [
+                "synapse",
+                "table",
+                "dbo",
+                "exampleInputB"
+            ]
+        ],
+        "synapse-wasbs-in-synapse-out.scala": [
+            [
+                "synapse",
+                "table",
+                "dbo",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/eleven/",
+                "exampleInputA"
+            ]
+        ],
+        "wasbs-in-wasbs-out.scala": [
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/wasinwasout/",
+                "exampleInputA"
+            ],
+            [
+                "storage",
+                "csv",
+                "rawdata/testcase/wasinwasout/",
+                "exampleInputB"
+            ]
+        ]
+    }
+}
