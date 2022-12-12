@@ -1,98 +1,96 @@
 {
-    "settings": {
-        "name": "hive3-tests",
-        "email_notifications": {
-            "no_alert_for_skipped_runs": false
+    "name": "hive3-tests",
+    "email_notifications": {
+        "no_alert_for_skipped_runs": false
+    },
+    "timeout_seconds": 0,
+    "max_concurrent_runs": 1,
+    "tasks": [
+        {
+            "task_key": "hive-in-hive-out-insert",
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/hive-in-hive-out-insert",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
         },
-        "timeout_seconds": 0,
-        "max_concurrent_runs": 1,
-        "tasks": [
-            {
-                "task_key": "hive-in-hive-out-insert",
-                "notebook_task": {
-                    "notebook_path": "/Shared/examples/hive-in-hive-out-insert",
-                    "source": "WORKSPACE"
-                },
-                "existing_cluster_id": "<CLUSTER_ID>",
-                "timeout_seconds": 0,
-                "email_notifications": {}
+        {
+            "task_key": "hive_abfss-in-hive_abfss-out-insert",
+            "depends_on": [
+                {
+                    "task_key": "hive-in-hive-out-insert"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/hive+abfss-in-hive+abfss-out-insert",
+                "source": "WORKSPACE"
             },
-            {
-                "task_key": "hive_abfss-in-hive_abfss-out-insert",
-                "depends_on": [
-                    {
-                        "task_key": "hive-in-hive-out-insert"
-                    }
-                ],
-                "notebook_task": {
-                    "notebook_path": "/Shared/examples/hive+abfss-in-hive+abfss-out-insert",
-                    "source": "WORKSPACE"
-                },
-                "existing_cluster_id": "<CLUSTER_ID>",
-                "timeout_seconds": 0,
-                "email_notifications": {}
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "hive_mgd_not_default-in-hive_mgd_not_default-out-insert",
+            "depends_on": [
+                {
+                    "task_key": "hive_abfss-in-hive_abfss-out-insert"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/hive+mgd+not+default-in-hive+mgd+not+default-out-insert",
+                "source": "WORKSPACE"
             },
-            {
-                "task_key": "hive_mgd_not_default-in-hive_mgd_not_default-out-insert",
-                "depends_on": [
-                    {
-                        "task_key": "hive_abfss-in-hive_abfss-out-insert"
-                    }
-                ],
-                "notebook_task": {
-                    "notebook_path": "/Shared/examples/hive+mgd+not+default-in-hive+mgd+not+default-out-insert",
-                    "source": "WORKSPACE"
-                },
-                "existing_cluster_id": "<CLUSTER_ID>",
-                "timeout_seconds": 0,
-                "email_notifications": {}
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "hive_mnt-in-hive_mnt-out-insert",
+            "depends_on": [
+                {
+                    "task_key": "hive_mgd_not_default-in-hive_mgd_not_default-out-insert"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/hive+mnt-in-hive+mnt-out-insert",
+                "source": "WORKSPACE"
             },
-            {
-                "task_key": "hive_mnt-in-hive_mnt-out-insert",
-                "depends_on": [
-                    {
-                        "task_key": "hive_mgd_not_default-in-hive_mgd_not_default-out-insert"
-                    }
-                ],
-                "notebook_task": {
-                    "notebook_path": "/Shared/examples/hive+mnt-in-hive+mnt-out-insert",
-                    "source": "WORKSPACE"
-                },
-                "existing_cluster_id": "<CLUSTER_ID>",
-                "timeout_seconds": 0,
-                "email_notifications": {}
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "abfss-in-hive_notmgd_saveAsTable-out",
+            "depends_on": [
+                {
+                    "task_key": "hive_mnt-in-hive_mnt-out-insert"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/abfss-in-hive+notmgd+saveAsTable-out",
+                "source": "WORKSPACE"
             },
-            {
-                "task_key": "abfss-in-hive_notmgd_saveAsTable-out",
-                "depends_on": [
-                    {
-                        "task_key": "hive_mnt-in-hive_mnt-out-insert"
-                    }
-                ],
-                "notebook_task": {
-                    "notebook_path": "/Shared/examples/abfss-in-hive+notmgd+saveAsTable-out",
-                    "source": "WORKSPACE"
-                },
-                "existing_cluster_id": "<CLUSTER_ID>",
-                "timeout_seconds": 0,
-                "email_notifications": {}
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "abfss-in-hive_saveAsTable-out",
+            "depends_on": [
+                {
+                    "task_key": "abfss-in-hive_notmgd_saveAsTable-out"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/abfss-in-hive+saveAsTable-out",
+                "source": "WORKSPACE"
             },
-            {
-                "task_key": "abfss-in-hive_saveAsTable-out",
-                "depends_on": [
-                    {
-                        "task_key": "abfss-in-hive_notmgd_saveAsTable-out"
-                    }
-                ],
-                "notebook_task": {
-                    "notebook_path": "/Shared/examples/abfss-in-hive+saveAsTable-out",
-                    "source": "WORKSPACE"
-                },
-                "existing_cluster_id": "<CLUSTER_ID>",
-                "timeout_seconds": 0,
-                "email_notifications": {}
-            }
-        ],
-        "format": "MULTI_TASK"
-    }
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        }
+    ],
+    "format": "MULTI_TASK"
 }

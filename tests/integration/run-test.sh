@@ -43,8 +43,8 @@ for fn in `ls ./tests/integration/jobdefs`; do
         continue
     fi
 
-    # For each file, get the settings.name
-    job_name=$(cat "$TESTS_DIRECTORY/$fn" | jq -r '.settings.name')
+    # For each file, get the .name
+    job_name=$(cat "$TESTS_DIRECTORY/$fn" | jq -r '.name')
     echo "Preparing to run JobDef:$fn JobName:$job_name JobId:${jobnametoid[$job_name]}"
     temp_job_id=${jobnametoid[$job_name]}
     # Get the expectation file

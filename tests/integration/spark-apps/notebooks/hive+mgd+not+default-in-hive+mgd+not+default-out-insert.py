@@ -1,28 +1,24 @@
 # Databricks notebook source
-# %sql
-# CREATE DATABASE IF NOT EXISTS notdefault;
+# MAGIC %sql
+# MAGIC CREATE DATABASE IF NOT EXISTS notdefault;
 
 # COMMAND ----------
 
-# %sql
-# CREATE TABLE IF NOT EXISTS notdefault.hiveExampleA (
-# tableId INT,
-# x INT
-# );
+# MAGIC %sql
+# MAGIC CREATE TABLE IF NOT EXISTS notdefault.hiveExampleA (
+# MAGIC tableId INT,
+# MAGIC x INT
+# MAGIC );
 
-# CREATE TABLE notdefault.hiveExampleOutput(
-# tableId INT,
-# x INT
-# )
-
-# COMMAND ----------
-
-# %sql
-# INSERT INTO notdefault.hiveExampleA (tableId, x) VALUES(1,2)
+# MAGIC CREATE TABLE IF NOT EXISTS notdefault.hiveExampleOutput(
+# MAGIC tableId INT,
+# MAGIC x INT
+# MAGIC )
 
 # COMMAND ----------
 
-spark.sparkContext.setLogLevel("DEBUG")
+# MAGIC %sql
+# MAGIC INSERT INTO notdefault.hiveExampleA (tableId, x) VALUES(1,2)
 
 # COMMAND ----------
 
@@ -32,10 +28,3 @@ spark.sparkContext.setLogLevel("DEBUG")
 # MAGIC FROM notdefault.hiveExampleA
 
 # COMMAND ----------
-
-# MAGIC %md
-# MAGIC # Exploring the File Path
-
-# COMMAND ----------
-
-# dbutils.fs.ls("/user/hive/warehouse/notdefault.db/hiveexamplea")

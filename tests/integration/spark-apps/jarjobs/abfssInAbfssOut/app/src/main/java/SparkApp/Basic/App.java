@@ -32,7 +32,7 @@ public class App {
         System.out.println(new App().getGreeting());
         
 
-        String storageKey = dbutils.secrets().get("purview-to-adb-scope", "storage-service-key");
+        String storageKey = dbutils.secrets().get("purview-to-adb-kv", "storage-service-key");
 
         spark.conf().set("fs.azure.account.key."+storageServiceName+".dfs.core.windows.net", storageKey);
 

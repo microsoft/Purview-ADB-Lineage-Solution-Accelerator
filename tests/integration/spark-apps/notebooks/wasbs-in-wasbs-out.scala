@@ -7,7 +7,7 @@ val storageServiceName = sys.env("STORAGE_SERVICE_NAME")
 val storageContainerName = "rawdata"
 val wasbsRootPath = "wasbs://"+storageContainerName+"@"+storageServiceName+".blob.core.windows.net"
 
-val storageKey = dbutils.secrets.get("purview-to-adb-scope", "storage-service-key")
+val storageKey = dbutils.secrets.get("purview-to-adb-kv", "storage-service-key")
 
 spark.conf.set("fs.azure.account.key."+storageServiceName+".blob.core.windows.net", storageKey)
 
@@ -22,7 +22,7 @@ val exampleA = (
     spark.read.format("csv")
   .schema(exampleASchema)
   .option("header", true)
-  .load(wasbsRootPath+"/examples/data/csv/exampleInputA/exampleInputA.csv")
+  .load(wasbsRootPath+"/testcase/wasinwasout/exampleInputA/")
 )
 
 
@@ -35,14 +35,14 @@ val exampleB = (
     spark.read.format("csv")
   .schema(exampleBSchema)
   .option("header", true)
-  .load(wasbsRootPath+"/examples/data/csv/exampleInputB/exampleInputB.csv")
+  .load(wasbsRootPath+"/testcase/wasinwasout/exampleInputB/")
 )
 
 // COMMAND ----------
 
 val outputDf = exampleA.join(exampleB, exampleA("id") === exampleB("id"), "inner").drop(exampleB("id"))
 
-outputDf.repartition(1).write.mode("overwrite").format("csv").save(wasbsRootPath+"/examples/data/csv/exampleOutputWASBS/")
+outputDf.repartition(1).write.mode("overwrite").format("csv").save(wasbsRootPath+"/testcase/wasinwasout/exampleOutputWASBS/")
 
 // COMMAND ----------
 
