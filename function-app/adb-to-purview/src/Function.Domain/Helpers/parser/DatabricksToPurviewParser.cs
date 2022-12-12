@@ -281,7 +281,6 @@ namespace Function.Domain.Helpers
             var databricksProcess = new DatabricksProcess();
             //var ColumnAttributes = new ColumnLevelAttributes();
             var inputs = new List<InputOutput>();
-            _logger.LogInformation("Number of inputs: {}", _eEvent.OlEvent!.Inputs.Count);
             foreach (IInputsOutputs input in _eEvent.OlEvent!.Inputs)
             {
                 inputs.Add(GetInputOutputs(input));
