@@ -120,3 +120,7 @@ purview_type_resp_custom_type=$(curl -s -X POST $purview_endpoint/catalog/api/at
 
 echo $purview_type_resp_custom_type
 ```
+
+If you need a Powershell alternative, see the [docs](./docs/powershell-alternatives.md#upload-custom-types).
+
+You should now be able to run your demo notebook and receive lineage.

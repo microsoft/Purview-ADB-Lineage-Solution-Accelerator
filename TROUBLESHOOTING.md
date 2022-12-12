@@ -48,6 +48,57 @@
 
     In this case, use the databricks CLI to upload the jar to the expected location to avoid changes in the file name.
 
+* ### Internal Error Resolving Secrets
+
+    For the demo deployment, if your cluster fails and returns the error "Internal Error resolving secrets" and "Failed to fetch secrets referred to in Spark Conf", the deployment script may have failed to add an Access Policy to the Azure Key Vault or the secret scope was not created.
+
+    **Solution**: Update the values in the below script and execute it in the cloud shell. This script deletes the demo deployment's secret scope and then recreates it. After executing the script, you should see an access policy for "AzureDatabricks" in your Azure Key Vault.
+
+    ```bash
+    adb_ws_url=adb-DATABRICKS_WORKSPACE.ID.azuredatabricks.net
+    global_adb_token=$(az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d -o tsv --query '[accessToken]')
+    adb_ws_id=/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Databricks/workspaces/DATABRICKS_WORKSPACE_NAME
+    subscription_id=123acb-456-def
+    akv_name=AKV_NAME
+    akv_resource_id=/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.KeyVault/vaults/AKV_NAME
+
+    # Remove the Secret Scope if it exists
+    cat << EOF > delete-scope.json
+    {
+    "scope": "purview-to-adb-kv"
+    }
+    EOF
+
+    curl \
+    -X POST https://$adb_ws_url/api/2.0/secrets/scopes/delete \
+    -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
+    --data @delete-scope.json
+
+    # If the above fails, that's okay
+    # Ultimately, we just need a clean slate
+
+    cat << EOF > create-scope.json
+    {
+    "scope": "purview-to-adb-kv",
+    "scope_backend_type": "AZURE_KEYVAULT",
+    "backend_azure_keyvault":
+    {
+        "resource_id": "$akv_resource_id",
+        "dns_name": "https://$akv_name.vault.azure.net/"
+    },
+    "initial_manage_principal": "users"
+    }
+    EOF
+
+
+    curl \
+    -X POST https://$adb_ws_url/api/2.0/secrets/scopes/create \
+    -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
+    --data @create-scope.json
+    ```
+
 ## <a id="no-lineage" />I don't see lineage in Microsoft Purview
 
 * ### Try Refreshing the Page
