@@ -1,19 +1,14 @@
-# Datricks notebook source
-# %sql
-# CREATE TABLE IF NOT EXISTS default.hiveExampleA000 (
-# tableId INT,
-# x INT
-# );
-
-# CREATE TABLE default.hiveExampleOutput000(
-# tableId INT,
-# x INT
-# )
-
-# COMMAND ----------
-
-# %sql
-# INSERT INTO default.hiveExampleA000 (tableId, x) VALUES(1,2)
+# Databricks notebook source
+# MAGIC %sql
+# MAGIC CREATE TABLE IF NOT EXISTS default.hiveExampleA000 (
+# MAGIC tableId INT,
+# MAGIC x INT
+# MAGIC );
+# MAGIC 
+# MAGIC CREATE TABLE IF NOT EXISTS default.hiveExampleOutput000(
+# MAGIC tableId INT,
+# MAGIC x INT
+# MAGIC )
 
 # COMMAND ----------
 

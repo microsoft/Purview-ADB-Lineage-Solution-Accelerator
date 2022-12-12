@@ -10,12 +10,10 @@ import java.lang.{ClassNotFoundException}
 
 // COMMAND ----------
 
-val server_name = "jdbc:sqlserver://FILL-IN-CONNECTION-STRING"
-val database_name = "purview-to-adb-sqldb"
-val url = server_name + ";" + "database=" + database_name + ";"
+val url = dbutils.secrets.get("purview-to-adb-kv", "azuresql-jdbc-conn-str")
 
-val username = dbutils.secrets.get("purview-to-adb-scope", "azuresql-username")
-val password = dbutils.secrets.get("purview-to-adb-scope", "azuresql-password")
+val username = dbutils.secrets.get("purview-to-adb-kv", "azuresql-username")
+val password = dbutils.secrets.get("purview-to-adb-kv", "azuresql-password")
 
 // COMMAND ----------
 

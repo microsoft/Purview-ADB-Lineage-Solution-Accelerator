@@ -19,7 +19,7 @@
                     "cluster_name": "",
                     "spark_version": "9.1.x-scala2.12",
                     "spark_conf": {
-                        "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-scope/Ol-Output-Api-Key}}",
+                        "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}",
                         "spark.openlineage.host": "https://<FUNCTION_SERVICE_NAME>.azurewebsites.net",
                         "spark.openlineage.namespace": "<DBR_WORKSPACE_NAME>#ABC123",
                         "spark.openlineage.version": "1"

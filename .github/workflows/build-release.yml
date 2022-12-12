@@ -85,18 +85,19 @@ jobs:
         name: FunctionZip
         path: ./artifacts
 
-    - name: Azure Functions Action
+    - name: Deploy Azure Function to Integration Env
       uses: Azure/functions-action@v1.4.6
       with:
         app-name: ${{ secrets.INT_FUNC_NAME }}
         package: ./artifacts/FunctionZip.zip
         publish-profile: ${{ secrets.INT_PUBLISH_PROFILE }}
     
-    - uses: azure/login@v1
+    - name: Azure Login
+      uses: azure/login@v1
       with:
         creds: ${{ secrets.INT_AZ_CLI_CREDENTIALS }}
     
-    - name: Azure CLI script
+    - name: Compare and Update App Settings on Deployed Function
       uses: azure/CLI@v1
       with:
         azcliversion: 2.34.1
@@ -108,7 +109,7 @@ jobs:
 
     # Start up Synapse Pool and Execute Tests
     - name: Start Integration Synapse SQL Pool
-      run: source tests/integration/manage-sql-pool.sh start ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
+      run: source tests/integration/manage-sql-pool.sh start ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_SYNAPSE_SQLPOOL_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
       env:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -124,6 +125,10 @@ jobs:
         token = ${{ secrets.INT_DATABRICKS_ACCESS_TOKEN }}" > ./config.ini
         export DATABRICKS_CONFIG_FILE=./config.ini
 
+    - name: Confirm Databricks CLI is configured
+      run: databricks clusters spark-versions
+      env:
+        DATABRICKS_CONFIG_FILE: ./config.ini
 
     - name: Cleanup Integration Environment
       run: python ./tests/integration/runner.py --cleanup --dontwait None None None
@@ -144,7 +149,7 @@ jobs:
         DATABRICKS_CONFIG_FILE: ./config.ini
 
     - name: Stop Integration Synapse SQL Pool
-      run: source tests/integration/manage-sql-pool.sh stop ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
+      run: source tests/integration/manage-sql-pool.sh stop ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_SYNAPSE_SQLPOOL_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
       env:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -172,25 +177,3 @@ jobs:
       with:
         artifacts: ~/artifacts/FunctionZip.zip
         token: ${{ secrets.GITHUB_TOKEN }}
-
-  deployProductionEnvironment:
-    name: Release to Production Environment
-    needs: [createRelease]
-    runs-on: ubuntu-latest
-    environment: 
-      name: Production
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Download Artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: FunctionZip
-        path: ./artifacts
-
-    - name: Azure Functions Action
-      uses: Azure/functions-action@v1.4.6
-      with:
-        app-name: ${{ secrets.FUNC_NAME }}
-        package: ./artifacts/FunctionZip.zip
-        publish-profile: ${{ secrets.PUBLISH_PROFILE }}
