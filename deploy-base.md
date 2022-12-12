@@ -117,6 +117,8 @@ From the [Azure Portal](https://portal.azure.com)
 
   echo $purview_type_resp_custom_type
   ```
+  
+  If you need a Powershell alternative, see the [docs](./docs/powershell-alternatives.md#upload-custom-types).
 
 ## <a id="download-openlineage" />Download the OpenLineage Spark agent and configure with your Azure Databricks clusters
 
