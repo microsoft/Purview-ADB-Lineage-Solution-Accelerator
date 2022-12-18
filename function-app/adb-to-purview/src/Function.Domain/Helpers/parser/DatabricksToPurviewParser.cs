@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace Function.Domain.Helpers
 {
@@ -30,6 +31,7 @@ namespace Function.Domain.Helpers
         private readonly EnrichedEvent _eEvent;
         private readonly string _adbWorkspaceUrl;
         const string SETTINGS = "OlToPurviewMappings";
+        Regex ADF_JOB_NAME_REGEX = new Regex(@"^ADF_(.*)_(.*)_(.*)_(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Constructor for DatabricksToPurviewParser
@@ -135,8 +137,18 @@ namespace Function.Domain.Helpers
                 adbJobRoot  = _eEvent.AdbRoot;
             }
             var databricksJob = new DatabricksJob();
-            databricksJob.Attributes.Name = adbJobRoot.RunName;
-            databricksJob.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_eEvent.AdbRoot!.JobId}";
+            string _jobName = adbJobRoot.RunName;
+            string _jobId = _eEvent.AdbRoot!.JobId.ToString();
+            // Special case for Azure Data Factory
+            // If we match this pattern in the job name, strip the last element since it's a random guid
+            // This will allow us to have the same name / qualified name each run
+            if (IsAdfJobName(_jobName)){
+                _logger.LogInformation($"Azure Data Factory Job being processed: ({_jobName})");
+                _jobName = TruncateAdfJobName(_jobName);
+                _jobId = _jobName;
+            }
+            databricksJob.Attributes.Name = _jobName;
+            databricksJob.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_jobId}";
             databricksJob.Attributes.JobId = adbJobRoot.JobId;
             databricksJob.Attributes.CreatorUserName = adbJobRoot.CreatorUserName;
 
@@ -188,9 +200,20 @@ namespace Function.Domain.Helpers
                 _logger.LogError(ex, ex.Message);
                 throw ex;
             }
-            taskAttributes.Name = _eEvent.AdbRoot.JobTasks[0].TaskKey;
-            string jobQn = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_eEvent.AdbRoot.JobId}";
-            taskAttributes.QualifiedName = $"{jobQn}/tasks/{_eEvent.AdbRoot.JobTasks[0].TaskKey}";
+            
+            string _taskKey = _eEvent.AdbRoot.JobTasks[0].TaskKey;
+            string _taskJobId = _eEvent.AdbRoot.JobId.ToString();
+            // Special case for Azure Data Factory
+            // If we match this pattern in the job name, strip the last element since it's a random guid
+            // This will allow us to have the same name / qualified name each run
+            if (IsAdfJobName(_taskKey)){
+                _logger.LogInformation($"Azure Data Factory Task being processed: ({_taskKey})");
+                _taskJobId = TruncateAdfJobName(_taskKey);
+                _taskKey = TruncateAdfTaskName(_taskKey);
+            }
+            taskAttributes.Name = _taskKey;
+            string jobQn = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net/jobs/{_taskJobId}";
+            taskAttributes.QualifiedName = $"{jobQn}/tasks/{_taskKey}";
             taskAttributes.JobId = _eEvent.AdbRoot.JobId;
             taskAttributes.ClusterId = _eEvent.AdbRoot.JobTasks[0].ClusterInstance.ClusterId;
             taskAttributes.SparkVersion = _eEvent.OlEvent?.Run.Facets.SparkVersion.SparkVersion ?? "";
@@ -365,6 +388,26 @@ namespace Function.Domain.Helpers
                 sOutput.Append(tmpHash[i].ToString("X2"));
             }
             return sOutput.ToString();
+        }
+
+        private bool IsAdfJobName(string inputName){
+            // Follows the pattern ADF_factoryName_pipelineName_notebookName_pipelineRunId
+            return (ADF_JOB_NAME_REGEX.Matches(inputName).Count > 0);
+        }
+        // Special case for Azure Data Factory
+        // If we match this pattern in the job name, strip the last element since it's a random guid
+        // This will allow us to have the same name / qualified name each run
+        private string TruncateAdfTaskName(string inputName){
+            // Return ADF_factoryName_pipelineName_notebookName portions
+            string[] job_name_parts = inputName.Split("_");
+            string[] job_name_except_last_element = job_name_parts.Take(job_name_parts.Count() - 1).ToArray();
+            return string.Join("_", job_name_except_last_element);
+        }
+        private string TruncateAdfJobName(string inputName){
+            // Return ADF_factoryName_pipelineName portions
+            string[] job_name_parts = inputName.Split("_");
+            string[] job_name_except_last_element = job_name_parts.Take(job_name_parts.Count() - 2).ToArray();
+            return string.Join("_", job_name_except_last_element);
         }
     }
 }
