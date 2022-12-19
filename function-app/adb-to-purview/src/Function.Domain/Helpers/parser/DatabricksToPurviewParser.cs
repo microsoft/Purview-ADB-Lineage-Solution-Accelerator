@@ -390,13 +390,13 @@ namespace Function.Domain.Helpers
             return sOutput.ToString();
         }
 
+        // Special case for Azure Data Factory
+        // If we match this pattern in the job name, strip the last element since it's a random guid
+        // This will allow us to have the same name / qualified name each run
         private bool IsAdfJobName(string inputName){
             // Follows the pattern ADF_factoryName_pipelineName_notebookName_pipelineRunId
             return (ADF_JOB_NAME_REGEX.Matches(inputName).Count > 0);
         }
-        // Special case for Azure Data Factory
-        // If we match this pattern in the job name, strip the last element since it's a random guid
-        // This will allow us to have the same name / qualified name each run
         private string TruncateAdfTaskName(string inputName){
             // Return ADF_factoryName_pipelineName_notebookName portions
             string[] job_name_parts = inputName.Split("_");
