@@ -31,7 +31,7 @@ namespace Function.Domain.Helpers
         private readonly EnrichedEvent _eEvent;
         private readonly string _adbWorkspaceUrl;
         const string SETTINGS = "OlToPurviewMappings";
-        Regex ADF_JOB_NAME_REGEX = new Regex(@"^ADF_(.*)_(.*)_(.*)_(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        Regex ADF_JOB_NAME_REGEX = new Regex(@"^ADF_(.*)_(.*)_(.*)_(.*)$", RegexOptions.Compiled );
 
         /// <summary>
         /// Constructor for DatabricksToPurviewParser
