@@ -143,12 +143,26 @@ namespace Function.Domain.Helpers
             }
             try
             {
-                var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
+                if (olEvent.Inputs.Count > 0)
+                // Store inputs and env facet.
                 {
-                    { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) }
-                };
+                    var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
+                    {
+                        { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) },
+                        { "Inputs", JsonConvert.SerializeObject(olEvent.Inputs) }
 
-                await _tableClient.AddEntityAsync(entity);
+                    };
+                    await _tableClient.AddEntityAsync(entity);
+                }
+                else {
+                // Store only env facet.
+                    var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
+                    {
+                        { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) }
+
+                    };
+                    await _tableClient.AddEntityAsync(entity);
+                }
             }
             catch (RequestFailedException ex)
             {
@@ -159,6 +173,7 @@ namespace Function.Domain.Helpers
                 _log.LogError(ex, $"OlMessageConsolodation-ProcessStartEvent: Error {ex.Message} when processing entity");
                 return false;
             }
+
             return true;
         }
 
@@ -170,6 +185,7 @@ namespace Function.Domain.Helpers
             }
             
             TableEntity te;
+            TableEntity te_inputs;
 
             // Processing time can sometimes cause complete events 
             int retryCount = 4;
@@ -195,6 +211,28 @@ namespace Function.Domain.Helpers
                 await Task.Delay(delay);
             }
 
+            // Get inputs. Todo: Check if more efficient to get inputs within the same while loop above. Can we get 2 entities at the same time? 
+            currentRetry = 0;
+            while (true)
+            {
+                try
+                {
+                    _log.LogInformation("Trying to get inputs");
+                    te_inputs = await _tableClient.GetEntityAsync<TableEntity>(TABLE_PARTITION, olEvent.Run.RunId, new string[] { "Inputs" });
+                    break;
+                }
+                catch (RequestFailedException)
+                {
+                    currentRetry++;
+                    _log.LogWarning($"Start event was missing, retrying to consolidate message to get inputs. Retry count: {currentRetry}");
+                    if (currentRetry > retryCount)
+                    {
+                        return false;
+                    }
+                }
+                await Task.Delay(delay);
+            }
+
             // Add Environment to event
             var envFacet = JsonConvert.DeserializeObject<EnvironmentPropsParent>(te["EnvFacet"].ToString() ?? "");
                 if (envFacet is null)
@@ -204,15 +242,28 @@ namespace Function.Domain.Helpers
                 }
                 olEvent.Run.Facets.EnvironmentProperties = envFacet;
 
-                // clean up table over time
-                try
-                {
-                    var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
-                }
-                catch (Exception ex)
-                {
-                    _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
-                }
+            // Add Inputs to event if not already there (will only be done for DataSourceV2 sources)
+            if (olEvent.Inputs.Count == 0) {
+                var inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
+
+                if (inputs is null)
+                    {
+                        _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs found for datasource v2 COMPLETE event");
+                        return false;
+                    }
+                    olEvent.Inputs = inputs;
+
+            }
+
+            // clean up table over time. 
+            try
+            {
+                var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
+            }
 
             return true;
         }
@@ -228,11 +279,32 @@ namespace Function.Domain.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Helper function to determine if the event is one of
+        /// the data source v2 ones which need to aggregate data
+        /// from the start and complete events
+        /// </summary>
+        private bool isDataSourceV2Event(Event olEvent) {
+            string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
+            // Don't need to process START events here as they have both inputs and outputs
+            if (olEvent.EventType == "START") return false;
+
+            foreach (var outp in olEvent.Outputs)
+            {
+                foreach (var source in special_cases)
+                {
+                    if (outp.NameSpace.StartsWith(source)) return true;
+                }   
+            }
+            return false;
+        }
+
         private bool IsJoinEvent(Event olEvent)
         {
+            string[] special_cases = {"cosmos", "iceberg"};
             if (olEvent.EventType == COMPLETE_EVENT)
             {
-                if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
+                if ((olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0) || (olEvent.Outputs.Count > 0 && isDataSourceV2Event(olEvent))) 
                 {
                     return true;
                 }

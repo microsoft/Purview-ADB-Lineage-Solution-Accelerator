@@ -30,9 +30,30 @@ namespace Function.Domain.Helpers.Parser
         }
 
         /// <summary>
+        /// Helper function to determine if the event is one of
+        /// the data source v2 ones which need to aggregate data
+        /// from the start and complete events
+        /// </summary>
+        private bool isDataSourceV2Event(Event olEvent) {
+            string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
+            // Don't need to process START events here as they have both inputs and outputs
+            if (olEvent.EventType == "START") return false;
+
+            foreach (var outp in olEvent.Outputs)
+            {
+                foreach (var source in special_cases)
+                {
+                    if (outp.NameSpace.StartsWith(source)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Performs initial validation of OpenLineage input
         /// The tested criteria include:
         /// 1. Events have both inputs and outputs
+        ///     a. Except for special cases covered in isDataSourceV2Event
         /// 2. Events do not have the same input and output
         /// 3. EventType is START or COMPLETE
         /// 4. If EventType is START, there is a Environment Facet
@@ -40,7 +61,7 @@ namespace Function.Domain.Helpers.Parser
         /// <param name="olEvent">OpenLineage Event message</param>
         /// <returns>true if input is valid, false if not</returns>
         public bool Validate(Event olEvent){
-            if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
+            if ((olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0) || (olEvent.Outputs.Count > 0 && isDataSourceV2Event(olEvent)))
             {
                 // Need to rework for multiple inputs and outputs in one packet - possibly combine and then hash
                 if (InOutEqual(olEvent))
