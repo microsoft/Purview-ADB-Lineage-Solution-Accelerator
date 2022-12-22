@@ -46,5 +46,11 @@
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/mysql-in-mysql-out",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/postgres-in-postgres-out",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/postgres-in-postgres-out/processes/7E6CEF8EC093F119A11618169A8C4EAE->DB99105F739F05449E1ECD20A652DEE1",
-  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/postgres-in-postgres-out"
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/postgres-in-postgres-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-kusto-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-kusto-out/processes/19D47FFE9052FC410D945175332F06A3->FDCBB55FFBA970F4BB5A7231AC01DF9D",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-kusto-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/kusto-in-wasbs-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out/processes/87443744B8F04F88E5115B213D004A9F->41DBE3E56CB367255A27A1E4A17F4861",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out"
 ]
