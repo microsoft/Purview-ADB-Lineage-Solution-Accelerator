@@ -23,7 +23,7 @@
 		},
 		"functionSku": {
 			"type": "string",
-			"defaultValue": "Dynamic",
+			"defaultValue": "EP1",
 			"metadata": {
 				"description": "The tier for the Azure Function."
 			},
