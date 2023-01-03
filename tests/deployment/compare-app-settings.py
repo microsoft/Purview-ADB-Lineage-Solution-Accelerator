@@ -56,7 +56,10 @@ if __name__ == "__main__":
     app_settings_in_template = None
     for resource in arm_template["resources"]:
         if resource["type"] == "Microsoft.Web/sites":
-            app_settings_in_template = resource["properties"]["siteConfig"]["appSettings"]
+            for child_resource in resource.get("resources", []):
+                if child_resource.get("type") == "config" and child_resource.get("name") == "web":
+                    app_settings_in_template = child_resource.get("properties", {}).get("appSettings", [])
+                    break
 
     if app_settings_in_template is None:
         raise ValueError("Unable to extract the Microsoft.web/sites resources")
