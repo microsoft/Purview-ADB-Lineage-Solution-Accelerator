@@ -447,7 +447,8 @@
 			"name": "[concat(variables('openlineageEventHubNameSpaceName'), '/ListenMessages')]",
 			"tags": "[parameters('resourceTagValues')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]"
+				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
+				"[resourceId('Microsoft.EventHub/namespaces/AuthorizationRules', 'SendMessages')]"
 			],
 			"properties": {
 				"rights": [
