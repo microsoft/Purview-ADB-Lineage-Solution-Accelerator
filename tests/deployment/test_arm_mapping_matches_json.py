@@ -19,7 +19,13 @@ if __name__ == "__main__":
         if resource["name"] != "[variables('functionAppName')]":
             continue
 
-        app_settings = resource.get("properties", {}).get("siteConfig", {}).get("appSettings", [])
+        web_config={}
+        for child_resource in resource.get("resources", []):
+            if child_resource.get("type") == "config" and child_resource.get("name") == "web":
+                web_config = child_resource
+                break
+
+        app_settings = web_config.get("properties", {}).get("appSettings", [])
         for setting in app_settings:
             if setting["name"] != "OlToPurviewMappings":
                 continue
