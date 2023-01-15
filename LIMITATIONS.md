@@ -13,6 +13,7 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure MySQL](#azure-mysql)
 * [PostgreSQL](#postgresql)
 * [Azure Data Explorer](#azure-data-explorer)
+* [Azure Cosmos DB]()
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
 * [Column Level Mapping Supported Sources](#column-level-mapping-supported-sources)
 
