@@ -50,6 +50,8 @@ Add Key Vault Secrets
   * `azurekusto-appsecret`
   * `azurekusto-uri`
   
+  * `azurecosmos-endpoint`
+  * `azurecosmos-key`
 * Update SQL Db and Synapse Server with AAD Admin
 * Add Service Principal for Databricks to connect to SQL sources
 * Assign the Service Principal admin role on the ADX cluster. [Guide](https://learn.microsoft.com/en-us/azure/data-explorer/provision-azure-ad-app#grant-the-service-principal-access-to-an-azure-data-explorer-database)
@@ -63,8 +65,11 @@ Set the following system environments:
 Install the version of the [kusto spark connector](https://github.com/Azure/azure-kusto-spark) that matches the cluster Scala and Spark versions from Maven Central.
 
 Upload notebooks in `./tests/integration/spark-apps/notebooks/` to dbfs' `/Shared/examples/`
-
 * Manually for now. TODO: Automate this in Python
+
+Install the following libraries on the compute cluster (versions to match the Spark and Scala versions of the cluster) (TODO: Automate):
+* Cosmos spark connector
+
 
 Compile the following apps and upload them to `/dbfs/FileStore/testcases/`
 
