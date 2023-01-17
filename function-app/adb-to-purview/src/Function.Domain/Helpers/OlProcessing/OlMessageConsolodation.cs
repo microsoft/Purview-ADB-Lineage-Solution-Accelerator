@@ -149,6 +149,9 @@ namespace Function.Domain.Helpers
                     var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
                     {
                         { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) },
+                        // TODO: Add logic here to only save DataSourceV2 event inputs. Old logic of checking the outputs 
+                        // for datasourceV2 events is not right because the issue is with inputs, and we may miss them if 
+                        // the output was not a datasource v2 event. 
                         { "Inputs", JsonConvert.SerializeObject(olEvent.Inputs) }
 
                     };
@@ -217,7 +220,6 @@ namespace Function.Domain.Helpers
             {
                 try
                 {
-                    _log.LogInformation("Trying to get inputs");
                     te_inputs = await _tableClient.GetEntityAsync<TableEntity>(TABLE_PARTITION, olEvent.Run.RunId, new string[] { "Inputs" });
                     break;
                 }
@@ -242,18 +244,37 @@ namespace Function.Domain.Helpers
                 }
                 olEvent.Run.Facets.EnvironmentProperties = envFacet;
 
-            // Add Inputs to event if not already there (will only be done for DataSourceV2 sources)
-            if (olEvent.Inputs.Count == 0) {
-                var inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
+            // Check if saved any inputs from the START event (will only be done for events containing DataSourceV2 sources)
+            if (te_inputs is not null) {
+                var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
 
-                if (inputs is null)
-                    {
+                if (saved_inputs is null) {
                         _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs found for datasource v2 COMPLETE event");
                         return false;
-                    }
-                    olEvent.Inputs = inputs;
+                }
+
+                // Check inputs saved against inputs captured in this COMPLETE event and combine, then remove any duplicates.
+                // Checking for duplicates may be overkill because we observed that DataSource V2 COMPLETE events do not show up in the inputs 
+                // of the COMPLETE event, so in theory we would only have saved DataSource V2 inputs from the START event, and they would
+                // not show up in the COMPLETE event
+                var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
+                
+                inputs.AddRange(saved_inputs);
+                inputs.AddRange(olEvent.Inputs);
+
+                // TODO: Come back to this
 
             }
+            // if (olEvent.Inputs.Count == 0) {
+            //     var inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
+
+            //     if (inputs is null)
+            //         {
+            //             _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs found for datasource v2 COMPLETE event");
+            //             return false;
+            //         }
+                    olEvent.Inputs = inputs;
+            // }
 
             // clean up table over time. 
             try
@@ -301,7 +322,6 @@ namespace Function.Domain.Helpers
 
         private bool IsJoinEvent(Event olEvent)
         {
-            string[] special_cases = {"cosmos", "iceberg"};
             if (olEvent.EventType == COMPLETE_EVENT)
             {
                 if ((olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0) || (olEvent.Outputs.Count > 0 && isDataSourceV2Event(olEvent))) 
