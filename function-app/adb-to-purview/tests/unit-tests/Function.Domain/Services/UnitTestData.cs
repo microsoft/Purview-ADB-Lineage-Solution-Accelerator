@@ -17,7 +17,7 @@ namespace UnitTests.Function.Domain.Services
             , false};
             // CompleteNoOutputsInputsFullMessage
             yield return new object[] {"CompleteNoOutputsInputsFullMessage: 2022-01-12T00:05:56.318 [Information] OpenLineageIn:{\"eventType\":\"COMPLETE\",\"eventTime\":\"2022-01-25T17:52:53.363Z\",\"inputs\":[],\"outputs\":[{\"namespace\":\"dbfs\",\"name\":\"/mnt/raw/DimProduct.parquet\"}],\"producer\":\"https://github.com/OpenLineage/OpenLineage/tree/0.5.0-SNAPSHOT/integration/spark\",\"schemaURL\":\"https://openlineage.io/spec/1-0-2/OpenLineage.json#/$defs/RunEvent\"}"
-            , false};
+            , true};
             // CompleteOutputsAndInputsFullMessage
             yield return new object[] {"CompleteOutputsAndInputsFullMessage: 2022-01-12T00:19:41.550 [Information] OpenLineageIn:{\"eventType\":\"COMPLETE\",\"eventTime\":\"2022-01-25T17:52:53.363Z\",\"inputs\":[{\"namespace\":\"dbfs\",\"name\":\"/mnt/raw/DimProduct.parquet\"}],\"outputs\":[{\"namespace\":\"dbfs\",\"name\":\"/mnt/destination/DimProduct.parquet\"}],\"producer\":\"https://github.com/OpenLineage/OpenLineage/tree/0.5.0-SNAPSHOT/integration/spark\",\"schemaURL\":\"https://openlineage.io/spec/1-0-2/OpenLineage.json#/$defs/RunEvent\"}"
             , true};
