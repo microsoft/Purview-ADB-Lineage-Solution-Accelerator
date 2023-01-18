@@ -10,10 +10,14 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure Synapse SQL Pools](#azure-synapse-sql-pools)
 * [Azure SQL DB](#azure-sql-db)
 * [Delta Lake](#delta-lake-file-format)
+<<<<<<< HEAD
 * [Azure MySQL](#azure-mysql)
 * [PostgreSQL](#postgresql)
 * [Azure Data Explorer](#azure-data-explorer)
 * [Azure Cosmos DB]()
+=======
+* [Azure Cosmos DB](#azure-cosmos-db)
+>>>>>>> 85ddab3 (Update LIMITATIONS)
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
 * [Column Level Mapping Supported Sources](#column-level-mapping-supported-sources)
 
@@ -104,6 +108,10 @@ Supports capturing lineage for Databricks Notebook activities in Azure Data Fact
 
 * At this time, the Microsoft Purview view of Azure Data Factory lineage will not contain these tasks unless the Databricks Task uses or feeds a data source to a Data Flow or Copy activity.
 * Copy Activities may not show lineage connecting to these Databricks tasks since it emits individual file assets rather than folder or resource set assets.
+
+## Azure Cosmos DB
+
+Supports querying [Azure Cosmos DB (SQL API)](https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/cosmos/azure-cosmos-spark_3_2-12)
 
 ## Other Data Sources and Limitations
 
