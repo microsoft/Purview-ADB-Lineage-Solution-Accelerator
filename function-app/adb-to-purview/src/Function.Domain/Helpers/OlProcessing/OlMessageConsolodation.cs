@@ -298,8 +298,6 @@ namespace Function.Domain.Helpers
         /// </summary>
         private bool isDataSourceV2Event(Event olEvent) {
             string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
-            // // Don't need to process START events here as they have both inputs and outputs
-            // if (olEvent.EventType == "COMPLETE") return false;
 
             foreach (var outp in olEvent.Outputs)
             {
