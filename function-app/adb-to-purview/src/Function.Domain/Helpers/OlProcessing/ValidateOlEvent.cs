@@ -29,22 +29,20 @@ namespace Function.Domain.Helpers.Parser
             _log = loggerFactory.CreateLogger<ValidateOlEvent>();
         }
 
-        /// <summary>
+/// <summary>
         /// Helper function to determine if the event is one of
-        /// the data source v2 ones which need to aggregate data
-        /// from the start and complete events
+        /// the data source v2 ones which needs us to save the 
+        /// inputs from the start event
         /// </summary>
         private bool isDataSourceV2Event(Event olEvent) {
             string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
-            // Don't need to process START events here as they have both inputs and outputs
-            if (olEvent.EventType == "START") return false;
 
             foreach (var outp in olEvent.Outputs)
             {
                 foreach (var source in special_cases)
                 {
                     if (outp.NameSpace.StartsWith(source)) return true;
-                }
+                }   
             }
             return false;
         }
@@ -52,8 +50,7 @@ namespace Function.Domain.Helpers.Parser
         /// <summary>
         /// Performs initial validation of OpenLineage input
         /// The tested criteria include:
-        /// 1. Events have both inputs and outputs
-        ///     a. Except for special cases covered in isDataSourceV2Event
+        /// 1. Events have both inputs and outputs (TODO: UPDATE)
         /// 2. Events do not have the same input and output
         /// 3. EventType is START or COMPLETE
         /// 4. If EventType is START, there is a Environment Facet
@@ -61,7 +58,9 @@ namespace Function.Domain.Helpers.Parser
         /// <param name="olEvent">OpenLineage Event message</param>
         /// <returns>true if input is valid, false if not</returns>
         public bool Validate(Event olEvent){
-            if ((olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0) || (olEvent.Outputs.Count > 0 && isDataSourceV2Event(olEvent)))
+            // if ((olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0) || (olEvent.Outputs.Count > 0 && isDataSourceV2Event(olEvent)))
+            if (olEvent.Outputs.Count > 0) // TODO: check if this breaks any logic down the line. 
+            // Want to save COMPLETE events even if they only have outputs for the cosmos case
             {
                 // Need to rework for multiple inputs and outputs in one packet - possibly combine and then hash
                 if (InOutEqual(olEvent))
@@ -70,14 +69,14 @@ namespace Function.Domain.Helpers.Parser
                 }
                 if (olEvent.EventType == "START")
                 {
-                    if (olEvent.Run.Facets.EnvironmentProperties == null)
-                    {
+                    if (olEvent.Run.Facets.EnvironmentProperties == null || !(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0))
+                    { // START events should contain both inputs and outputs, as well as the EnvironmentProperties facet
                         return false;
                     }
                     return true;
                 }
-                else if (olEvent.EventType == "COMPLETE")
-                {
+                else if (olEvent.EventType == "COMPLETE" && olEvent.Outputs.Count > 0)
+                { // COMPLETE events might not contain inputs, but should have at least one output. 
                     return true;
                 }
                 else
