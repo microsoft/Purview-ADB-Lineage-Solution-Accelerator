@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
@@ -143,15 +144,12 @@ namespace Function.Domain.Helpers
             }
             try
             {
-                if (olEvent.Inputs.Count > 0)
+                if (isDataSourceV2Event(olEvent))
                 // Store inputs and env facet.
                 {
                     var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
                     {
                         { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) },
-                        // TODO: Add logic here to only save DataSourceV2 event inputs. Old logic of checking the outputs 
-                        // for datasourceV2 events is not right because the issue is with inputs, and we may miss them if 
-                        // the output was not a datasource v2 event. 
                         { "Inputs", JsonConvert.SerializeObject(olEvent.Inputs) }
 
                     };
@@ -186,7 +184,7 @@ namespace Function.Domain.Helpers
             {
                 return false;
             }
-            
+
             TableEntity te;
             TableEntity te_inputs;
 
@@ -253,28 +251,15 @@ namespace Function.Domain.Helpers
                         return false;
                 }
 
-                // Check inputs saved against inputs captured in this COMPLETE event and combine, then remove any duplicates.
-                // Checking for duplicates may be overkill because we observed that DataSource V2 COMPLETE events do not show up in the inputs 
-                // of the COMPLETE event, so in theory we would only have saved DataSource V2 inputs from the START event, and they would
-                // not show up in the COMPLETE event
+                // Check inputs saved against inputs captured in this COMPLETE event and combine while removing any duplicates.
+                // Checking for duplicates needed since we save all the inputs captured from the START event. Perhaps it may be better to 
+                // only save the DataSourceV2 inputs?
                 var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
-                
                 inputs.AddRange(saved_inputs);
                 inputs.AddRange(olEvent.Inputs);
-
-                // TODO: Come back to this
-
+                var unique_inputs = inputs.Distinct();
+                olEvent.Inputs = unique_inputs.ToList();
             }
-            // if (olEvent.Inputs.Count == 0) {
-            //     var inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
-
-            //     if (inputs is null)
-            //         {
-            //             _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs found for datasource v2 COMPLETE event");
-            //             return false;
-            //         }
-                    olEvent.Inputs = inputs;
-            // }
 
             // clean up table over time. 
             try
@@ -284,6 +269,12 @@ namespace Function.Domain.Helpers
             catch (Exception ex)
             {
                 _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
+            }
+
+            // If no inputs were saved from the start event, then we need to make sure we're only processing this COMPLETE event
+            // if it has both inputs and outputs (reflects original logic, prior to supporting DataSourceV2 events)
+            if (te_inputs is null && !(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)) {
+                return false;
             }
 
             return true;
@@ -302,13 +293,13 @@ namespace Function.Domain.Helpers
 
         /// <summary>
         /// Helper function to determine if the event is one of
-        /// the data source v2 ones which need to aggregate data
-        /// from the start and complete events
+        /// the data source v2 ones which needs us to save the 
+        /// inputs from the start event
         /// </summary>
         private bool isDataSourceV2Event(Event olEvent) {
             string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
-            // Don't need to process START events here as they have both inputs and outputs
-            if (olEvent.EventType == "START") return false;
+            // // Don't need to process START events here as they have both inputs and outputs
+            // if (olEvent.EventType == "COMPLETE") return false;
 
             foreach (var outp in olEvent.Outputs)
             {
@@ -324,7 +315,7 @@ namespace Function.Domain.Helpers
         {
             if (olEvent.EventType == COMPLETE_EVENT)
             {
-                if ((olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0) || (olEvent.Outputs.Count > 0 && isDataSourceV2Event(olEvent))) 
+                if (olEvent.Outputs.Count > 0)
                 {
                     return true;
                 }
