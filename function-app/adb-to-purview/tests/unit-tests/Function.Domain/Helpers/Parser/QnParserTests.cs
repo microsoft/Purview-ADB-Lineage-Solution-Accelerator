@@ -129,8 +129,8 @@ namespace UnitTests.Function.Domain.Helpers
                     "table01", 
                     "https://qpll4l5hchczm.eastus2.kusto.windows.net/database01/table01")]
         // Cosmos
-        [InlineData("azurecosmos://6ch4pkm5tpniq.documents.azure.com/dbs/myDatabase", 
-                    "/colls/yourContainer", 
+        [InlineData("azurecosmos://6ch4pkm5tpniq.documents.azure.com/dbs/mydatabase", 
+                    "/colls/yourcontainer", 
                     "https://6ch4pkm5tpniq.documents.azure.com/dbs/mydatabase/colls/yourcontainer")]
 
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
