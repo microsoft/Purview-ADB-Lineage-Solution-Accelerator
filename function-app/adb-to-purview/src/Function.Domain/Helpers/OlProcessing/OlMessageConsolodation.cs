@@ -299,11 +299,11 @@ namespace Function.Domain.Helpers
         private bool isDataSourceV2Event(Event olEvent) {
             string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
 
-            foreach (var outp in olEvent.Outputs)
+            foreach (var inp in olEvent.Inputs)
             {
                 foreach (var source in special_cases)
                 {
-                    if (outp.NameSpace.StartsWith(source)) return true;
+                    if (inp.NameSpace.StartsWith(source)) return true;
                 }   
             }
             return false;

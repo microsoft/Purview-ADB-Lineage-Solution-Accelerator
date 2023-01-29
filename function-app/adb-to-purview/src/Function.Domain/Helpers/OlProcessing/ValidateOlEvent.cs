@@ -29,23 +29,23 @@ namespace Function.Domain.Helpers.Parser
             _log = loggerFactory.CreateLogger<ValidateOlEvent>();
         }
 
-/// <summary>
+        /// <summary>
         /// Helper function to determine if the event is one of
         /// the data source v2 ones which needs us to save the 
         /// inputs from the start event
         /// </summary>
-        private bool isDataSourceV2Event(Event olEvent) {
-            string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
+        // private bool isDataSourceV2Event(Event olEvent) {
+        //     string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
 
-            foreach (var outp in olEvent.Outputs)
-            {
-                foreach (var source in special_cases)
-                {
-                    if (outp.NameSpace.StartsWith(source)) return true;
-                }   
-            }
-            return false;
-        }
+        //     foreach (var outp in olEvent.Outputs)
+        //     {
+        //         foreach (var source in special_cases)
+        //         {
+        //             if (outp.NameSpace.StartsWith(source)) return true;
+        //         }   
+        //     }
+        //     return false;
+        // }
 
         /// <summary>
         /// Performs initial validation of OpenLineage input
