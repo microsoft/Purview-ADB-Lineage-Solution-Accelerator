@@ -115,7 +115,7 @@ The solution supports Spark 2 job cluster jobs. Databricks has removed Spark 2 f
 
 ### Spark 3.3+ Support
 
-The solution supports Spark 3.0, 3.1, and 3.2 interactive and job clusters. We are working with the OpenLineage community to enable support of Spark 3.3 on Databricks Runtime 11.0 and higher.
+The solution supports Spark 3.0, 3.1, 3.2, and 3.3 interactive and job clusters. The solution has been tested on the Databricks Runtime 11.3LTS version.
 
 ### Private Endpoints on Microsoft Purview
 

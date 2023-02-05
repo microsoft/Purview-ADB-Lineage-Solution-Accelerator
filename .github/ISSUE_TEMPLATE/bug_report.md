@@ -29,7 +29,7 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows, Mac]
  - OpenLineage Version: [e.g. name of jar]
- - Databricks Runtime Version: [e.g. 6.4, 9.1, 10.1]
+ - Databricks Runtime Version: [e.g. 9.1, 10.1, 11.3]
  - Cluster Type: [e.g. Job, Interactive]
  - Cluster Mode: [e.g. Standard, High Concurrency, Single]
  - Using Credential Passthrough: [e.g. Yes, No]
