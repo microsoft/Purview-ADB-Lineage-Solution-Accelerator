@@ -586,6 +586,17 @@ namespace Function.Domain.Helpers
             string _candidateFQN = candidateQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
             return _entityOfInterestFQN == _candidateFQN;
         }
+
+        // For resource sets, we need to be able to handle the normalization (e.g. 1 gets converted to {N})
+        // In all cases, it appears the pattern needs to be delimited by [-\\.=_@]
+        // That might not be the case for file extensions though? TODO
+        // N: N-text-N/fileN.csv | N_text_N/fileN.csv
+        // Guid: /{GUID}/{GUID}.csv | /text-{GUID}-text/ | /text_{GUID}_text/ | /text{GUID}text/
+        // Hex: /[0-9A-Fa-f]{4}/ | doesn't seem to work if it's in the middle
+        // Date: delimited by [-\\.=_@] /1900-2099/01-12/01-31(anything else)
+        private string[] split_normalizable_qualifiedName(string token){
+            return null;
+        }
     }
 
     /// <summary>
