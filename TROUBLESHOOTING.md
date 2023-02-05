@@ -140,10 +140,10 @@ When reviewing the Driver logs, you see an error in the Log4j output that indica
 * Confirm that `spark.openlineage.version` is set correctly.
 
     |SA Release|OpenLineage Jar|spark.openlineage.version|
-    |----|----|----|
-    |1.0.0|0.8.2|1
-    |1.1.0|0.8.2|1
-    |2.0.0|0.11.0|v1
+    |-----|----|----|
+    |1.0.x|0.8.2|1|
+    |1.1.x|0.8.2|1|
+    |2.x.x or newer|0.11.0 or newer|v1|
 
 ## <a id="pureviewout-load2purview" />PurviewOut Logs: Error Loading to Purview: 403 Forbidden
 
