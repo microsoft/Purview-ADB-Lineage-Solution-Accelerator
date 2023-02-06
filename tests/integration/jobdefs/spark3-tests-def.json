@@ -206,7 +206,11 @@
                 }
             ],
             "notebook_task": {
+<<<<<<< HEAD
                 "notebook_path": "/Shared/examples/wasbs-in-kusto-out",
+=======
+                "notebook_path": "/Shared/examples/Test Kusto Write",
+>>>>>>> e14c399 (Implemented Kusto support and added unit and integration tests)
                 "source": "WORKSPACE"
             },
             "existing_cluster_id": "0104-045638-iaecf5ne",
@@ -239,7 +243,7 @@
                 "notebook_path": "/Shared/examples/postgres-in-postgres-out",
                 "source": "WORKSPACE"
             },
-            "existing_cluster_id": "0104-045638-iaecf5ne",
+            "existing_cluster_id": "<CLUSTER_ID>",
             "timeout_seconds": 0,
             "email_notifications": {}
         },
@@ -254,7 +258,7 @@
                 "notebook_path": "/Shared/examples/mysql-in-mysql-out",
                 "source": "WORKSPACE"
             },
-            "existing_cluster_id": "0104-045638-iaecf5ne",
+            "existing_cluster_id": "<CLUSTER_ID>",
             "timeout_seconds": 0,
             "email_notifications": {}
         }

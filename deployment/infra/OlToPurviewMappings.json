@@ -395,6 +395,19 @@
             "qualifiedName": "mysql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0]}",
             "purviewDataType": "azure_mysql_table",
             "purviewPrefix": "mysql"
+        },
+        {
+            "name": "kusto",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "azurekusto"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[0]}/{nameSpcBodyParts[1]}/{nameGroups[0]}",
+            "purviewDataType": "azure_data_explorer_table", 
+            "purviewPrefix": "https"
         }
     ]
 }

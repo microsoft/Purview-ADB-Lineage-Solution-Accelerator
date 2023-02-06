@@ -124,6 +124,10 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("postgresql://10.2.0.4:5432/postgres", 
             "myschema.table01", 
             "postgresql://servers/10.2.0.4:5432/dbs/postgres/schemas/myschema/tables/table01")]
+        // Azure Data Explorer (Kusto)
+        [InlineData("azurekusto://qpll4l5hchczm.eastus2.kusto.windows.net/database01", 
+                    "table01", 
+                    "https://qpll4l5hchczm.eastus2.kusto.windows.net/database01/table01")]
 
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
         {
