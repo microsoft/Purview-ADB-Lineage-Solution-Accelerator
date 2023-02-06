@@ -10,8 +10,12 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure Synapse SQL Pools](#azure-synapse-sql-pools)
 * [Azure SQL DB](#azure-sql-db)
 * [Delta Lake](#delta-lake-file-format)
+<<<<<<< HEAD
 * [Azure MySQL](#azure-mysql)
 * [PostgreSQL](#postgresql)
+=======
+* [Azure Data Explorer](#azure-data-explorer)
+>>>>>>> e14c399 (Implemented Kusto support and added unit and integration tests)
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
 
 ## Connecting to Assets in Purview
@@ -85,6 +89,9 @@ Supports both Azure PostgreSQL and on-prem/VM installations of PostgreSQL throug
   * This can be corrected by specifying the database schema in the Spark job.
 * Default configuration supports using multiple strings divided by dots to define a custom schema.  For example ```myschema.mytable```.
 * If you register and scan your postgres server as `localhost` in Microsoft Purview, but use the IP within the Databricks notebook, the assets will not be matched correctly. You need to use the IP when registering the Postgres server.  
+## Azure Data Explorer
+
+Supports Azure Data Explorer (aka Kusto) through the [Azure Data Explorer Connector for Apache Spark](https://learn.microsoft.com/en-us/azure/data-explorer/spark-connector)
 
 ## Other Data Sources and Limitations
 
