@@ -42,6 +42,10 @@ Add Key Vault Secrets
   * `mysql-username` of the form `username@servername`
   * `mysql-password`
   * `mysql-hostname` the server name of the Azure MySQL resource
+  * `postgres-admin-user` should be of the form `username@servername`
+  * `postgres-admin-password`
+  * `postgres-host` - the server name of the deployed postgres server
+
 * Update SQL Db and Synapse Server with AAD Admin
 * Add Service Principal for Databricks to connect to SQL sources
 

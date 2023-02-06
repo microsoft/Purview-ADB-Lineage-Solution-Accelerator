@@ -11,6 +11,7 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure SQL DB](#azure-sql-db)
 * [Delta Lake](#delta-lake-file-format)
 * [Azure MySQL](#azure-mysql)
+* [PostgreSQL](#postgresql)
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
 
 ## Connecting to Assets in Purview
@@ -75,6 +76,15 @@ Supports [Delta File Format](https://delta.io/).
 ## Azure MySQL
 
 Supports Azure MySQL through [JDBC](https://learn.microsoft.com/en-us/azure/databricks/external-data/jdbc).
+## PostgreSQL
+
+Supports both Azure PostgreSQL and on-prem/VM installations of PostgreSQL through [JDBC](https://learn.microsoft.com/en-us/azure/databricks/external-data/jdbc).
+
+* If you specify the `dbTable` value without the database schema (e.g. `dbo`), the connector assumes you are using the default `public` schema.
+  * For users and Service Principals with different default schemas, this may result in incorrect lineage.
+  * This can be corrected by specifying the database schema in the Spark job.
+* Default configuration supports using multiple strings divided by dots to define a custom schema.  For example ```myschema.mytable```.
+* If you register and scan your postgres server as `localhost` in Microsoft Purview, but use the IP within the Databricks notebook, the assets will not be matched correctly. You need to use the IP when registering the Postgres server.  
 
 ## Other Data Sources and Limitations
 
