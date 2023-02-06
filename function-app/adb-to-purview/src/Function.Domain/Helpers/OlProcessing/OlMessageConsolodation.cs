@@ -244,6 +244,7 @@ namespace Function.Domain.Helpers
 
             // Check if saved any inputs from the START event (will only be done for events containing DataSourceV2 sources)
             if (te_inputs is not null) {
+                // TODO: Possible source of error.
                 var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
 
                 if (saved_inputs is null) {
