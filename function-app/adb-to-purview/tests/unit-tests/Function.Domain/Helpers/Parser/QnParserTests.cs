@@ -108,6 +108,22 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("mysql://fikz4nmpfka4s.mysql.database.azure.com:3306/mydatabase", 
                     "fruits", 
                     "mysql://fikz4nmpfka4s.mysql.database.azure.com/mydatabase/fruits")]
+        // Azure Postgres Public
+        [InlineData("postgresql://gqhfuzgnrmpzw.postgres.database.azure.com:5432/postgres", 
+            "people", 
+            "postgresql://gqhfuzgnrmpzw.postgres.database.azure.com/postgres/public/people")]
+        // Azure Postgres Non Public
+        [InlineData("postgresql://gqhfuzgnrmpzw.postgres.database.azure.com:5432/postgres", 
+            "myschema.people", 
+            "postgresql://gqhfuzgnrmpzw.postgres.database.azure.com/postgres/myschema/people")]
+        // Postgres Public
+        [InlineData("postgresql://10.2.0.4:5432/postgres", 
+            "table01", 
+            "postgresql://servers/10.2.0.4:5432/dbs/postgres/schemas/public/tables/table01")]
+        // Postgres Non Public
+        [InlineData("postgresql://10.2.0.4:5432/postgres", 
+            "myschema.table01", 
+            "postgresql://servers/10.2.0.4:5432/dbs/postgres/schemas/myschema/tables/table01")]
 
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
         {
