@@ -104,6 +104,10 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("sqlserver://purviewadbsynapsews.sql.azuresynapse.net:1433;database=SQLPool1;", 
                     "sales.region", 
                     "mssql://purviewadbsynapsews.sql.azuresynapse.net/SQLPool1/sales/region")]
+        // Azure MySQL
+        [InlineData("mysql://fikz4nmpfka4s.mysql.database.azure.com:3306/mydatabase", 
+                    "fruits", 
+                    "mysql://fikz4nmpfka4s.mysql.database.azure.com/mydatabase/fruits")]
 
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
         {

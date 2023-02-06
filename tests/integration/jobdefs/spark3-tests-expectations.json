@@ -40,5 +40,8 @@
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/nested-parent",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-in-wasbs-out",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-wasbs-in-synapse-out",
-  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/wasbs-in-wasbs-out"
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/wasbs-in-wasbs-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/mysql-in-mysql-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/mysql-in-mysql-out/processes/1F6965315A6049825A37C4AD085BD605->A08160B244AF828E1FDB80AC8D14FA96",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/mysql-in-mysql-out"
 ]

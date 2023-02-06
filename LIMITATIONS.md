@@ -10,6 +10,7 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure Synapse SQL Pools](#azure-synapse-sql-pools)
 * [Azure SQL DB](#azure-sql-db)
 * [Delta Lake](#delta-lake-file-format)
+* [Azure MySQL](#azure-mysql)
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
 
 ## Connecting to Assets in Purview
@@ -70,6 +71,10 @@ Supports [Delta File Format](https://delta.io/).
 * Does not support Delta on Spark 2 Databricks Runtimes.
 * Does not currently support the MERGE INTO statement due to differences between proprietary Databricks and Open Source Delta implementations.
 * Commands such as [Vacuum](https://docs.delta.io/latest/delta-utility.html#toc-entry-1) or [Optimize](https://docs.microsoft.com/en-us/azure/databricks/spark/latest/spark-sql/language-manual/delta-optimize) do not emit any lineage information and will not result in a Purview asset.
+
+## Azure MySQL
+
+Supports Azure MySQL through [JDBC](https://learn.microsoft.com/en-us/azure/databricks/external-data/jdbc).
 
 ## Other Data Sources and Limitations
 

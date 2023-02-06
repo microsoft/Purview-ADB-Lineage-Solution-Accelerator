@@ -197,6 +197,66 @@
             "existing_cluster_id": "<CLUSTER_ID>",
             "timeout_seconds": 0,
             "email_notifications": {}
+        },
+        {
+            "task_key": "wasbs-in-kusto-out",
+            "depends_on": [
+                {
+                    "task_key": "output-with-period"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/wasbs-in-kusto-out",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "0104-045638-iaecf5ne",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "kusto-in-wasbs-out",
+            "depends_on": [
+                {
+                    "task_key": "wasbs-in-kusto-out"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/kusto-in-wasbs-out",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "0104-045638-iaecf5ne",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "postgres-in-postgres-out",
+            "depends_on": [
+                {
+                    "task_key": "kusto-in-wasbs-out"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/postgres-in-postgres-out",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "0104-045638-iaecf5ne",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "mysql-in-mysql-out",
+            "depends_on": [
+                {
+                    "task_key": "postgres-in-postgres-out"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/mysql-in-mysql-out",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "0104-045638-iaecf5ne",
+            "timeout_seconds": 0,
+            "email_notifications": {}
         }
     ],
     "format": "MULTI_TASK"
