@@ -28,6 +28,8 @@ Add Service Principal as user in Databricks.
 
 Enable mount points with `./tests/environment/dbfs/mounts.py`
 
+Install mysql:mysql-connector-java:8.0.30 (version may vary based on cluster config) on the cluster.
+
 Add Key Vault Secrets
   * `tenant-id`
   * `storage-service-key`
@@ -37,6 +39,9 @@ Add Key Vault Secrets
   * `synapse-storage-key`
   * `synapse-query-username`
   * `synapse-query-password`
+  * `mysql-username` of the form `username@servername`
+  * `mysql-password`
+  * `mysql-hostname` the server name of the Azure MySQL resource
 * Update SQL Db and Synapse Server with AAD Admin
 * Add Service Principal for Databricks to connect to SQL sources
 
