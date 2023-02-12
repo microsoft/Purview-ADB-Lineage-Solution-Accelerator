@@ -88,16 +88,14 @@ namespace Function.Domain.Services
 
                 foreach (JObject entity in entities)
                 {
-
-
-                    if (Validate_Process_Json(entity))
+                    if (IsProcessEntity(entity))
                     {
                         JObject new_entity = await Validate_Process_Entities(entity);
                         to_purview_Json.Add(new_entity);
                     }
                     else
                     {
-                        if (Validate_Entities_Json(entity))
+                        if (EntityAttributesHaveBeenPopulated(entity))
                         {
                             PurviewCustomType new_entity = await Validate_Entities(entity);
                             //Check Entity Relatioship
@@ -224,24 +222,20 @@ namespace Function.Domain.Services
             _logger.LogInformation($"Payload already registered in Microsoft Purview: {json.ToString()}");
             return false;
         }
-        private bool Validate_Entities_Json(JObject Process)
+        private bool EntityAttributesHaveBeenPopulated(JObject questionableEntity)
         {
-            if (!Process.ContainsKey("typeName"))
+            if (!questionableEntity.ContainsKey("typeName"))
             {
                 return false;
             }
-            /*            if (!Process.ContainsKey("guid"))
-                        {
-                            return false;
-                        }*/
-            if (!Process.ContainsKey("attributes"))
+            if (!questionableEntity.ContainsKey("attributes"))
             {
                 return false;
             }
-            if (Process["attributes"]!.GetType() != typeof(JObject))
+            if (questionableEntity["attributes"]!.GetType() != typeof(JObject))
                 return false;
 
-            if (!((JObject)Process["attributes"]!).ContainsKey("qualifiedName"))
+            if (!((JObject)questionableEntity["attributes"]!).ContainsKey("qualifiedName"))
             {
                 return false;
             }
@@ -402,7 +396,7 @@ namespace Function.Domain.Services
             }
             return Process;
         }
-        private bool Validate_Process_Json(JObject Process)
+        private bool IsProcessEntity(JObject Process)
         {
             var _typename = get_attribute("typeName", Process);
             if (_typename == null)
@@ -419,7 +413,7 @@ namespace Function.Domain.Services
 
             if (!((JObject)Process["attributes"]!).ContainsKey("columnMapping"))
             {
-                _logger.LogInformation($"Not found Attribute columnMapping on {Process.ToString()} i is not a Process Entity!");
+                _logger.LogInformation($"Not found Attribute columnMapping on {Process.ToString()} is not a Process Entity!");
                 return false;
             }
 
