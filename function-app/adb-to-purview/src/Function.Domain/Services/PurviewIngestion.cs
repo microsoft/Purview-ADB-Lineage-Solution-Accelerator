@@ -23,17 +23,13 @@ namespace Function.Domain.Services
     /// </summary>
     public class PurviewIngestion : IPurviewIngestion
     {
-        private bool useResourceSet = bool.Parse(Environment.GetEnvironmentVariable("useResourceSet") ?? "true");
         private PurviewClient _purviewClient;
         private Int64 initGuid = -1000;
-        //stores all mappings of columns for Origin and destination assets
-        private Hashtable columnmapping = new Hashtable();
         //flag use to mark if a data Asset is a Dummy type
         private Dictionary<string, PurviewCustomType> entities = new Dictionary<string, PurviewCustomType>();
         List<PurviewCustomType> inputs_outputs = new List<PurviewCustomType>();
         private JArray to_purview_Json = new JArray();
         private readonly ILogger<PurviewIngestion> _logger;
-        private List<PurviewCustomType> found_entities = new List<PurviewCustomType>();
         private MemoryCache _payLoad = MemoryCache.Default;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         private CacheItemPolicy cacheItemPolicy;
@@ -80,7 +76,7 @@ namespace Function.Domain.Services
 
             if (entities == null)
             {
-                Log("Error", "Not found Attribute entities on " + json.ToString());
+                _logger.LogError("Not found Attribute entities on " + json.ToString());
                 return false;
             }
 
@@ -164,42 +160,42 @@ namespace Function.Domain.Services
                     }
                     payload = "{\"entities\": " + tempEntities.ToString() + "}";
                     JObject? Jpayload = JObject.Parse(payload);
-                    Log("Info", $"Input/Output Entities to load: {Jpayload.ToString()}");
+                    _logger.LogInformation($"Input/Output Entities to load: {Jpayload.ToString()}");
                     results = await _purviewClient.Send_to_Purview(payload);
                     if (results != null)
                     {
                         if (results.ReasonPhrase != "OK")
                         {
-                            Log("Error", $"Error Loading Input/Outputs to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                            _logger.LogError($"Error Loading Input/Outputs to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                         else
                         {
                             var data = await results.Content.ReadAsStringAsync();
-                            Log("Info", $"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
+                            _logger.LogInformation($"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
                         }
                     }
                     else
                     {
-                        Log("Error", $"Error Loading to Purview!");
+                        _logger.LogError($"Error Loading to Purview!");
                     }
                 }
                 if (to_purview_Json.Count > 0)
                 {
-                    Log("Debug", to_purview_Json.ToString());
+                    _logger.LogDebug(to_purview_Json.ToString());
                     payload = "{\"entities\": " + to_purview_Json.ToString() + "}";
                     JObject? Jpayload = JObject.Parse(payload);
-                    Log("Info", $"To Purview Json Entities to load: {Jpayload.ToString()}");
+                    _logger.LogInformation($"To Purview Json Entities to load: {Jpayload.ToString()}");
                     results = await _purviewClient.Send_to_Purview(payload);
                     if (results != null)
                     {
                         if (results.ReasonPhrase != "OK")
                         {
-                            Log("Error", $"Error Loading to Purview JSON Entiitesto Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                            _logger.LogError($"Error Loading to Purview JSON Entiitesto Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                     }
                     else
                     {
-                        Log("Error", $"Error Loading to Purview!");
+                        _logger.LogError($"Error Loading to Purview!");
                     }
                     foreach (var entity in this.entities)
                     {
@@ -211,12 +207,12 @@ namespace Function.Domain.Services
                 {
                     if (json.Count > 0)
                     {
-                        Log("INFO", $"Payload: {json}");
-                        Log("Error", "Nothing found to load on to Purview, look if the payload is empty.");
+                        _logger.LogInformation($"Payload: {json}");
+                        _logger.LogError("Nothing found to load on to Purview, look if the payload is empty.");
                     }
                     else
                     {
-                        Log("Error", "No Purview entity to load");
+                        _logger.LogError("No Purview entity to load");
                     }
                     foreach (var entity in this.entities)
                     {
@@ -225,7 +221,7 @@ namespace Function.Domain.Services
                     return false;
                 }
             }
-            Log("INFO", $"Payload already registered in Microsoft Purview: {json.ToString()}");
+            _logger.LogInformation($"Payload already registered in Microsoft Purview: {json.ToString()}");
             return false;
         }
         private bool Validate_Entities_Json(JObject Process)
@@ -275,24 +271,34 @@ namespace Function.Domain.Services
             String proctype = Process["typeName"]!.ToString();
             if (sourceEntity.Properties.ContainsKey("typeName")){
                 String sourcetype = sourceEntity.Properties["typeName"]!.ToString();
-                Log("Info", $"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was {sourcetype}");
+                _logger.LogInformation($"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was {sourcetype}");
             }else{
-                Log("Info", $"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was not set");
+                _logger.LogInformation($"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was not set");
             }
 
             if (sourceEntity.is_dummy_asset)
             {
-                Log("Info", "IN DUMMY ASSET AND ABOUT TO OVERWRITE");
+                _logger.LogInformation("IN DUMMY ASSET AND ABOUT TO OVERWRITE");
                 sourceEntity.Properties["typeName"] = Process["typeName"]!.ToString();
                 if (!entities.ContainsKey(qualifiedName))
                     entities.Add(qualifiedName, sourceEntity);
-                Log("Info", $"Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
+                _logger.LogInformation($"Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
                 return sourceEntity;
             }
             if (!entities.ContainsKey(qualifiedName))
                 entities.Add(qualifiedName, sourceEntity);
             return sourceEntity;
         }
+
+        /// <summary>
+        /// Transform the provided JSON object (an input or output entity for a Purview process).
+        /// This entity will have their qualified name and type updated based on searching for
+        /// an existing entity in the purview instance.
+        /// In addition the entity is added to the inputs_outputs property of PurviewIngestion.
+        /// </summary>
+        /// <param name="outPutInput">Json Object</param>
+        /// <param name="inorout">Should be either 'inputs' or 'outputs'</param>
+        /// <returns>A PurviewCustomType</returns>
         private async Task<PurviewCustomType> SetOutputInput(JObject outPutInput, string inorout)
         {
 
@@ -320,7 +326,7 @@ namespace Function.Domain.Services
                 outPutInput["uniqueAttributes"]!["qualifiedName"] = sourceEntity.Properties!["attributes"]!["qualifiedName"]!.ToString().ToLower();
 
                 inputs_outputs.Add(sourceEntity);
-                Log("Info", $"{inorout} Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
+                _logger.LogInformation($"{inorout} Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
             }
             else
             {
@@ -401,19 +407,19 @@ namespace Function.Domain.Services
             var _typename = get_attribute("typeName", Process);
             if (_typename == null)
             {
-                Log("Info", "Not found Attribute typename on " + Process.ToString());
+                _logger.LogInformation("Not found Attribute typename on " + Process.ToString());
                 return false;
             }
             var _attributes = get_attribute("attributes", Process);
             if (!_attributes.HasValues)
             {
-                Log("Error", "Not found Attribute attributes on " + Process.ToString());
+                _logger.LogError("Not found Attribute attributes on " + Process.ToString());
                 return false;
             }
 
             if (!((JObject)Process["attributes"]!).ContainsKey("columnMapping"))
             {
-                Log("Info", $"Not found Attribute columnMapping on {Process.ToString()} i is not a Process Entity!");
+                _logger.LogInformation($"Not found Attribute columnMapping on {Process.ToString()} i is not a Process Entity!");
                 return false;
             }
 
@@ -442,31 +448,6 @@ namespace Function.Domain.Services
 
             return initGuid--;
         }
-
-        private void Remove_Unused_Dummy_Entitites()
-        {
-            foreach (var entity in this.entities)
-            {
-
-            }
-        }
-
-        private void Log(string type, string msg)
-        {
-            if (type.ToUpper() == "ERROR")
-            { _logger.LogError(msg); return; }
-            if (type.ToUpper() == "INFO")
-            { _logger.LogInformation(msg); return; }
-            if (type.ToUpper() == "DEBUG")
-            { _logger.LogDebug(msg); return; }
-            if (type.ToUpper() == "WARNING")
-            { _logger.LogWarning(msg); return; }
-            if (type.ToUpper() == "CRITICAL")
-            { _logger.LogCritical(msg); return; }
-            if (type.ToUpper() == "TRACE")
-            { _logger.LogInformation(msg); return; }
-        }
-
         private static string CalculateHash(string payload)
         {
             var newKey = Encoding.UTF8.GetBytes(payload);
@@ -484,12 +465,4 @@ namespace Function.Domain.Services
         }
     }
 
-    /// <summary>
-    /// Enumeration of the Microsoft Purview Process entity relationships
-    /// </summary>
-    public enum Relationships_Type
-    {
-        inputs,
-        outputs
-    }
 }
