@@ -86,36 +86,33 @@ namespace Function.Domain.Services
                 var cacheItem = new CacheItem(dataEvent, dataEvent);  
                 _payLoad.Add(cacheItem, cacheItemPolicy);
 
-                foreach (JObject entity in entities)
+                foreach (JObject purviewEntityToBeUpdated in entities)
                 {
-                    if (IsProcessEntity(entity))
+                    if (IsProcessEntity(purviewEntityToBeUpdated))
                     {
-                        JObject new_entity = await Validate_Process_Entities(entity);
+                        JObject new_entity = await Validate_Process_Entities(purviewEntityToBeUpdated);
                         to_purview_Json.Add(new_entity);
                     }
                     else
                     {
-                        if (EntityAttributesHaveBeenPopulated(entity))
+                        if (EntityAttributesHaveBeenPopulated(purviewEntityToBeUpdated))
                         {
-                            PurviewCustomType new_entity = await Validate_Entities(entity);
-                            //Check Entity Relatioship
-                            //                        if (new_entity.is_dummy_asset)
-                            //                            to_purview_Json.Add(new_entity.Properties);
+                            PurviewCustomType new_entity = await Validate_Entities(purviewEntityToBeUpdated);
 
-                            string qualifiedName = entity["attributes"]!["qualifiedName"]!.ToString();
-                            if (entity.ContainsKey("relationshipAttributes"))
+                            string qualifiedName = purviewEntityToBeUpdated["attributes"]!["qualifiedName"]!.ToString();
+                            if (purviewEntityToBeUpdated.ContainsKey("relationshipAttributes"))
                             {
-                                foreach (var rel in entity["relationshipAttributes"]!.Values<JProperty>())
+                                foreach (var rel in purviewEntityToBeUpdated["relationshipAttributes"]!.Values<JProperty>())
                                 {
-                                    if (((JObject)(entity["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
+                                    if (((JObject)(purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
                                     {
-                                        if (this.entities.ContainsKey(entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()))
+                                        if (this.entities.ContainsKey(purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()))
                                         {
-                                            entity["relationshipAttributes"]![rel!.Name]!["guid"] = this.entities[entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()].Properties["guid"];
+                                            purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = this.entities[purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()].Properties["guid"];
                                         }
                                         else
                                         {
-                                            string qn = entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
+                                            string qn = purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
                                             PurviewCustomType sourceEntity = new PurviewCustomType("search relationship"
                                                 , ""
                                                 , qn
@@ -130,17 +127,27 @@ namespace Function.Domain.Services
 
                                             if (!this.entities.ContainsKey(qn))
                                                 this.entities.Add(qn, sourceEntity);
-                                            entity["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
+                                            purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
 
                                         }
 
                                     }
                                 }
                             }
-                            to_purview_Json.Add(entity);
+                            to_purview_Json.Add(purviewEntityToBeUpdated);
                         }
                     }
                 }
+
+
+
+
+
+
+
+
+
+
 
                 HttpResponseMessage results;
                 string? payload = "";
