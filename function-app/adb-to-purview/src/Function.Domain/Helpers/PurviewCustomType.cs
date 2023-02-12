@@ -447,7 +447,12 @@ namespace Function.Domain.Helpers
                             validEntities.Insert(0,entity);
                             continue;
                         }
-
+                        // If the first valid entity is the default generic entity, insert
+                        // this match into the first position and continue. This helps when
+                        // there is a folder matching but the generic entity is higher up in search
+                        if (validEntities[0].entityType == EntityType){
+                            validEntities.Insert(0,entity);
+                        }
                     }
                     // Fall through: We know the qualified name matches but it's either the first
                     // valid entity OR it's not attached to any Azure Data Factory process
