@@ -396,25 +396,6 @@ namespace Function.Domain.Services
             }
             return Process;
         }
-        private async Task<PurviewCustomType> Validate_Resource_Set(string qualifiedName)
-        {
-            string[] tmpName = qualifiedName.Split('/');
-            string Name = tmpName[tmpName.Length - 1];
-            if (Name == "")
-                Name = tmpName[tmpName.Length - 2];
-            string typeName = "azure_datalake_gen2_resource_set";
-            PurviewCustomType sourceEntity = new PurviewCustomType(Name
-            , typeName
-            , qualifiedName
-            , typeName
-            , $"Data Assets {Name}"
-            , NewGuid()
-            , _logger
-            , _purviewClient);
-
-            var outputObj = await sourceEntity.QueryInPurview();
-            return sourceEntity;
-        }
         private bool Validate_Process_Json(JObject Process)
         {
             var _typename = get_attribute("typeName", Process);
