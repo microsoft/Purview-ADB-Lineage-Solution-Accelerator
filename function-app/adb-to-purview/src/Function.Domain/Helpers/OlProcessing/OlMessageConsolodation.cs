@@ -185,15 +185,17 @@ namespace Function.Domain.Helpers
                 return false;
             }
 
-            TableEntity te;
-            TableEntity te_inputs;
+            TableEntity te = null;
+            TableEntity te_inputs = null;
+
+            bool ret_val = true;
 
             // Processing time can sometimes cause complete events 
             int retryCount = 4;
             int currentRetry = 0;
             TimeSpan delay = TimeSpan.FromSeconds(1);
 
-            while (true)
+            while (ret_val)
             {
                 try
                 {
@@ -206,7 +208,8 @@ namespace Function.Domain.Helpers
                     _log.LogWarning($"Start event was missing, retrying to consolidate message. Retry count: {currentRetry}");
                     if (currentRetry > retryCount)
                     {
-                        return false;
+                        ret_val = false;
+                        break;
                     }
                 }
                 await Task.Delay(delay);
@@ -214,7 +217,7 @@ namespace Function.Domain.Helpers
 
             // Get inputs. Todo: Check if more efficient to get inputs within the same while loop above. Can we get 2 entities at the same time? 
             currentRetry = 0;
-            while (true)
+            while (ret_val) // ret_val instead of just true, because if didn't have the env_facet then don't bother getting inputs either
             {
                 try
                 {
@@ -227,7 +230,8 @@ namespace Function.Domain.Helpers
                     _log.LogWarning($"Start event was missing, retrying to consolidate message to get inputs. Retry count: {currentRetry}");
                     if (currentRetry > retryCount)
                     {
-                        return false;
+                        ret_val = false;
+                        break;
                     }
                 }
                 await Task.Delay(delay);
@@ -238,28 +242,53 @@ namespace Function.Domain.Helpers
                 if (envFacet is null)
                 {
                     _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning environment facet for COMPLETE event is null");
-                    return false;
+                    ret_val = false;
                 }
                 olEvent.Run.Facets.EnvironmentProperties = envFacet;
 
             // Check if saved any inputs from the START event (will only be done for events containing DataSourceV2 sources)
             if (te_inputs is not null) {
                 // TODO: Possible source of error.
-                var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
+                if (te_inputs.ContainsKey("Inputs")){
+                    _log.LogInformation($"New Code #1");
+                    try {
+                        var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
+                        _log.LogInformation($"New Code #1.1");
+                        _log.LogInformation("Inputs in dictionary? ", te_inputs.ContainsKey("Inputs").ToString());
 
-                if (saved_inputs is null) {
-                        _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning: no inputs found for datasource v2 COMPLETE event");
-                        return false;
+                        if (saved_inputs is null) {
+                            // Unecessary check?
+                            _log.LogInformation($"OlMessageConsolodation-JoinEventData: No inputs found for COMPLETE event");
+                            //ret_val = false;
+                        }
+
+                        else {
+                            // Check inputs saved against inputs captured in this COMPLETE event and combine while removing any duplicates.
+                            // Checking for duplicates needed since we save all the inputs captured from the START event. Perhaps it may be better to 
+                            // only save the DataSourceV2 inputs?
+                            var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
+                            inputs.AddRange(saved_inputs);
+                            inputs.AddRange(olEvent.Inputs);
+                            var unique_inputs = inputs.Distinct();
+                            olEvent.Inputs = unique_inputs.ToList();
+                            _log.LogInformation($"OlMessageConsolodation-JoinEventData: Captured inputs for COMPLETE event");
+                        }
+                    }
+                    catch (System.Exception ex) {
+                        _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deserializing inputs");
+                        ret_val = false;
+                    }
+                    
+
+                    
                 }
 
-                // Check inputs saved against inputs captured in this COMPLETE event and combine while removing any duplicates.
-                // Checking for duplicates needed since we save all the inputs captured from the START event. Perhaps it may be better to 
-                // only save the DataSourceV2 inputs?
-                var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
-                inputs.AddRange(saved_inputs);
-                inputs.AddRange(olEvent.Inputs);
-                var unique_inputs = inputs.Distinct();
-                olEvent.Inputs = unique_inputs.ToList();
+                else {
+                    _log.LogInformation($"New Code #2");
+                    _log.LogInformation($"OlMessageConsolodation-JoinEventData: No inputs found for COMPLETE event");
+                    //ret_val = false;
+                }
+                
             }
 
             // clean up table over time. 
@@ -275,10 +304,10 @@ namespace Function.Domain.Helpers
             // If no inputs were saved from the start event, then we need to make sure we're only processing this COMPLETE event
             // if it has both inputs and outputs (reflects original logic, prior to supporting DataSourceV2 events)
             if (te_inputs is null && !(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)) {
-                return false;
+                ret_val = false;
             }
 
-            return true;
+            return ret_val;
         }
 
         // Returns true if olEvent is of type START and has the environment facet

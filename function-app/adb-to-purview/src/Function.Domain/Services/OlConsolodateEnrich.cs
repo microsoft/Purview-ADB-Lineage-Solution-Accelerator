@@ -93,18 +93,26 @@ namespace Function.Domain.Services
                 // consolidate and enrich the complete event if possible
                 else if (_event.EventType == COMPLETE_EVENT_TYPE)
                 {
+                    _logger.LogInformation("is COMPLETE_EVENT_TYPE #1");
                     var consolodatedEvent = await olMessageConsolodation.ConsolodateCompleteEvent(_event, _event.Run.RunId);
                     if (consolodatedEvent == null)
                     {
+                        _logger.LogInformation("is COMPLETE_EVENT_TYPE #2");
                         return null;
                     }
                     else
                     {
+                        _logger.LogInformation("is COMPLETE_EVENT_TYPE #3");
                         var enrichedEvent = await olEnrichMessage.GetEnrichedEvent(consolodatedEvent);
+                        _logger.LogInformation("is COMPLETE_EVENT_TYPE #4");
+
                         if (enrichedEvent == null)
                         {
+                            _logger.LogInformation("is COMPLETE_EVENT_TYPE #5");
                             return null;
                         }
+                        _logger.LogInformation("is COMPLETE_EVENT_TYPE #6");
+
                         return enrichedEvent;
                     }
                 }
