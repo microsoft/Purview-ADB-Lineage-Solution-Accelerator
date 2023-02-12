@@ -7,7 +7,6 @@ using System.Collections.Generic;
 
 namespace Function.Domain.Helpers
 {
-    //Interface for ColParser.cs
     public interface IColParser
      {
         public List<ColumnLevelAttributes> GetColIdentifiers();
