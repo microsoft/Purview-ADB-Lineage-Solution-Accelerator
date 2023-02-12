@@ -113,6 +113,28 @@ namespace Function.Domain.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Validate if the entity is a Blob or Data Lake entity type but not a resource set
+        /// </summary>
+        /// <param name="typeName">Type name</param>
+        /// <returns>boolean</returns>
+        public bool IsBlobOrDataLakeFS_Entity(string typeName)
+        {
+            string typeNameLowercase = typeName.ToLower();
+            return ((typeNameLowercase == "azure_blob_path") || (typeNameLowercase == "azure_datalake_gen2_path") || (typeNameLowercase == "azure_datalake_gen2_filesystem"));
+        }
+
+        /// <summary>
+        /// Validate if the entity is a Blob or Data Lake resource type but not a file path or system type
+        /// </summary>
+        /// <param name="typeName">Type name</param>
+        /// <returns>boolean</returns>
+        public bool IsBlobOrDataLakeResourceSet_Entity(string typeName)
+        {
+            string typeNameLowercase = typeName.ToLower();
+            return ((typeNameLowercase == "azure_datalake_gen2_resource_set") || (typeNameLowercase == "azure_blob_resource_set"));
+        }
+
         private void Init(string name, string typeName, string qualified_name, string data_type, string description, Int64 guid)
         {
             is_dummy_asset = false;
@@ -385,11 +407,11 @@ namespace Function.Domain.Helpers
                         validEntities.Add(entity);
                     }
 
-                string qualifiedNameToCompare = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
-                if ((entity.entityType == "azure_datalake_gen2_resource_set") || (entity.entityType == "azure_blob_resource_set"))
+                string searchResultComparableQualifiedName = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
+                if (IsBlobOrDataLakeResourceSet_Entity(entity.entityType))
                 {
-                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {qualifiedNameToCompare}");
-                    if (ResourceSet_QualifiedNames_Match(this.to_compare_QualifiedName, qualifiedNameToCompare))
+                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {searchResultComparableQualifiedName}");
+                    if (QualifiedNames_Match_After_Normalizing(this.to_compare_QualifiedName, searchResultComparableQualifiedName))
                     {
                         _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS FQN comparison is true");
                         // In case where the search score is the same for multiple values, we cannot trust Microsoft Purview's ordering.
@@ -409,50 +431,23 @@ namespace Function.Domain.Helpers
                     }
                     
                 }
-                else
+                else if (QualifiedNames_Match_After_Normalizing(this.to_compare_QualifiedName, searchResultComparableQualifiedName))
                 {
-                    if (qualifiedNameToCompare.ToLower().Trim('/') == this.to_compare_QualifiedName.ToLower().Trim('/'))
+                    if (IsBlobOrDataLakeFS_Entity(entity.entityType))
                     {
-                        if ((entity.entityType.ToLower() == "azure_blob_path") || (entity.entityType.ToLower() == "azure_datalake_gen2_path") || (entity.entityType.ToLower() == "azure_datalake_gen2_filesystem"))
+                        // If there are already some entities, we might want to jump the line if
+                        // this entity is attached to an adf process in any way.
+                        if (validEntities.Count > 0)
                         {
-                            if (validEntities.Count > 0)
-                            {
-                                JObject folder = await _client.GetByGuid(entity.id);
-                                if (folder.ContainsKey("entity"))
-                                {
-                                    if (((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!).Count > 0)
-                                    {
-                                        foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!))
-                                        {
-                                            if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
-                                            {
-                                                validEntities = new List<QueryValeuModel>();
-                                                validEntities.Add(entity);
-                                                return validEntities;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!).Count > 0)
-                                        {
-                                            foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!))
-                                            {
-                                                if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
-                                                {
-                                                    validEntities = new List<QueryValeuModel>();
-                                                    validEntities.Add(entity);
-                                                    return validEntities;
-                                                }
-                                            }
-                                        }
-
-                                    }
-                                }
+                            JObject folder = await _client.GetByGuid(entity.id);
+                            if (IsInputOrOutputOfAzureDataFactoryEntity(folder)){
+                                _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Discovered entity is part of an ADF process and has been inserted first");
+                                validEntities.Insert(0,entity);
+                                continue;
                             }
                         }
-                        validEntities.Add(entity);
                     }
+                    validEntities.Add(entity);
                 }
             }
             return validEntities;
@@ -581,10 +576,45 @@ namespace Function.Domain.Helpers
         // For resource sets, since Microsoft Purview cannot register the same storage account for
         // both ADLS G2 and Blob Storage, we need to match against either pattern (dfs.core.windows.net
         // or blob.core.windows.net) since we cannot be certain which one the end user has scanned.
-        private bool ResourceSet_QualifiedNames_Match(string entityOfInterestQualifiedName, string candidateQualifiedName){
-            string _entityOfInterestFQN = entityOfInterestQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
-            string _candidateFQN = candidateQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
+        private bool QualifiedNames_Match_After_Normalizing(string entityOfInterestQualifiedName, string candidateQualifiedName)
+        {
+            string _entityOfInterestFQN = entityOfInterestQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","").Trim('/');
+            string _candidateFQN = candidateQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","").Trim('/');
             return _entityOfInterestFQN == _candidateFQN;
+        }
+
+        // Given an entity (presumably a blob or data lake folder), check to see if it has
+        // relationship attributes that indicate the entity is the input to or output of
+        // an azure data factory (adf_) process.
+        private bool IsInputOrOutputOfAzureDataFactoryEntity(JObject folder)
+        {
+            if (!folder.ContainsKey("entity")){
+                return false;
+            }
+
+            // TODO Refactor this to look across both inputs and outputs from one list
+            if (((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!).Count > 0)
+            {
+                foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!))
+                {
+                    if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!).Count > 0)
+            {
+                foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!))
+                {
+                    if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
+                    {
+                        return true;
+                    }
+                }
+            }
+            // Fall through - If we didn't have an adf_ relationship
+            return false;
         }
     }
 
