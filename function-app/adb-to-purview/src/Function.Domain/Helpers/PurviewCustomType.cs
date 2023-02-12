@@ -408,50 +408,59 @@ namespace Function.Domain.Helpers
                     }
 
                 string searchResultComparableQualifiedName = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
+                // If the qualified name does not match, move along
+                _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {searchResultComparableQualifiedName}");
+                if (!QualifiedNames_Match_After_Normalizing(this.to_compare_QualifiedName, searchResultComparableQualifiedName))
+                {
+                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - The searchResultComparableQualifiedName of {searchResultComparableQualifiedName} is not match");
+                    continue;
+                }
+
                 if (IsBlobOrDataLakeResourceSet_Entity(entity.entityType))
                 {
-                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {searchResultComparableQualifiedName}");
-                    if (QualifiedNames_Match_After_Normalizing(this.to_compare_QualifiedName, searchResultComparableQualifiedName))
-                    {
-                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS FQN comparison is true");
-                        // In case where the search score is the same for multiple values, we cannot trust Microsoft Purview's ordering.
-                        // For example if we have a period in the resource set name or there are multiple assets with very similar names,
-                        // it's pushing the resource set of interest lower in the results (since ordering could be entirely random).
-                        // Only insert the first resource set seen and trust that it is ordered appropriately
-                        if (config!.prioritizeFirstResourceSet && !(matchingResourceSetHasBeenSeen)){
-                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been inserted first");
-                            validEntities.Insert(0,entity);
-                            // Assuming the order of entities are sorted by highest likely match,
-                            // if we 've seen any resource set, it should be the most likely to have matched.
-                            matchingResourceSetHasBeenSeen = true;
-                        } else{
-                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been added to the list");
-                            validEntities.Add(entity);
-                        }
+                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS FQN comparison is true");
+                    // In case where the search score is the same for multiple values, we cannot trust Microsoft Purview's ordering.
+                    // For example if we have a period in the resource set name or there are multiple assets with very similar names,
+                    // it's pushing the resource set of interest lower in the results (since ordering could be entirely random).
+                    // Only insert the first resource set seen and trust that it is ordered appropriately
+                    if (config!.prioritizeFirstResourceSet && !(matchingResourceSetHasBeenSeen)){
+                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been inserted first");
+                        validEntities.Insert(0,entity);
+                        // Assuming the order of entities are sorted by highest likely match,
+                        // if we 've seen any resource set, it should be the most likely to have matched.
+                        matchingResourceSetHasBeenSeen = true;
+                    } else{
+                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been added to the list");
+                        validEntities.Add(entity);
                     }
                     
                 }
-                else if (QualifiedNames_Match_After_Normalizing(this.to_compare_QualifiedName, searchResultComparableQualifiedName))
+                else if (IsBlobOrDataLakeFS_Entity(entity.entityType))
                 {
-                    if (IsBlobOrDataLakeFS_Entity(entity.entityType))
+                    // If there are already some entities, we might want to jump the line if
+                    // this entity is attached to an adf process in any way.
+                    if (validEntities.Count > 0)
                     {
-                        // If there are already some entities, we might want to jump the line if
-                        // this entity is attached to an adf process in any way.
-                        if (validEntities.Count > 0)
-                        {
-                            JObject folder = await _client.GetByGuid(entity.id);
-                            if (IsInputOrOutputOfAzureDataFactoryEntity(folder)){
-                                _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Discovered entity is part of an ADF process and has been inserted first");
-                                validEntities.Insert(0,entity);
-                                continue;
-                            }
+                        JObject folder = await _client.GetByGuid(entity.id);
+                        if (IsInputOrOutputOfAzureDataFactoryEntity(folder)){
+                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Discovered entity is part of an ADF process and has been inserted first");
+                            validEntities.Insert(0,entity);
+                            continue;
                         }
+
                     }
+                    // Fall through: We know the qualified name matches but it's either the first
+                    // valid entity OR it's not attached to any Azure Data Factory process
+                    validEntities.Add(entity);
+                }
+                else
+                {
+                    // Fall through: We know the qualified name matches but it's not any of the above special cases
                     validEntities.Add(entity);
                 }
             }
-            return validEntities;
 
+            return validEntities;
         }
 
         private string Name_To_Search(string Name)
