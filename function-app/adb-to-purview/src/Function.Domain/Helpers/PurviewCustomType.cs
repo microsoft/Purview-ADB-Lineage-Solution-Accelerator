@@ -367,22 +367,22 @@ namespace Function.Domain.Helpers
             if (results.Count > 0)
             {
                 _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first match has a fqn of {results[0].qualifiedName} and type of {results[0].entityType}");
-                List<QueryValeuModel> validentity = await SelectReturnEntity(results);
-                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {validentity.Count} valid entity matches");
-                if (validentity.Count > 0)
+                List<QueryValeuModel> validEntitiesAfterFiltering = await SelectReturnEntity(results);
+                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {validEntitiesAfterFiltering.Count} valid entity matches");
+                if (validEntitiesAfterFiltering.Count > 0)
                 {
-                    _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first valid match has a fqn of {validentity[0].qualifiedName} and type of {validentity[0].entityType}");
-                    obj = validentity[0];
-                    properties["guid"] = validentity[0].id;
-                    properties["typeName"] = validentity[0].entityType;
-                    properties!["attributes"]!["qualifiedName"] = validentity[0].qualifiedName;
-                    this.Fullentity = await this._client.GetByGuid(validentity[0].id);
+                    _logger.LogInformation($"Existing Asset Match Search for {_fqn}: The first valid match has a fqn of {validEntitiesAfterFiltering[0].qualifiedName} and type of {validEntitiesAfterFiltering[0].entityType}");
+                    obj = validEntitiesAfterFiltering[0];
+                    properties["guid"] = validEntitiesAfterFiltering[0].id;
+                    properties["typeName"] = validEntitiesAfterFiltering[0].entityType;
+                    properties!["attributes"]!["qualifiedName"] = validEntitiesAfterFiltering[0].qualifiedName;
+                    this.Fullentity = await this._client.GetByGuid(validEntitiesAfterFiltering[0].id);
                     this.is_dummy_asset = false;
                 }
                 // If there are matches but there are none that are valid, it should still be a dummy asset
                 else
                 {
-                    _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Changing type to dummy type because zero valid entities");
+                    _logger.LogInformation($"Existing Asset Match Search for {_fqn}: Changing type to placeholder type because zero valid entities");
                     properties["typeName"] = EntityType;
                 }
             }
