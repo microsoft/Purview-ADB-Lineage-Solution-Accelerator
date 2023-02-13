@@ -30,7 +30,7 @@ namespace Function.Domain.Services
         List<PurviewCustomType> inputs_outputs = new List<PurviewCustomType>();
         private JArray to_purview_Json = new JArray();
         private readonly ILogger<PurviewIngestion> _logger;
-        private MemoryCache _payLoad = MemoryCache.Default;
+        private MemoryCache _cacheOfSeenEvents = MemoryCache.Default;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         private CacheItemPolicy cacheItemPolicy;
         /// <summary>
@@ -72,21 +72,22 @@ namespace Function.Domain.Services
         /// <returns>Boolean</returns>
         public async Task<bool> SendToPurview(JObject json)
         {
-            var entities = get_attribute("entities", json);
+            var entitiesFromInitialJson = get_attribute("entities", json);
 
-            if (entities == null)
+            if (entitiesFromInitialJson == null)
             {
                 _logger.LogError("Not found Attribute entities on " + json.ToString());
                 return false;
             }
 
-            string ? dataEvent = CalculateHash(entities.ToString());
-            if (!_payLoad.Contains(dataEvent))
+            // This hash and cache helps to prevent processing the same event multiple times
+            string ? dataEvent = CalculateHash(entitiesFromInitialJson.ToString());
+            if (!_cacheOfSeenEvents.Contains(dataEvent))
             {
                 var cacheItem = new CacheItem(dataEvent, dataEvent);  
-                _payLoad.Add(cacheItem, cacheItemPolicy);
+                _cacheOfSeenEvents.Add(cacheItem, cacheItemPolicy);
 
-                foreach (JObject purviewEntityToBeUpdated in entities)
+                foreach (JObject purviewEntityToBeUpdated in entitiesFromInitialJson)
                 {
                     if (IsProcessEntity(purviewEntityToBeUpdated))
                     {
