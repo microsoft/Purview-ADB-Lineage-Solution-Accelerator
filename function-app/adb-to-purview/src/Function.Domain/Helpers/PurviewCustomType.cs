@@ -25,11 +25,11 @@ namespace Function.Domain.Helpers
         private readonly ILogger _logger;
         private readonly string EntityType = "purview_custom_connector_generic_entity_with_columns";
         private PurviewClient _client;
-        private JObject? simpleEntity;
         private JObject? properties;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         public JObject? Fullentity = new JObject();
         bool useResourceSet = true;
+        public string? originalQualifiedName {get; private set;}
         /// <summary>
         /// Property that contains all Json attributes for the Custom data Entity in Microsoft Purview
         /// </summary>
@@ -139,7 +139,7 @@ namespace Function.Domain.Helpers
         {
             is_dummy_asset = false;
             properties = new JObject();
-            simpleEntity = new JObject();
+            originalQualifiedName = qualified_name;
             //Loading Entity properties into Json format of an AtlasEntity
             properties.Add("typeName", typeName);
             properties.Add("guid", guid);
@@ -150,23 +150,7 @@ namespace Function.Domain.Helpers
             ((JObject)properties["attributes"]!).Add("data_type", data_type);
             ((JObject)properties["attributes"]!).Add("description", description);
         }
-        /// <summary>
-        /// Export basic data entity attribute
-        /// </summary>
-        /// <value>Json Object</value>
-        public JObject SimpleEntity
-        {
-            get
-            {
-                //Simple Json format for use in Atlas requests
-                simpleEntity = new JObject();
-                simpleEntity.Add("typeName", this.Properties["typeName"]!.ToString());
-                simpleEntity.Add("guid", this.Properties["guid"]!.ToString());
-                simpleEntity.Add("qualifiedName", this.Properties["attributes"]!["qualifiedName"]!.ToString());
-                _logger.LogInformation($"Retrived Entity simple Object: {simpleEntity.ToString()}");
-                return simpleEntity;
-            }
-        }
+
         /// <summary>
         /// Get a list on Data Entities in Microsoft Purview using Entity Qualified Name and Type
         /// </summary>
@@ -184,84 +168,6 @@ namespace Function.Domain.Helpers
         /// </summary>
         /// <value>Boolean</value>
         public bool is_dummy_asset { get; set; }
-        /// <summary>
-        /// Add Relationship to entity as columns to tables type
-        /// </summary>
-        /// <param name="Table">Table to be related to</param>
-        /// <returns>bool</returns>
-        public bool AddToTable(PurviewCustomType Table)
-        {
-            //Validating if the table attribute exists if not we will initialize
-            if (!((JObject)properties!["relationshipAttributes"]!).ContainsKey("table"))
-                ((JObject)properties!["relationshipAttributes"]!).Add("table", new JObject());
-
-            _logger.LogInformation($"Entity qualifiedName: {properties["attributes"]!["qualifiedName"]}Table.simpleEntity: {Table!.simpleEntity!.ToString()}");
-            properties["relationshipAttributes"]!["table"] = Table.simpleEntity;
-            return true;
-        }
-        /// <summary>
-        /// Search an Entity in Microsoft Purview using Qualified Name and Type
-        /// </summary>
-        /// <param name="typeName">Type to search for</param>
-        /// <returns>Json object</returns>
-        public async Task<JObject> FindQualifiedNameInPurview(string typeName)
-        {
-            //Search using search method and qualifiedName attribute. Scape needs to be used on some non safe (web URLs) chars
-            EntityModel results = await this._client.search_entities(
-                properties!["attributes"]!["qualifiedName"]!.ToString()
-                , typeName);
-
-            if (results.qualifiedName == null)
-            {
-                _logger.LogInformation($"Entity qualifiedName:{properties["attributes"]!["qualifiedName"]!.ToString()} - typeName:{typeName}, not found!");
-                this.is_dummy_asset = true;
-                properties["typeName"] = EntityType;
-                return new JObject();
-            }
-            var guid = "";
-            this.is_dummy_asset = false;
-            var _qualifiedName = "";
-            //validate if qualifiedName is the same
-            _qualifiedName = results.qualifiedName;
-            if (results.entityType == "azure_datalake_gen2_resource_set")
-                properties["attributes"]!["qualifiedName"] = _qualifiedName;
-            if (_qualifiedName.Trim('/').ToLower() == properties["attributes"]!["qualifiedName"]!.ToString().Trim('/').ToLower())
-            {
-                //search api return quid on ID property
-                guid = results.id;
-                properties["typeName"] = results.entityType;
-                properties!["attributes"]!["qualifiedName"] = results.qualifiedName;
-                //break if find a non dummy entity with the qualified name
-                if (results.entityType == EntityType)
-                {
-                    //log.debug("search_entity_by_qualifiedName: entity \'{name}\' is Dummy Entity");
-                    //mark entity as dummy to be created
-                    this.is_dummy_asset = true;
-                }
-                _logger.LogInformation($"Entity qualifiedName:{properties["attributes"]!["qualifiedName"]!.ToString()} - typeName:{typeName} - guid:{guid}, found!");
-            }
-
-            if (!this.is_dummy_asset)
-                properties!["attributes"]!["qualifiedName"] = results.qualifiedName;
-
-            var content = new JObject();
-            content.Add(_qualifiedName, new JObject());
-            properties["guid"] = guid;
-            ((JObject)content[_qualifiedName]!).Add("guid", guid);
-            ((JObject)content[_qualifiedName]!).Add("qualifiedName", properties!["attributes"]!["qualifiedName"]!.ToString());
-
-            return content;
-        }
-        /// <summary>
-        /// Remove any unused Dummy entities
-        /// </summary>
-        /// <returns>Boolean</returns>
-        public async Task<bool> CleanUnusedCustomEntities()
-        {
-            return await this._client.Delete_Unused_Entity(
-                properties!["attributes"]!["qualifiedName"]!.ToString()
-                , properties!["typeName"]!.ToString());
-        }
 
         private List<string>? qNames = new List<string>();
         /// <summary>
@@ -468,48 +374,6 @@ namespace Function.Domain.Helpers
             return validEntities;
         }
 
-        private string Name_To_Search(string Name)
-        {
-            Func<string, bool> isNumber = delegate (string num)
-             {
-                 return Int64.TryParse(num, out long number)!;
-             };
-
-            Func<char, string> newName = delegate (char separator)
-             {
-                 string[] partsName = Name.Split(separator);
-                 int index = 0;
-                 foreach (string? part in partsName)
-                 {
-                     if (isNumber(part))
-                         partsName[index] = "{N}";
-                     index++;
-                 }
-                 return string.Join(separator, partsName)!;
-             };
-
-            if (isNumber(Name))
-            {
-                return "{N}";
-            }
-
-            if (Name.Contains('='))
-            {
-                return newName('=');
-            }
-
-            if (Name.Contains('-'))
-            {
-                return newName('-');
-            }
-
-            if (Name.Contains('_'))
-            {
-                return newName('_');
-            }
-
-            return Name;
-        }
         private bool Is_Valid_Name(string name)
         {
             Func<string, bool> isNumber = delegate (string num)
