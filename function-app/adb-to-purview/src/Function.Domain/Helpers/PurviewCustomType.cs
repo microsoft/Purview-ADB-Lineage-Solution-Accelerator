@@ -38,6 +38,13 @@ namespace Function.Domain.Helpers
             get { return properties!; }
         }
         /// <summary>
+        /// Get the current qualifedName
+        /// </summary>
+        public string currentQualifiedName()
+        {
+            return properties!["attributes"]!["qualifiedName"]!.ToString();
+        }
+        /// <summary>
         /// Creation of a Microsoft Purview Custom Type entity that initialize all attributes needed
         /// </summary>
         /// <param name="name">Name of the Data Entity</param>
