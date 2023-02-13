@@ -26,7 +26,7 @@ namespace Function.Domain.Services
         private PurviewClient _purviewClient;
         private Int64 initGuid = -1000;
         //flag use to mark if a data Asset is a Dummy type
-        private Dictionary<string, PurviewCustomType> entities = new Dictionary<string, PurviewCustomType>();
+        private Dictionary<string, PurviewCustomType> entitiesMarkedForDeletion = new Dictionary<string, PurviewCustomType>();
         List<PurviewCustomType> inputs_outputs = new List<PurviewCustomType>();
         private JArray to_purview_Json = new JArray();
         private readonly ILogger<PurviewIngestion> _logger;
@@ -99,36 +99,43 @@ namespace Function.Domain.Services
                         {
                             PurviewCustomType new_entity = await Validate_Entities(purviewEntityToBeUpdated);
 
-                            string qualifiedName = purviewEntityToBeUpdated["attributes"]!["qualifiedName"]!.ToString();
                             if (purviewEntityToBeUpdated.ContainsKey("relationshipAttributes"))
                             {
+                                // For every relationship attribute
                                 foreach (var rel in purviewEntityToBeUpdated["relationshipAttributes"]!.Values<JProperty>())
                                 {
+                                    // If the relationship attribute has a qualified name property
                                     if (((JObject)(purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
                                     {
-                                        if (this.entities.ContainsKey(purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()))
+                                        string _qualifiedNameOfRelatedAsset = purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
+                                        // If the entitiesMarkedForDeletion dictionary has this related asset
+                                        // update the guid of the relationship attribute we're in to be the original one?
+                                        if (this.entitiesMarkedForDeletion.ContainsKey(_qualifiedNameOfRelatedAsset))
                                         {
-                                            purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = this.entities[purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()].Properties["guid"];
+                                            purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = this.entitiesMarkedForDeletion[_qualifiedNameOfRelatedAsset].Properties["guid"];
                                         }
                                         else
                                         {
-                                            string qn = purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
+                                            // This entity is created solely to be able to search for the asset based on qualifiedName
                                             PurviewCustomType sourceEntity = new PurviewCustomType("search relationship"
                                                 , ""
-                                                , qn
+                                                , _qualifiedNameOfRelatedAsset
                                                 , ""
                                                 , "search relationship"
-                                                , NewGuid()
+                                                , NewGuid() // This will be updated after successfully finding the asset via query in purview
                                                 , _logger
                                                 , _purviewClient);
 
-
+                                            // TODO This should use the qualifiedNamePrefix filter
+                                            // Currently fqn may change here
                                             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
 
-                                            if (!this.entities.ContainsKey(qn))
-                                                this.entities.Add(qn, sourceEntity);
+                                            // If the related asset has not been seen, add it to the list of assets to be deleted?
+                                            if (!this.entitiesMarkedForDeletion.ContainsKey(_qualifiedNameOfRelatedAsset))
+                                                this.entitiesMarkedForDeletion.Add(_qualifiedNameOfRelatedAsset, sourceEntity);
+                                            // Update the guid of the relationship attribute with the one that was discovered ()
+                                            // TODO Handle when sourceJson does not return a typed asset
                                             purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
-
                                         }
 
                                     }
@@ -202,9 +209,9 @@ namespace Function.Domain.Services
                     {
                         _logger.LogError($"Error Loading to Purview!");
                     }
-                    foreach (var entity in this.entities)
+                    foreach (var deletableEntity in this.entitiesMarkedForDeletion)
                     {
-                        await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
+                        await _purviewClient.Delete_Unused_Entity(deletableEntity.Key, "purview_custom_connector_generic_entity_with_columns");
                     }
                     return true;
                 }
@@ -219,9 +226,9 @@ namespace Function.Domain.Services
                     {
                         _logger.LogError("No Purview entity to load");
                     }
-                    foreach (var entity in this.entities)
+                    foreach (var deletableEntity in this.entitiesMarkedForDeletion)
                     {
-                        await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
+                        await _purviewClient.Delete_Unused_Entity(deletableEntity.Key, "purview_custom_connector_generic_entity_with_columns");
                     }
                     return false;
                 }
@@ -281,13 +288,13 @@ namespace Function.Domain.Services
             {
                 _logger.LogInformation("IN DUMMY ASSET AND ABOUT TO OVERWRITE");
                 sourceEntity.Properties["typeName"] = Process["typeName"]!.ToString();
-                if (!entities.ContainsKey(qualifiedName))
-                    entities.Add(qualifiedName, sourceEntity);
+                if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                    entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
                 _logger.LogInformation($"Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
                 return sourceEntity;
             }
-            if (!entities.ContainsKey(qualifiedName))
-                entities.Add(qualifiedName, sourceEntity);
+            if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
             return sourceEntity;
         }
 
@@ -335,8 +342,8 @@ namespace Function.Domain.Services
                 outPutInput["typeName"] = sourceEntity.Properties!["typeName"]!.ToString();
             }
 
-            if (!entities.ContainsKey(qualifiedName))
-                entities.Add(qualifiedName, sourceEntity);
+            if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
 
             return sourceEntity;
         }
@@ -377,7 +384,7 @@ namespace Function.Domain.Services
                     string[] tmpName = qualifiedName.Split('/');
                     Name = tmpName[tmpName.Length - 1];
                     typename = "purview_custom_connector_generic_entity_with_columns";
-                    if (!entities.ContainsKey(qualifiedName))
+                    if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
                     {
 
                         PurviewCustomType sourceEntity = new PurviewCustomType(Name
@@ -392,12 +399,12 @@ namespace Function.Domain.Services
 
                         var outputObj = await sourceEntity.QueryInPurview();
                         Process["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
-                        if (!entities.ContainsKey(qualifiedName))
-                            entities.Add(qualifiedName, sourceEntity);
+                        if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                            entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
                     }
                     else
                     {
-                        Process["relationshipAttributes"]![rel!.Name]!["guid"] = entities[qualifiedName].Properties["guid"];
+                        Process["relationshipAttributes"]![rel!.Name]!["guid"] = entitiesMarkedForDeletion[qualifiedName].Properties["guid"];
                     }
                 }
             }
