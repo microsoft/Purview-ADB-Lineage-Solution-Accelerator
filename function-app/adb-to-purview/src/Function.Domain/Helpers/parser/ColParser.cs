@@ -38,8 +38,12 @@ namespace Function.Domain.Helpers
         /// This class will be used for the parsing code. 
         /// </summary>
         /// <returns></returns>
-        
         public List<ColumnLevelAttributes> GetColIdentifiers()
+        {
+            return GetColIdentifiers(new Dictionary<string, string>{});
+        }
+        
+        public List<ColumnLevelAttributes> GetColIdentifiers(Dictionary<string, string> originalToMatchedFqn )
         {
             
             var col = new List<ColumnLevelAttributes>();
@@ -48,8 +52,12 @@ namespace Function.Domain.Helpers
                 foreach(KeyValuePair<string, ColumnLineageInputFieldClass> colInfo in colId.Facets.ColFacets.fields)
                 {
                   var dataSet = new DatasetMappingClass();
-                    //dataSet.sink = $"{colId.NameSpace}, {colId.Name}";
                     dataSet.sink = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name).QualifiedName;
+                    // The identifier from OpenLineage may not be the same as what is discovered on
+                    // the Purview catalog. This includes cases like resource sets or blob vs dfs paths
+                    if (originalToMatchedFqn.ContainsKey(dataSet.sink)){
+                        dataSet.sink = originalToMatchedFqn[dataSet.sink];
+                    }
                     var columnLevels = new List<ColumnMappingClass>();
                     foreach (ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
                     {
@@ -63,7 +71,12 @@ namespace Function.Domain.Helpers
                             }
                         }
                         dataSet.source = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name).QualifiedName;
-                        //dataSet.source = "*";
+                        // The identifier from OpenLineage may not be the same as what is discovered on
+                        // the Purview catalog. This includes cases like resource sets or blob vs dfs paths
+                        if (originalToMatchedFqn.ContainsKey(dataSet.source)){
+                            dataSet.source = originalToMatchedFqn[dataSet.source];
+                        }
+
                         columnLevel.source = colInfo2.field;
                         columnLevel.sink = colInfo.Key;
                         columnLevels.Add(columnLevel);

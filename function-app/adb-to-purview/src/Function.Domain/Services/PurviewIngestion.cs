@@ -27,6 +27,7 @@ namespace Function.Domain.Services
         private Int64 initGuid = -1000;
         //flag use to mark if a data Asset is a Dummy type
         private Dictionary<string, PurviewCustomType> entitiesMarkedForDeletion = new Dictionary<string, PurviewCustomType>();
+        private Dictionary<string, string> originalFqnToDiscoveredFqn = new Dictionary<string, string>();
         List<PurviewCustomType> inputs_outputs = new List<PurviewCustomType>();
         private JArray to_purview_Json = new JArray();
         private readonly ILogger<PurviewIngestion> _logger;
@@ -274,6 +275,9 @@ namespace Function.Domain.Services
 
 
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
+            // Capture the updated qualified name mapping in case column mapping needs it
+            originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
+
 
             Process["guid"] = sourceEntity.Properties["guid"];
 
@@ -329,6 +333,9 @@ namespace Function.Domain.Services
             , _purviewClient);
 
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
+            // Capture the updated qualified name mapping in case column mapping needs it
+            originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
+
             if (sourceEntity.is_dummy_asset)
             {
                 outPutInput["typeName"] = sourceEntity.Properties["typeName"];
@@ -399,6 +406,9 @@ namespace Function.Domain.Services
 
 
                         var outputObj = await sourceEntity.QueryInPurview();
+                        // Capture the updated qualified name mapping in case column mapping needs it
+                        originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
+
                         Process["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
                         if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
                             entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
