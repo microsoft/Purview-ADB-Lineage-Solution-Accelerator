@@ -17,5 +17,6 @@ namespace Function.Domain.Helpers
         public DatabricksSparkJarTask GetDatabricksSparkJarTask(string jobQn);
         public DatabricksProcess GetDatabricksProcess(string taskQn);
         public JobType GetJobType();
+        public IColParser GetColumnParser();
     }
 }

@@ -2,12 +2,13 @@
 // Licensed under the MIT License.
 
 using System.Threading.Tasks;
+using Function.Domain.Helpers;
 using Function.Domain.Models.OL;
 
 namespace Function.Domain.Services
 {
     public interface IOlToPurviewParsingService
     {
-        public string? GetPurviewFromOlEvent(EnrichedEvent eventData);
+        public string? GetPurviewFromOlEvent(EnrichedEvent eventData, IDatabricksToPurviewParser parser);
     }
 }
