@@ -10,13 +10,11 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure Synapse SQL Pools](#azure-synapse-sql-pools)
 * [Azure SQL DB](#azure-sql-db)
 * [Delta Lake](#delta-lake-file-format)
-<<<<<<< HEAD
 * [Azure MySQL](#azure-mysql)
 * [PostgreSQL](#postgresql)
-=======
 * [Azure Data Explorer](#azure-data-explorer)
->>>>>>> e14c399 (Implemented Kusto support and added unit and integration tests)
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
+* [Column Level Mapping Supported Sources](#column-level-mapping-supported-sources)
 
 ## Connecting to Assets in Purview
 
@@ -80,6 +78,7 @@ Supports [Delta File Format](https://delta.io/).
 ## Azure MySQL
 
 Supports Azure MySQL through [JDBC](https://learn.microsoft.com/en-us/azure/databricks/external-data/jdbc).
+
 ## PostgreSQL
 
 Supports both Azure PostgreSQL and on-prem/VM installations of PostgreSQL through [JDBC](https://learn.microsoft.com/en-us/azure/databricks/external-data/jdbc).
@@ -89,6 +88,7 @@ Supports both Azure PostgreSQL and on-prem/VM installations of PostgreSQL throug
   * This can be corrected by specifying the database schema in the Spark job.
 * Default configuration supports using multiple strings divided by dots to define a custom schema.  For example ```myschema.mytable```.
 * If you register and scan your postgres server as `localhost` in Microsoft Purview, but use the IP within the Databricks notebook, the assets will not be matched correctly. You need to use the IP when registering the Postgres server.  
+
 ## Azure Data Explorer
 
 Supports Azure Data Explorer (aka Kusto) through the [Azure Data Explorer Connector for Apache Spark](https://learn.microsoft.com/en-us/azure/data-explorer/spark-connector)
@@ -108,10 +108,6 @@ We welcome [contributions](./CONTRIBUTING.md) to help map those types to officia
 Microsoft Purview's Fully Qualified Names are case sensitive. Spark Jobs may have data sources connections that are not in the proper casing as on the data source (e.g. `dbo.InputTable` might be the physical table's name in the SQL db but a Spark query may reference the table as `dbo.iNpUtTaBlE`).
 
 As a result, this solution attempts to find the best matching *existing* asset. If no existing asset is found to match based on qualified name, the data source name as found in the Spark query will be used toe create a dummy asset. On a subsequent scan of the data source in Purview and another run of the Spark query with the connector enabled will resolve the linkage.
-
-### Column Level Mapping
-
-The solution currently does not provide column level mapping within the Microsoft Purview lineage tab.
 
 ### Data Factory
 
@@ -142,3 +138,17 @@ The solution supports Spark 3.0, 3.1, 3.2, and 3.3 interactive and job clusters.
 ### Private Endpoints on Microsoft Purview
 
 Currently, the solution does not support pushing lineage to a Private Endpoint backed Microsoft Purview service. The solution may be customized to deploy the Azure Function to connect to Microsoft Purview. Consider reviewing the documentation to [Connect privately and securely to your Microsoft Purview account](https://docs.microsoft.com/en-us/azure/purview/catalog-private-link-account-portal).
+
+## Column Level Mapping Supported Sources
+
+Starting with OpenLineage 0.18.0 and release 2.3.0 of the solution accelerator, we support emitting column level mapping from the following sources and their combinations:
+
+* Read / Write to ABFSS file paths (mount or explicit path `abfss://`)
+* Read / Write to WASBS file paths (mount or explicit path `wasbs://`)
+* Read / Write to the default metastore in Azure Databricks
+  * Does NOT support custom hive metastores
+
+### Column Mapping Support for Delta Format
+
+* Delta Merge statements are supported when the table is stored in the default metastore
+* Delta to Delta is NOT supported at this time
