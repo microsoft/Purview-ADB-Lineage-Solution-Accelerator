@@ -10,5 +10,6 @@ namespace Function.Domain.Helpers
     public interface IColParser
      {
         public List<ColumnLevelAttributes> GetColIdentifiers();
+        public List<ColumnLevelAttributes> GetColIdentifiers(Dictionary<string, string> originalToMatchedFqn);
     }
 }
