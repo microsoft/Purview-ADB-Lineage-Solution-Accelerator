@@ -95,6 +95,7 @@ namespace Function.Domain.Services
                     {
                         JObject new_entity = await Validate_Process_Entities(purviewEntityToBeUpdated);
                         // Update Column mapping attribute based on the dictionary and inject the column parser with the openlineage event
+                        // This lets us use the discovered inputs / outputs rather than just what open lineage provides.
                         string columnMapping = JsonConvert.SerializeObject(colParser.GetColIdentifiers(originalFqnToDiscoveredFqn));
                         new_entity["attributes"]!["columnMapping"] = columnMapping;
                         to_purview_Json.Add(new_entity);
@@ -151,16 +152,6 @@ namespace Function.Domain.Services
                         }
                     }
                 }
-
-
-
-
-
-
-
-
-
-
 
                 HttpResponseMessage results;
                 string? payload = "";
