@@ -42,15 +42,13 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="eventData">Contains OpenLineage and, optionally data obtained from the ADB Jobs API</param>
         /// <returns>Serialized Atlas entities</returns>
-        public string? GetPurviewFromOlEvent(EnrichedEvent eventData)
+        public string? GetPurviewFromOlEvent(EnrichedEvent eventData, IDatabricksToPurviewParser parser)
         {
             if (!verifyEventData(eventData))
             {
                 _logger.LogWarning($"OlToPurviewParsingService-GetPurviewFromOlEventAsync: Event data is not valid - eventData: {JsonConvert.SerializeObject(eventData)}");
                 return null;
             }
-
-            IDatabricksToPurviewParser parser = new DatabricksToPurviewParser(_loggerFactory, _config, eventData);
 
             if (eventData.IsInteractiveNotebook)
             {

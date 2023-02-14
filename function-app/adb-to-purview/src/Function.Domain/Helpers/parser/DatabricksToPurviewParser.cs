@@ -357,5 +357,10 @@ namespace Function.Domain.Helpers
             }
             return sOutput.ToString();
         }
+
+        public IColParser GetColumnParser()
+        {
+            return this._colParser;
+        }
     }
 }
