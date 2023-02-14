@@ -93,6 +93,7 @@ namespace Function.Domain.Services
                     if (IsProcessEntity(purviewEntityToBeUpdated))
                     {
                         JObject new_entity = await Validate_Process_Entities(purviewEntityToBeUpdated);
+                        // Todo Update Column mapping attribute based on the dictionary and inject the column parser with the openlineage event
                         to_purview_Json.Add(new_entity);
                     }
                     else
