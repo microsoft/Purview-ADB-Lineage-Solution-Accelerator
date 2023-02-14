@@ -14,6 +14,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Runtime.Caching;
 using Function.Domain.Models.Settings;
+using Newtonsoft.Json;
 
 namespace Function.Domain.Services
 {
@@ -54,12 +55,12 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="Processes">Array of Entities</param>
         /// <returns>Array on Entities</returns>
-        public async Task<JArray> SendToPurview(JArray Processes)
+        public async Task<JArray> SendToPurview(JArray Processes, IColParser colParser)
         {
             foreach (JObject process in Processes)
             {
 
-                if (await SendToPurview(process))
+                if (await SendToPurview(process, colParser))
                 {
                     return new JArray();
                 }
@@ -71,7 +72,7 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="json">Json Object</param>
         /// <returns>Boolean</returns>
-        public async Task<bool> SendToPurview(JObject json)
+        public async Task<bool> SendToPurview(JObject json, IColParser colParser)
         {
             var entitiesFromInitialJson = get_attribute("entities", json);
 
@@ -93,7 +94,9 @@ namespace Function.Domain.Services
                     if (IsProcessEntity(purviewEntityToBeUpdated))
                     {
                         JObject new_entity = await Validate_Process_Entities(purviewEntityToBeUpdated);
-                        // Todo Update Column mapping attribute based on the dictionary and inject the column parser with the openlineage event
+                        // Update Column mapping attribute based on the dictionary and inject the column parser with the openlineage event
+                        string columnMapping = JsonConvert.SerializeObject(colParser.GetColIdentifiers(originalFqnToDiscoveredFqn));
+                        new_entity["attributes"]!["columnMapping"] = columnMapping;
                         to_purview_Json.Add(new_entity);
                     }
                     else
