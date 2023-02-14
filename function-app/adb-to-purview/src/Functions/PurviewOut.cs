@@ -58,7 +58,7 @@ namespace AdbToPurview.Function
                 _logger.LogInformation($"PurviewOut-ParserService: {purviewEvent}");
                 var jObjectPurviewEvent = JsonConvert.DeserializeObject<JObject>(purviewEvent) ?? new JObject();
                 _logger.LogInformation("Calling SendToPurview");
-                await _purviewIngestion.SendToPurview(jObjectPurviewEvent);
+                await _purviewIngestion.SendToPurview(jObjectPurviewEvent, parser.GetColumnParser());
 
                 return $"Output message created at {DateTime.Now}";
             }
