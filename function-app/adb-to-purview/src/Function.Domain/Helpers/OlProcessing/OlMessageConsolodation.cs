@@ -215,9 +215,9 @@ namespace Function.Domain.Helpers
                 await Task.Delay(delay);
             }
 
-            // Get inputs. Todo: Check if more efficient to get inputs within the same while loop above. Can we get 2 entities at the same time? 
+            // Get inputs. TODO: Check if more efficient to get inputs within the same while loop above. Can we get 2 entities at the same time? 
             currentRetry = 0;
-            while (ret_val) // ret_val instead of just true, because if didn't have the env_facet then don't bother getting inputs either
+            while (ret_val) // use a variable instead of just true, because if we didn't have the env_facet then we don't need to get inputs
             {
                 try
                 {
@@ -248,30 +248,29 @@ namespace Function.Domain.Helpers
 
             // Check if saved any inputs from the START event (will only be done for events containing DataSourceV2 sources)
             if (te_inputs is not null) {
-                // TODO: Possible source of error.
-                if (te_inputs.ContainsKey("Inputs")){
-                    _log.LogInformation($"New Code #1");
+                
+                if (te_inputs.ContainsKey("Inputs")) {
                     try {
-                        var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
-                        _log.LogInformation($"New Code #1.1");
-                        _log.LogInformation("Inputs in dictionary? ", te_inputs.ContainsKey("Inputs").ToString());
+                        //TODO: Find out why inputs might be null. Technically inputs are only added to the table if they exist. This is also not an issue when running locally.
+                        if (te_inputs["Inputs"] != null) {
+                            
+                            var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
 
-                        if (saved_inputs is null) {
-                            // Unecessary check?
-                            _log.LogInformation($"OlMessageConsolodation-JoinEventData: No inputs found for COMPLETE event");
-                            //ret_val = false;
-                        }
+                            if (saved_inputs is null) {
+                                _log.LogInformation($"OlMessageConsolodation-JoinEventData: No inputs found for COMPLETE event");
+                            }
 
-                        else {
-                            // Check inputs saved against inputs captured in this COMPLETE event and combine while removing any duplicates.
-                            // Checking for duplicates needed since we save all the inputs captured from the START event. Perhaps it may be better to 
-                            // only save the DataSourceV2 inputs?
-                            var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
-                            inputs.AddRange(saved_inputs);
-                            inputs.AddRange(olEvent.Inputs);
-                            var unique_inputs = inputs.Distinct();
-                            olEvent.Inputs = unique_inputs.ToList();
-                            _log.LogInformation($"OlMessageConsolodation-JoinEventData: Captured inputs for COMPLETE event");
+                            else {
+                                // Check inputs saved against inputs captured in this COMPLETE event and combine while removing any duplicates.
+                                // Checking for duplicates needed since we save all the inputs captured from the START event. Perhaps it may be better to 
+                                // only save the DataSourceV2 inputs?
+                                var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
+                                inputs.AddRange(saved_inputs);
+                                inputs.AddRange(olEvent.Inputs);
+                                var unique_inputs = inputs.Distinct();
+                                olEvent.Inputs = unique_inputs.ToList();
+                                _log.LogInformation($"OlMessageConsolodation-JoinEventData: Captured inputs for COMPLETE event");
+                            }
                         }
                     }
                     catch (System.Exception ex) {
@@ -279,14 +278,6 @@ namespace Function.Domain.Helpers
                         ret_val = false;
                     }
                     
-
-                    
-                }
-
-                else {
-                    _log.LogInformation($"New Code #2");
-                    _log.LogInformation($"OlMessageConsolodation-JoinEventData: No inputs found for COMPLETE event");
-                    //ret_val = false;
                 }
                 
             }
@@ -301,9 +292,9 @@ namespace Function.Domain.Helpers
                 _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
             }
 
-            // If no inputs were saved from the start event, then we need to make sure we're only processing this COMPLETE event
-            // if it has both inputs and outputs (reflects original logic, prior to supporting DataSourceV2 events)
-            if (te_inputs is null && !(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)) {
+            // Need to make sure we're only processing this COMPLETE event if it has both
+            // inputs and outputs (reflects original logic, prior to supporting DataSourceV2 events)
+            if (!(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)) { 
                 ret_val = false;
             }
 
@@ -314,9 +305,9 @@ namespace Function.Domain.Helpers
         private bool IsStartEventEnvironment(Event olEvent)
         {
             if (olEvent.EventType == START_EVENT && olEvent.Run.Facets.EnvironmentProperties != null)
-                {
-                    return true;
-                }
+            {
+                return true;
+            }
 
             return false;
         }
