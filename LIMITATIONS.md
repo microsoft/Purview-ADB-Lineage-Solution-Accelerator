@@ -10,9 +10,14 @@ The solution accelerator supports a limited set of data sources to be ingested i
 * [Azure Synapse SQL Pools](#azure-synapse-sql-pools)
 * [Azure SQL DB](#azure-sql-db)
 * [Delta Lake](#delta-lake-file-format)
+<<<<<<< HEAD
 * [Azure MySQL](#azure-mysql)
 * [PostgreSQL](#postgresql)
 * [Azure Data Explorer](#azure-data-explorer)
+* [Azure Cosmos DB]()
+=======
+* [Azure Cosmos DB](#azure-cosmos-db)
+>>>>>>> 85ddab3 (Update LIMITATIONS)
 * [Other Data Sources and Limitations](#other-data-sources-and-limitations)
 * [Column Level Mapping Supported Sources](#column-level-mapping-supported-sources)
 
@@ -92,6 +97,9 @@ Supports both Azure PostgreSQL and on-prem/VM installations of PostgreSQL throug
 ## Azure Data Explorer
 
 Supports Azure Data Explorer (aka Kusto) through the [Azure Data Explorer Connector for Apache Spark](https://learn.microsoft.com/en-us/azure/data-explorer/spark-connector)
+## Azure Cosmos DB
+
+Supports querying [Azure Cosmos DB (SQL API)](https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/cosmos/azure-cosmos-spark_3_2-12)
 
 ## Other Data Sources and Limitations
 

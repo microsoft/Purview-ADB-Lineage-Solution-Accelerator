@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
@@ -143,12 +144,26 @@ namespace Function.Domain.Helpers
             }
             try
             {
-                var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
+                if (isDataSourceV2Event(olEvent))
+                // Store inputs and env facet.
                 {
-                    { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) }
-                };
+                    var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
+                    {
+                        { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) },
+                        { "Inputs", JsonConvert.SerializeObject(olEvent.Inputs) }
 
-                await _tableClient.AddEntityAsync(entity);
+                    };
+                    await _tableClient.AddEntityAsync(entity);
+                }
+                else {
+                // Store only env facet.
+                    var entity = new TableEntity(TABLE_PARTITION, olEvent.Run.RunId)
+                    {
+                        { "EnvFacet", JsonConvert.SerializeObject(olEvent.Run.Facets.EnvironmentProperties) }
+
+                    };
+                    await _tableClient.AddEntityAsync(entity);
+                }
             }
             catch (RequestFailedException ex)
             {
@@ -159,6 +174,7 @@ namespace Function.Domain.Helpers
                 _log.LogError(ex, $"OlMessageConsolodation-ProcessStartEvent: Error {ex.Message} when processing entity");
                 return false;
             }
+
             return true;
         }
 
@@ -168,15 +184,18 @@ namespace Function.Domain.Helpers
             {
                 return false;
             }
-            
-            TableEntity te;
+
+            TableEntity te = null;
+            TableEntity te_inputs = null;
+
+            bool ret_val = true;
 
             // Processing time can sometimes cause complete events 
             int retryCount = 4;
             int currentRetry = 0;
             TimeSpan delay = TimeSpan.FromSeconds(1);
 
-            while (true)
+            while (ret_val)
             {
                 try
                 {
@@ -189,7 +208,30 @@ namespace Function.Domain.Helpers
                     _log.LogWarning($"Start event was missing, retrying to consolidate message. Retry count: {currentRetry}");
                     if (currentRetry > retryCount)
                     {
-                        return false;
+                        ret_val = false;
+                        break;
+                    }
+                }
+                await Task.Delay(delay);
+            }
+
+            // Get inputs. TODO: Check if more efficient to get inputs within the same while loop above. Can we get 2 entities at the same time? 
+            currentRetry = 0;
+            while (ret_val) // use a variable instead of just true, because if we didn't have the env_facet then we don't need to get inputs
+            {
+                try
+                {
+                    te_inputs = await _tableClient.GetEntityAsync<TableEntity>(TABLE_PARTITION, olEvent.Run.RunId, new string[] { "Inputs" });
+                    break;
+                }
+                catch (RequestFailedException)
+                {
+                    currentRetry++;
+                    _log.LogWarning($"Start event was missing, retrying to consolidate message to get inputs. Retry count: {currentRetry}");
+                    if (currentRetry > retryCount)
+                    {
+                        ret_val = false;
+                        break;
                     }
                 }
                 await Task.Delay(delay);
@@ -200,31 +242,91 @@ namespace Function.Domain.Helpers
                 if (envFacet is null)
                 {
                     _log.LogWarning($"OlMessageConsolodation-JoinEventData: Warning environment facet for COMPLETE event is null");
-                    return false;
+                    ret_val = false;
                 }
                 olEvent.Run.Facets.EnvironmentProperties = envFacet;
 
-                // clean up table over time
-                try
-                {
-                    var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
-                }
-                catch (Exception ex)
-                {
-                    _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
-                }
+            // Check if saved any inputs from the START event (will only be done for events containing DataSourceV2 sources)
+            if (te_inputs is not null) {
+                
+                if (te_inputs.ContainsKey("Inputs")) {
+                    try {
+                        //TODO: Find out why inputs might be null. Technically inputs are only added to the table if they exist. This is also not an issue when running locally.
+                        if (te_inputs["Inputs"] != null) {
+                            
+                            var saved_inputs = JsonConvert.DeserializeObject<List<Inputs>>(te_inputs["Inputs"].ToString() ?? "");
 
-            return true;
+                            if (saved_inputs is null) {
+                                _log.LogInformation($"OlMessageConsolodation-JoinEventData: No inputs found for COMPLETE event");
+                            }
+
+                            else {
+                                // Check inputs saved against inputs captured in this COMPLETE event and combine while removing any duplicates.
+                                // Checking for duplicates needed since we save all the inputs captured from the START event. Perhaps it may be better to 
+                                // only save the DataSourceV2 inputs?
+                                var inputs = new List<Inputs>(saved_inputs.Count + olEvent.Inputs.Count);
+                                inputs.AddRange(saved_inputs);
+                                inputs.AddRange(olEvent.Inputs);
+                                var unique_inputs = inputs.Distinct();
+                                olEvent.Inputs = unique_inputs.ToList();
+                                _log.LogInformation($"OlMessageConsolodation-JoinEventData: Captured inputs for COMPLETE event");
+                            }
+                        }
+                    }
+                    catch (System.Exception ex) {
+                        _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deserializing inputs");
+                        ret_val = false;
+                    }
+                    
+                }
+                
+            }
+
+            // clean up table over time. 
+            try
+            {
+                var delresp = await _tableClient.DeleteEntityAsync(TABLE_PARTITION, olEvent.Run.RunId);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"OlMessageConsolodation-JoinEventData: Error {ex.Message} when deleting entity");
+            }
+
+            // Need to make sure we're only processing this COMPLETE event if it has both
+            // inputs and outputs (reflects original logic, prior to supporting DataSourceV2 events)
+            if (!(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)) { 
+                ret_val = false;
+            }
+
+            return ret_val;
         }
 
         // Returns true if olEvent is of type START and has the environment facet
         private bool IsStartEventEnvironment(Event olEvent)
         {
             if (olEvent.EventType == START_EVENT && olEvent.Run.Facets.EnvironmentProperties != null)
-                {
-                    return true;
-                }
+            {
+                return true;
+            }
 
+            return false;
+        }
+
+        /// <summary>
+        /// Helper function to determine if the event is one of
+        /// the data source v2 ones which needs us to save the 
+        /// inputs from the start event
+        /// </summary>
+        private bool isDataSourceV2Event(Event olEvent) {
+            string[] special_cases = {"azurecosmos://", "iceberg://"}; // todo: make this configurable?
+
+            foreach (var inp in olEvent.Inputs)
+            {
+                foreach (var source in special_cases)
+                {
+                    if (inp.NameSpace.StartsWith(source)) return true;
+                }   
+            }
             return false;
         }
 
@@ -232,7 +334,7 @@ namespace Function.Domain.Helpers
         {
             if (olEvent.EventType == COMPLETE_EVENT)
             {
-                if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
+                if (olEvent.Outputs.Count > 0)
                 {
                     return true;
                 }

@@ -408,6 +408,19 @@
             "qualifiedName": "https://{nameSpcBodyParts[0]}/{nameSpcBodyParts[1]}/{nameGroups[0]}",
             "purviewDataType": "azure_data_explorer_table", 
             "purviewPrefix": "https"
+        },
+        {
+            "name": "azureCosmos",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "azurecosmos"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[0]}/{nameSpcBodyParts[1]}/{nameSpcBodyParts[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_cosmosdb_sqlapi_collection",
+            "purviewPrefix": "https"
         }
     ]
 }

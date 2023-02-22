@@ -101,10 +101,12 @@ namespace Function.Domain.Services
                     else
                     {
                         var enrichedEvent = await olEnrichMessage.GetEnrichedEvent(consolodatedEvent);
+
                         if (enrichedEvent == null)
                         {
                             return null;
                         }
+                        
                         return enrichedEvent;
                     }
                 }

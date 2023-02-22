@@ -32,7 +32,7 @@ namespace Function.Domain.Helpers.Parser
         /// <summary>
         /// Performs initial validation of OpenLineage input
         /// The tested criteria include:
-        /// 1. Events have both inputs and outputs
+        /// 1. Events have outputs (not both inputs and outputs, because in the case of DataSourceV2 events, the COMPLETE event will not have inputs)
         /// 2. Events do not have the same input and output
         /// 3. EventType is START or COMPLETE
         /// 4. If EventType is START, there is a Environment Facet
@@ -40,23 +40,26 @@ namespace Function.Domain.Helpers.Parser
         /// <param name="olEvent">OpenLineage Event message</param>
         /// <returns>true if input is valid, false if not</returns>
         public bool Validate(Event olEvent){
-            if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
+            if (olEvent.Outputs.Count > 0)
+            // Want to save COMPLETE events even if they only have outputs, to deal with cosmos
             {
                 // Need to rework for multiple inputs and outputs in one packet - possibly combine and then hash
                 if (InOutEqual(olEvent))
-                { 
+                {
                     return false; 
                 }
                 if (olEvent.EventType == "START")
                 {
-                    if (olEvent.Run.Facets.EnvironmentProperties == null)
+                    // START events should contain both inputs and outputs, as well as the EnvironmentProperties facet
+                    if (olEvent.Run.Facets.EnvironmentProperties == null || !(olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0))
                     {
                         return false;
                     }
                     return true;
                 }
-                else if (olEvent.EventType == "COMPLETE")
-                {
+                // COMPLETE events might not contain inputs, but should have at least one output. 
+                else if (olEvent.EventType == "COMPLETE" && olEvent.Outputs.Count > 0)
+                { 
                     return true;
                 }
                 else
