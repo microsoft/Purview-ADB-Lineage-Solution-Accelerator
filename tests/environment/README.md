@@ -28,6 +28,9 @@ Add Service Principal as user in Databricks.
 
 Enable mount points with `./tests/environment/dbfs/mounts.py`
 
+Install mysql:mysql-connector-java:8.0.30 (version may vary based on cluster config) on the cluster.
+Create/reuse a Service Principal for Azure Data Explorer Authentication. Create and save a secret locally.
+
 Add Key Vault Secrets
   * `tenant-id`
   * `storage-service-key`
@@ -37,14 +40,27 @@ Add Key Vault Secrets
   * `synapse-storage-key`
   * `synapse-query-username`
   * `synapse-query-password`
+  * `mysql-username` of the form `username@servername`
+  * `mysql-password`
+  * `mysql-hostname` the server name of the Azure MySQL resource
+  * `postgres-admin-user` should be of the form `username@servername`
+  * `postgres-admin-password`
+  * `postgres-host` - the server name of the deployed postgres server
+  * `azurekusto-appid`
+  * `azurekusto-appsecret`
+  * `azurekusto-uri`
+  
 * Update SQL Db and Synapse Server with AAD Admin
 * Add Service Principal for Databricks to connect to SQL sources
+* Assign the Service Principal admin role on the ADX cluster. [Guide](https://learn.microsoft.com/en-us/azure/data-explorer/provision-azure-ad-app#grant-the-service-principal-access-to-an-azure-data-explorer-database)
 
 Set the following system environments:
 
 * `SYNAPSE_SERVICE_NAME`
 * `STORAGE_SERVICE_NAME`
 * `SYNAPSE_STORAGE_SERVICE_NAME`
+
+Install the version of the [kusto spark connector](https://github.com/Azure/azure-kusto-spark) that matches the cluster Scala and Spark versions from Maven Central.
 
 Upload notebooks in `./tests/integration/spark-apps/notebooks/` to dbfs' `/Shared/examples/`
 

@@ -14,6 +14,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Runtime.Caching;
 using Function.Domain.Models.Settings;
+using Newtonsoft.Json;
 
 namespace Function.Domain.Services
 {
@@ -23,18 +24,15 @@ namespace Function.Domain.Services
     /// </summary>
     public class PurviewIngestion : IPurviewIngestion
     {
-        private bool useResourceSet = bool.Parse(Environment.GetEnvironmentVariable("useResourceSet") ?? "true");
         private PurviewClient _purviewClient;
         private Int64 initGuid = -1000;
-        //stores all mappings of columns for Origin and destination assets
-        private Hashtable columnmapping = new Hashtable();
         //flag use to mark if a data Asset is a Dummy type
-        private Dictionary<string, PurviewCustomType> entities = new Dictionary<string, PurviewCustomType>();
+        private Dictionary<string, PurviewCustomType> entitiesMarkedForDeletion = new Dictionary<string, PurviewCustomType>();
+        private Dictionary<string, string> originalFqnToDiscoveredFqn = new Dictionary<string, string>();
         List<PurviewCustomType> inputs_outputs = new List<PurviewCustomType>();
         private JArray to_purview_Json = new JArray();
         private readonly ILogger<PurviewIngestion> _logger;
-        private List<PurviewCustomType> found_entities = new List<PurviewCustomType>();
-        private MemoryCache _payLoad = MemoryCache.Default;
+        private MemoryCache _cacheOfSeenEvents = MemoryCache.Default;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         private CacheItemPolicy cacheItemPolicy;
         /// <summary>
@@ -57,12 +55,12 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="Processes">Array of Entities</param>
         /// <returns>Array on Entities</returns>
-        public async Task<JArray> SendToPurview(JArray Processes)
+        public async Task<JArray> SendToPurview(JArray Processes, IColParser colParser)
         {
             foreach (JObject process in Processes)
             {
 
-                if (await SendToPurview(process))
+                if (await SendToPurview(process, colParser))
                 {
                     return new JArray();
                 }
@@ -74,76 +72,83 @@ namespace Function.Domain.Services
         /// </summary>
         /// <param name="json">Json Object</param>
         /// <returns>Boolean</returns>
-        public async Task<bool> SendToPurview(JObject json)
+        public async Task<bool> SendToPurview(JObject json, IColParser colParser)
         {
-            var entities = get_attribute("entities", json);
+            var entitiesFromInitialJson = get_attribute("entities", json);
 
-            if (entities == null)
+            if (entitiesFromInitialJson == null)
             {
-                Log("Error", "Not found Attribute entities on " + json.ToString());
+                _logger.LogError("Not found Attribute entities on " + json.ToString());
                 return false;
             }
 
-            string ? dataEvent = CalculateHash(entities.ToString());
-            if (!_payLoad.Contains(dataEvent))
+            // This hash and cache helps to prevent processing the same event multiple times
+            string ? dataEvent = CalculateHash(entitiesFromInitialJson.ToString());
+            if (!_cacheOfSeenEvents.Contains(dataEvent))
             {
                 var cacheItem = new CacheItem(dataEvent, dataEvent);  
-                _payLoad.Add(cacheItem, cacheItemPolicy);
+                _cacheOfSeenEvents.Add(cacheItem, cacheItemPolicy);
 
-                foreach (JObject entity in entities)
+                foreach (JObject purviewEntityToBeUpdated in entitiesFromInitialJson)
                 {
-
-
-                    if (Validate_Process_Json(entity))
+                    if (IsProcessEntity(purviewEntityToBeUpdated))
                     {
-                        JObject new_entity = await Validate_Process_Entities(entity);
+                        JObject new_entity = await Validate_Process_Entities(purviewEntityToBeUpdated);
+                        // Update Column mapping attribute based on the dictionary and inject the column parser with the openlineage event
+                        // This lets us use the discovered inputs / outputs rather than just what open lineage provides.
+                        string columnMapping = JsonConvert.SerializeObject(colParser.GetColIdentifiers(originalFqnToDiscoveredFqn));
+                        new_entity["attributes"]!["columnMapping"] = columnMapping;
                         to_purview_Json.Add(new_entity);
                     }
                     else
                     {
-                        if (Validate_Entities_Json(entity))
+                        if (EntityAttributesHaveBeenPopulated(purviewEntityToBeUpdated))
                         {
-                            PurviewCustomType new_entity = await Validate_Entities(entity);
-                            //Check Entity Relatioship
-                            //                        if (new_entity.is_dummy_asset)
-                            //                            to_purview_Json.Add(new_entity.Properties);
+                            PurviewCustomType new_entity = await Validate_Entities(purviewEntityToBeUpdated);
 
-                            string qualifiedName = entity["attributes"]!["qualifiedName"]!.ToString();
-                            if (entity.ContainsKey("relationshipAttributes"))
+                            if (purviewEntityToBeUpdated.ContainsKey("relationshipAttributes"))
                             {
-                                foreach (var rel in entity["relationshipAttributes"]!.Values<JProperty>())
+                                // For every relationship attribute
+                                foreach (var rel in purviewEntityToBeUpdated["relationshipAttributes"]!.Values<JProperty>())
                                 {
-                                    if (((JObject)(entity["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
+                                    // If the relationship attribute has a qualified name property
+                                    if (((JObject)(purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!)).ContainsKey("qualifiedName"))
                                     {
-                                        if (this.entities.ContainsKey(entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()))
+                                        string _qualifiedNameOfRelatedAsset = purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
+                                        // If the entitiesMarkedForDeletion dictionary has this related asset
+                                        // update the guid of the relationship attribute we're in to be the original one?
+                                        if (this.entitiesMarkedForDeletion.ContainsKey(_qualifiedNameOfRelatedAsset))
                                         {
-                                            entity["relationshipAttributes"]![rel!.Name]!["guid"] = this.entities[entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString()].Properties["guid"];
+                                            purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = this.entitiesMarkedForDeletion[_qualifiedNameOfRelatedAsset].Properties["guid"];
                                         }
                                         else
                                         {
-                                            string qn = entity["relationshipAttributes"]![rel!.Name]!["qualifiedName"]!.ToString();
+                                            // This entity is created solely to be able to search for the asset based on qualifiedName
                                             PurviewCustomType sourceEntity = new PurviewCustomType("search relationship"
                                                 , ""
-                                                , qn
+                                                , _qualifiedNameOfRelatedAsset
                                                 , ""
                                                 , "search relationship"
-                                                , NewGuid()
+                                                , NewGuid() // This will be updated after successfully finding the asset via query in purview
                                                 , _logger
                                                 , _purviewClient);
 
-
+                                            // TODO This should use the qualifiedNamePrefix filter
+                                            // Currently fqn may change here
                                             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
 
-                                            if (!this.entities.ContainsKey(qn))
-                                                this.entities.Add(qn, sourceEntity);
-                                            entity["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
-
+                                            // If the related asset has not been seen, add it to the list of assets to be deleted?
+                                            if (!this.entitiesMarkedForDeletion.ContainsKey(_qualifiedNameOfRelatedAsset))
+                                                this.entitiesMarkedForDeletion.Add(_qualifiedNameOfRelatedAsset, sourceEntity);
+                                            // Update the guid of the relationship attribute with the one that was discovered ()
+                                            // TODO Handle when sourceJson does not return a typed asset
+                                            purviewEntityToBeUpdated["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
                                         }
 
                                     }
                                 }
                             }
-                            to_purview_Json.Add(entity);
+                            to_purview_Json.Add(purviewEntityToBeUpdated);
                         }
                     }
                 }
@@ -164,46 +169,46 @@ namespace Function.Domain.Services
                     }
                     payload = "{\"entities\": " + tempEntities.ToString() + "}";
                     JObject? Jpayload = JObject.Parse(payload);
-                    Log("Info", $"Input/Output Entities to load: {Jpayload.ToString()}");
+                    _logger.LogInformation($"Input/Output Entities to load: {Jpayload.ToString()}");
                     results = await _purviewClient.Send_to_Purview(payload);
                     if (results != null)
                     {
                         if (results.ReasonPhrase != "OK")
                         {
-                            Log("Error", $"Error Loading Input/Outputs to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                            _logger.LogError($"Error Loading Input/Outputs to Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                         else
                         {
                             var data = await results.Content.ReadAsStringAsync();
-                            Log("Info", $"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
+                            _logger.LogInformation($"Purview Loaded Relationship, Input and Output Entities: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase} - Content: {data}");
                         }
                     }
                     else
                     {
-                        Log("Error", $"Error Loading to Purview!");
+                        _logger.LogError($"Error Loading to Purview!");
                     }
                 }
                 if (to_purview_Json.Count > 0)
                 {
-                    Log("Debug", to_purview_Json.ToString());
+                    _logger.LogDebug(to_purview_Json.ToString());
                     payload = "{\"entities\": " + to_purview_Json.ToString() + "}";
                     JObject? Jpayload = JObject.Parse(payload);
-                    Log("Info", $"To Purview Json Entities to load: {Jpayload.ToString()}");
+                    _logger.LogInformation($"To Purview Json Entities to load: {Jpayload.ToString()}");
                     results = await _purviewClient.Send_to_Purview(payload);
                     if (results != null)
                     {
                         if (results.ReasonPhrase != "OK")
                         {
-                            Log("Error", $"Error Loading to Purview JSON Entiitesto Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
+                            _logger.LogError($"Error Loading to Purview JSON Entiitesto Purview: Return Code: {results.StatusCode} - Reason:{results.ReasonPhrase}");
                         }
                     }
                     else
                     {
-                        Log("Error", $"Error Loading to Purview!");
+                        _logger.LogError($"Error Loading to Purview!");
                     }
-                    foreach (var entity in this.entities)
+                    foreach (var deletableEntity in this.entitiesMarkedForDeletion)
                     {
-                        await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
+                        await _purviewClient.Delete_Unused_Entity(deletableEntity.Key, "purview_custom_connector_generic_entity_with_columns");
                     }
                     return true;
                 }
@@ -211,41 +216,37 @@ namespace Function.Domain.Services
                 {
                     if (json.Count > 0)
                     {
-                        Log("INFO", $"Payload: {json}");
-                        Log("Error", "Nothing found to load on to Purview, look if the payload is empty.");
+                        _logger.LogInformation($"Payload: {json}");
+                        _logger.LogError("Nothing found to load on to Purview, look if the payload is empty.");
                     }
                     else
                     {
-                        Log("Error", "No Purview entity to load");
+                        _logger.LogError("No Purview entity to load");
                     }
-                    foreach (var entity in this.entities)
+                    foreach (var deletableEntity in this.entitiesMarkedForDeletion)
                     {
-                        await _purviewClient.Delete_Unused_Entity(entity.Key, "purview_custom_connector_generic_entity_with_columns");
+                        await _purviewClient.Delete_Unused_Entity(deletableEntity.Key, "purview_custom_connector_generic_entity_with_columns");
                     }
                     return false;
                 }
             }
-            Log("INFO", $"Payload already registered in Microsoft Purview: {json.ToString()}");
+            _logger.LogInformation($"Payload already registered in Microsoft Purview: {json.ToString()}");
             return false;
         }
-        private bool Validate_Entities_Json(JObject Process)
+        private bool EntityAttributesHaveBeenPopulated(JObject questionableEntity)
         {
-            if (!Process.ContainsKey("typeName"))
+            if (!questionableEntity.ContainsKey("typeName"))
             {
                 return false;
             }
-            /*            if (!Process.ContainsKey("guid"))
-                        {
-                            return false;
-                        }*/
-            if (!Process.ContainsKey("attributes"))
+            if (!questionableEntity.ContainsKey("attributes"))
             {
                 return false;
             }
-            if (Process["attributes"]!.GetType() != typeof(JObject))
+            if (questionableEntity["attributes"]!.GetType() != typeof(JObject))
                 return false;
 
-            if (!((JObject)Process["attributes"]!).ContainsKey("qualifiedName"))
+            if (!((JObject)questionableEntity["attributes"]!).ContainsKey("qualifiedName"))
             {
                 return false;
             }
@@ -269,30 +270,43 @@ namespace Function.Domain.Services
 
 
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
+            // Capture the updated qualified name mapping in case column mapping needs it
+            originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
+
 
             Process["guid"] = sourceEntity.Properties["guid"];
 
             String proctype = Process["typeName"]!.ToString();
             if (sourceEntity.Properties.ContainsKey("typeName")){
                 String sourcetype = sourceEntity.Properties["typeName"]!.ToString();
-                Log("Info", $"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was {sourcetype}");
+                _logger.LogInformation($"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was {sourcetype}");
             }else{
-                Log("Info", $"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was not set");
+                _logger.LogInformation($"PQN:{qualifiedName} Process Type name is {proctype} and sourceEntity original TypeName was not set");
             }
 
             if (sourceEntity.is_dummy_asset)
             {
-                Log("Info", "IN DUMMY ASSET AND ABOUT TO OVERWRITE");
+                _logger.LogInformation("IN DUMMY ASSET AND ABOUT TO OVERWRITE");
                 sourceEntity.Properties["typeName"] = Process["typeName"]!.ToString();
-                if (!entities.ContainsKey(qualifiedName))
-                    entities.Add(qualifiedName, sourceEntity);
-                Log("Info", $"Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
+                if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                    entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
+                _logger.LogInformation($"Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
                 return sourceEntity;
             }
-            if (!entities.ContainsKey(qualifiedName))
-                entities.Add(qualifiedName, sourceEntity);
+            if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
             return sourceEntity;
         }
+
+        /// <summary>
+        /// Transform the provided JSON object (an input or output entity for a Purview process).
+        /// This entity will have their qualified name and type updated based on searching for
+        /// an existing entity in the purview instance.
+        /// In addition the entity is added to the inputs_outputs property of PurviewIngestion.
+        /// </summary>
+        /// <param name="outPutInput">Json Object</param>
+        /// <param name="inorout">Should be either 'inputs' or 'outputs'</param>
+        /// <returns>A PurviewCustomType</returns>
         private async Task<PurviewCustomType> SetOutputInput(JObject outPutInput, string inorout)
         {
 
@@ -314,13 +328,16 @@ namespace Function.Domain.Services
             , _purviewClient);
 
             QueryValeuModel sourceJson = await sourceEntity.QueryInPurview();
+            // Capture the updated qualified name mapping in case column mapping needs it
+            originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
+
             if (sourceEntity.is_dummy_asset)
             {
                 outPutInput["typeName"] = sourceEntity.Properties["typeName"];
                 outPutInput["uniqueAttributes"]!["qualifiedName"] = sourceEntity.Properties!["attributes"]!["qualifiedName"]!.ToString().ToLower();
 
                 inputs_outputs.Add(sourceEntity);
-                Log("Info", $"{inorout} Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
+                _logger.LogInformation($"{inorout} Entity: {qualifiedName} Type: {typename}, Not found, Creating Dummy Entity");
             }
             else
             {
@@ -328,8 +345,8 @@ namespace Function.Domain.Services
                 outPutInput["typeName"] = sourceEntity.Properties!["typeName"]!.ToString();
             }
 
-            if (!entities.ContainsKey(qualifiedName))
-                entities.Add(qualifiedName, sourceEntity);
+            if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
 
             return sourceEntity;
         }
@@ -370,7 +387,7 @@ namespace Function.Domain.Services
                     string[] tmpName = qualifiedName.Split('/');
                     Name = tmpName[tmpName.Length - 1];
                     typename = "purview_custom_connector_generic_entity_with_columns";
-                    if (!entities.ContainsKey(qualifiedName))
+                    if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
                     {
 
                         PurviewCustomType sourceEntity = new PurviewCustomType(Name
@@ -384,55 +401,39 @@ namespace Function.Domain.Services
 
 
                         var outputObj = await sourceEntity.QueryInPurview();
+                        // Capture the updated qualified name mapping in case column mapping needs it
+                        originalFqnToDiscoveredFqn[qualifiedName] = sourceEntity.currentQualifiedName();
+
                         Process["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
-                        if (!entities.ContainsKey(qualifiedName))
-                            entities.Add(qualifiedName, sourceEntity);
+                        if (!entitiesMarkedForDeletion.ContainsKey(qualifiedName))
+                            entitiesMarkedForDeletion.Add(qualifiedName, sourceEntity);
                     }
                     else
                     {
-                        Process["relationshipAttributes"]![rel!.Name]!["guid"] = entities[qualifiedName].Properties["guid"];
+                        Process["relationshipAttributes"]![rel!.Name]!["guid"] = entitiesMarkedForDeletion[qualifiedName].Properties["guid"];
                     }
                 }
             }
             return Process;
         }
-        private async Task<PurviewCustomType> Validate_Resource_Set(string qualifiedName)
-        {
-            string[] tmpName = qualifiedName.Split('/');
-            string Name = tmpName[tmpName.Length - 1];
-            if (Name == "")
-                Name = tmpName[tmpName.Length - 2];
-            string typeName = "azure_datalake_gen2_resource_set";
-            PurviewCustomType sourceEntity = new PurviewCustomType(Name
-            , typeName
-            , qualifiedName
-            , typeName
-            , $"Data Assets {Name}"
-            , NewGuid()
-            , _logger
-            , _purviewClient);
-
-            var outputObj = await sourceEntity.QueryInPurview();
-            return sourceEntity;
-        }
-        private bool Validate_Process_Json(JObject Process)
+        private bool IsProcessEntity(JObject Process)
         {
             var _typename = get_attribute("typeName", Process);
             if (_typename == null)
             {
-                Log("Info", "Not found Attribute typename on " + Process.ToString());
+                _logger.LogInformation("Not found Attribute typename on " + Process.ToString());
                 return false;
             }
             var _attributes = get_attribute("attributes", Process);
             if (!_attributes.HasValues)
             {
-                Log("Error", "Not found Attribute attributes on " + Process.ToString());
+                _logger.LogError("Not found Attribute attributes on " + Process.ToString());
                 return false;
             }
 
             if (!((JObject)Process["attributes"]!).ContainsKey("columnMapping"))
             {
-                Log("Info", $"Not found Attribute columnMapping on {Process.ToString()} i is not a Process Entity!");
+                _logger.LogInformation($"Not found Attribute columnMapping on {Process.ToString()} is not a Process Entity!");
                 return false;
             }
 
@@ -461,31 +462,6 @@ namespace Function.Domain.Services
 
             return initGuid--;
         }
-
-        private void Remove_Unused_Dummy_Entitites()
-        {
-            foreach (var entity in this.entities)
-            {
-
-            }
-        }
-
-        private void Log(string type, string msg)
-        {
-            if (type.ToUpper() == "ERROR")
-            { _logger.LogError(msg); return; }
-            if (type.ToUpper() == "INFO")
-            { _logger.LogInformation(msg); return; }
-            if (type.ToUpper() == "DEBUG")
-            { _logger.LogDebug(msg); return; }
-            if (type.ToUpper() == "WARNING")
-            { _logger.LogWarning(msg); return; }
-            if (type.ToUpper() == "CRITICAL")
-            { _logger.LogCritical(msg); return; }
-            if (type.ToUpper() == "TRACE")
-            { _logger.LogInformation(msg); return; }
-        }
-
         private static string CalculateHash(string payload)
         {
             var newKey = Encoding.UTF8.GetBytes(payload);
@@ -503,12 +479,4 @@ namespace Function.Domain.Services
         }
     }
 
-    /// <summary>
-    /// Enumeration of the Microsoft Purview Process entity relationships
-    /// </summary>
-    public enum Relationships_Type
-    {
-        inputs,
-        outputs
-    }
 }

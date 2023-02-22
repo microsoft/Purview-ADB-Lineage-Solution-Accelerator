@@ -110,7 +110,6 @@ namespace Function.Domain.Helpers
             DatabricksWorkspace databricksWorkspace = new DatabricksWorkspace();
             databricksWorkspace.Attributes.Name = $"{_adbWorkspaceUrl}.azuredatabricks.net";
             databricksWorkspace.Attributes.QualifiedName = $"databricks://{_adbWorkspaceUrl}.azuredatabricks.net";
-            //databricksWorkspace.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             
             return databricksWorkspace;
         }
@@ -317,7 +316,6 @@ namespace Function.Domain.Helpers
             }
 
             databricksProcess.Attributes = GetProcAttributes(taskQn, inputs,outputs,_eEvent.OlEvent);
-            //databricksProcess.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser.GetColIdentifiers());
             databricksProcess.RelationshipAttributes.Task.QualifiedName = taskQn; 
             return databricksProcess;
         }
@@ -344,13 +342,6 @@ namespace Function.Domain.Helpers
 
             return inputOutputId;
         }
-
-        // private ColumnLevelAttributes GetColumnLevelAttributes(IInputsOutputs inOut)
-        // {
-        //     var id = _colParser.GetColIdentifiers(_eEvent.OlEvent.Outputs);
-        //     var columnLevelId = new ColumnLevelAttributes();
-        //     return columnLevelId;
-        // } 
 
         private string GetInputsOutputsHash(List<InputOutput> inputs, List<InputOutput> outputs)
         {
@@ -408,6 +399,11 @@ namespace Function.Domain.Helpers
             string[] job_name_parts = inputName.Split("_");
             string[] job_name_except_last_element = job_name_parts.Take(job_name_parts.Count() - 2).ToArray();
             return string.Join("_", job_name_except_last_element);
+        }
+
+        public IColParser GetColumnParser()
+        {
+            return this._colParser;
         }
     }
 }

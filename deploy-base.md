@@ -136,7 +136,7 @@ You will need the default API / Host key configured on your Function app. To ret
 ### <a id="configure-openlineage" />Install OpenLineage on Your Databricks Cluster
 
 Follow the instructions below and refer to the [OpenLineage Databricks Install Instructions](https://github.com/OpenLineage/OpenLineage/tree/main/integration/spark/databricks#databricks-install-instructions) to enable OpenLineage in Databricks.
-1. Download the [OpenLineage-Spark 0.13.0 jar](https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.13.0/openlineage-spark-0.13.0.jar) from Maven Central
+1. Download the [OpenLineage-Spark 0.18.0 jar](https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.18.0/openlineage-spark-0.18.0.jar) from Maven Central
 2. Create an init-script named `open-lineage-init-script.sh`
 
     ```text

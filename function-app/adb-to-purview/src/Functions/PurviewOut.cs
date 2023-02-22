@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Function.Domain.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Function.Domain.Helpers;
+using Microsoft.Extensions.Configuration;
 
 namespace AdbToPurview.Function
 {
@@ -18,8 +20,9 @@ namespace AdbToPurview.Function
         private readonly IOlConsolodateEnrich _olConsolodateEnrich;       
         private readonly IOlToPurviewParsingService _olToPurviewParsingService;
         private readonly IPurviewIngestion _purviewIngestion;
+        private readonly IConfiguration _configuration;
 
-        public PurviewOut(ILogger<PurviewOut> logger, IOlToPurviewParsingService olToPurviewParsingService, IPurviewIngestion purviewIngestion, IOlConsolodateEnrich olConsolodateEnrich, ILoggerFactory loggerFactory)
+        public PurviewOut(ILogger<PurviewOut> logger, IOlToPurviewParsingService olToPurviewParsingService, IPurviewIngestion purviewIngestion, IOlConsolodateEnrich olConsolodateEnrich, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
             logger.LogInformation("Enter PurviewOut");
             _logger = logger; 
@@ -27,6 +30,7 @@ namespace AdbToPurview.Function
             _olConsolodateEnrich = olConsolodateEnrich;           
             _olToPurviewParsingService = olToPurviewParsingService;
             _purviewIngestion = purviewIngestion;
+            _configuration = configuration;
         }
 
         [Function("PurviewOut")]
@@ -42,7 +46,9 @@ namespace AdbToPurview.Function
                     _logger.LogInformation($"Start event, duplicate event, or no context found - eventData: {input}");
                     return "";
                 }
-                var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent);
+
+                IDatabricksToPurviewParser parser = new DatabricksToPurviewParser(_loggerFactory, _configuration, enrichedEvent);
+                var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent, parser);
                 if (purviewEvent == null)
                 {
                     _logger.LogWarning("No Purview Event found");
@@ -52,7 +58,7 @@ namespace AdbToPurview.Function
                 _logger.LogInformation($"PurviewOut-ParserService: {purviewEvent}");
                 var jObjectPurviewEvent = JsonConvert.DeserializeObject<JObject>(purviewEvent) ?? new JObject();
                 _logger.LogInformation("Calling SendToPurview");
-                await _purviewIngestion.SendToPurview(jObjectPurviewEvent);
+                await _purviewIngestion.SendToPurview(jObjectPurviewEvent, parser.GetColumnParser());
 
                 return $"Output message created at {DateTime.Now}";
             }

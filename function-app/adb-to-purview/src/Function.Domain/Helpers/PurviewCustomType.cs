@@ -25,17 +25,24 @@ namespace Function.Domain.Helpers
         private readonly ILogger _logger;
         private readonly string EntityType = "purview_custom_connector_generic_entity_with_columns";
         private PurviewClient _client;
-        private JObject? simpleEntity;
         private JObject? properties;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         public JObject? Fullentity = new JObject();
         bool useResourceSet = true;
+        public string? originalQualifiedName {get; private set;}
         /// <summary>
         /// Property that contains all Json attributes for the Custom data Entity in Microsoft Purview
         /// </summary>
         public JObject Properties
         {
             get { return properties!; }
+        }
+        /// <summary>
+        /// Get the current qualifedName
+        /// </summary>
+        public string currentQualifiedName()
+        {
+            return properties!["attributes"]!["qualifiedName"]!.ToString();
         }
         /// <summary>
         /// Creation of a Microsoft Purview Custom Type entity that initialize all attributes needed
@@ -113,11 +120,33 @@ namespace Function.Domain.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Validate if the entity is a Blob or Data Lake entity type but not a resource set
+        /// </summary>
+        /// <param name="typeName">Type name</param>
+        /// <returns>boolean</returns>
+        public bool IsBlobOrDataLakeFS_Entity(string typeName)
+        {
+            string typeNameLowercase = typeName.ToLower();
+            return ((typeNameLowercase == "azure_blob_path") || (typeNameLowercase == "azure_datalake_gen2_path") || (typeNameLowercase == "azure_datalake_gen2_filesystem"));
+        }
+
+        /// <summary>
+        /// Validate if the entity is a Blob or Data Lake resource type but not a file path or system type
+        /// </summary>
+        /// <param name="typeName">Type name</param>
+        /// <returns>boolean</returns>
+        public bool IsBlobOrDataLakeResourceSet_Entity(string typeName)
+        {
+            string typeNameLowercase = typeName.ToLower();
+            return ((typeNameLowercase == "azure_datalake_gen2_resource_set") || (typeNameLowercase == "azure_blob_resource_set"));
+        }
+
         private void Init(string name, string typeName, string qualified_name, string data_type, string description, Int64 guid)
         {
             is_dummy_asset = false;
             properties = new JObject();
-            simpleEntity = new JObject();
+            originalQualifiedName = qualified_name;
             //Loading Entity properties into Json format of an AtlasEntity
             properties.Add("typeName", typeName);
             properties.Add("guid", guid);
@@ -128,23 +157,7 @@ namespace Function.Domain.Helpers
             ((JObject)properties["attributes"]!).Add("data_type", data_type);
             ((JObject)properties["attributes"]!).Add("description", description);
         }
-        /// <summary>
-        /// Export basic data entity attribute
-        /// </summary>
-        /// <value>Json Object</value>
-        public JObject SimpleEntity
-        {
-            get
-            {
-                //Simple Json format for use in Atlas requests
-                simpleEntity = new JObject();
-                simpleEntity.Add("typeName", this.Properties["typeName"]!.ToString());
-                simpleEntity.Add("guid", this.Properties["guid"]!.ToString());
-                simpleEntity.Add("qualifiedName", this.Properties["attributes"]!["qualifiedName"]!.ToString());
-                _logger.LogInformation($"Retrived Entity simple Object: {simpleEntity.ToString()}");
-                return simpleEntity;
-            }
-        }
+
         /// <summary>
         /// Get a list on Data Entities in Microsoft Purview using Entity Qualified Name and Type
         /// </summary>
@@ -162,84 +175,6 @@ namespace Function.Domain.Helpers
         /// </summary>
         /// <value>Boolean</value>
         public bool is_dummy_asset { get; set; }
-        /// <summary>
-        /// Add Relationship to entity as columns to tables type
-        /// </summary>
-        /// <param name="Table">Table to be related to</param>
-        /// <returns>bool</returns>
-        public bool AddToTable(PurviewCustomType Table)
-        {
-            //Validating if the table attribute exists if not we will initialize
-            if (!((JObject)properties!["relationshipAttributes"]!).ContainsKey("table"))
-                ((JObject)properties!["relationshipAttributes"]!).Add("table", new JObject());
-
-            _logger.LogInformation($"Entity qualifiedName: {properties["attributes"]!["qualifiedName"]}Table.simpleEntity: {Table!.simpleEntity!.ToString()}");
-            properties["relationshipAttributes"]!["table"] = Table.simpleEntity;
-            return true;
-        }
-        /// <summary>
-        /// Search an Entity in Microsoft Purview using Qualified Name and Type
-        /// </summary>
-        /// <param name="typeName">Type to search for</param>
-        /// <returns>Json object</returns>
-        public async Task<JObject> FindQualifiedNameInPurview(string typeName)
-        {
-            //Search using search method and qualifiedName attribute. Scape needs to be used on some non safe (web URLs) chars
-            EntityModel results = await this._client.search_entities(
-                properties!["attributes"]!["qualifiedName"]!.ToString()
-                , typeName);
-
-            if (results.qualifiedName == null)
-            {
-                _logger.LogInformation($"Entity qualifiedName:{properties["attributes"]!["qualifiedName"]!.ToString()} - typeName:{typeName}, not found!");
-                this.is_dummy_asset = true;
-                properties["typeName"] = EntityType;
-                return new JObject();
-            }
-            var guid = "";
-            this.is_dummy_asset = false;
-            var _qualifiedName = "";
-            //validate if qualifiedName is the same
-            _qualifiedName = results.qualifiedName;
-            if (results.entityType == "azure_datalake_gen2_resource_set")
-                properties["attributes"]!["qualifiedName"] = _qualifiedName;
-            if (_qualifiedName.Trim('/').ToLower() == properties["attributes"]!["qualifiedName"]!.ToString().Trim('/').ToLower())
-            {
-                //search api return quid on ID property
-                guid = results.id;
-                properties["typeName"] = results.entityType;
-                properties!["attributes"]!["qualifiedName"] = results.qualifiedName;
-                //break if find a non dummy entity with the qualified name
-                if (results.entityType == EntityType)
-                {
-                    //log.debug("search_entity_by_qualifiedName: entity \'{name}\' is Dummy Entity");
-                    //mark entity as dummy to be created
-                    this.is_dummy_asset = true;
-                }
-                _logger.LogInformation($"Entity qualifiedName:{properties["attributes"]!["qualifiedName"]!.ToString()} - typeName:{typeName} - guid:{guid}, found!");
-            }
-
-            if (!this.is_dummy_asset)
-                properties!["attributes"]!["qualifiedName"] = results.qualifiedName;
-
-            var content = new JObject();
-            content.Add(_qualifiedName, new JObject());
-            properties["guid"] = guid;
-            ((JObject)content[_qualifiedName]!).Add("guid", guid);
-            ((JObject)content[_qualifiedName]!).Add("qualifiedName", properties!["attributes"]!["qualifiedName"]!.ToString());
-
-            return content;
-        }
-        /// <summary>
-        /// Remove any unused Dummy entities
-        /// </summary>
-        /// <returns>Boolean</returns>
-        public async Task<bool> CleanUnusedCustomEntities()
-        {
-            return await this._client.Delete_Unused_Entity(
-                properties!["attributes"]!["qualifiedName"]!.ToString()
-                , properties!["typeName"]!.ToString());
-        }
 
         private List<string>? qNames = new List<string>();
         /// <summary>
@@ -345,22 +280,22 @@ namespace Function.Domain.Helpers
             if (results.Count > 0)
             {
                 _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first match has a fqn of {results[0].qualifiedName} and type of {results[0].entityType}");
-                List<QueryValeuModel> validentity = await SelectReturnEntity(results);
-                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {validentity.Count} valid entity matches");
-                if (validentity.Count > 0)
+                List<QueryValeuModel> validEntitiesAfterFiltering = await SelectReturnEntity(results);
+                _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Found {validEntitiesAfterFiltering.Count} valid entity matches");
+                if (validEntitiesAfterFiltering.Count > 0)
                 {
-                    _logger.LogDebug($"Existing Asset Match Search for {_fqn}: The first valid match has a fqn of {validentity[0].qualifiedName} and type of {validentity[0].entityType}");
-                    obj = validentity[0];
-                    properties["guid"] = validentity[0].id;
-                    properties["typeName"] = validentity[0].entityType;
-                    properties!["attributes"]!["qualifiedName"] = validentity[0].qualifiedName;
-                    this.Fullentity = await this._client.GetByGuid(validentity[0].id);
+                    _logger.LogInformation($"Existing Asset Match Search for {_fqn}: The first valid match has a fqn of {validEntitiesAfterFiltering[0].qualifiedName} and type of {validEntitiesAfterFiltering[0].entityType}");
+                    obj = validEntitiesAfterFiltering[0];
+                    properties["guid"] = validEntitiesAfterFiltering[0].id;
+                    properties["typeName"] = validEntitiesAfterFiltering[0].entityType;
+                    properties!["attributes"]!["qualifiedName"] = validEntitiesAfterFiltering[0].qualifiedName;
+                    this.Fullentity = await this._client.GetByGuid(validEntitiesAfterFiltering[0].id);
                     this.is_dummy_asset = false;
                 }
                 // If there are matches but there are none that are valid, it should still be a dummy asset
                 else
                 {
-                    _logger.LogDebug($"Existing Asset Match Search for {_fqn}: Changing type to dummy type because zero valid entities");
+                    _logger.LogInformation($"Existing Asset Match Search for {_fqn}: Changing type to placeholder type because zero valid entities");
                     properties["typeName"] = EntityType;
                 }
             }
@@ -385,122 +320,67 @@ namespace Function.Domain.Helpers
                         validEntities.Add(entity);
                     }
 
-                string qualifiedNameToCompare = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
-                if ((entity.entityType == "azure_datalake_gen2_resource_set") || (entity.entityType == "azure_blob_resource_set"))
+                string searchResultComparableQualifiedName = string.Join("/", this.Build_Searchable_QualifiedName(entity.qualifiedName)!);
+                // If the qualified name does not match, move along
+                _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {searchResultComparableQualifiedName}");
+                if (!QualifiedNames_Match_After_Normalizing(this.to_compare_QualifiedName, searchResultComparableQualifiedName))
                 {
-                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Comparing RS FQNs: {this.to_compare_QualifiedName} to {qualifiedNameToCompare}");
-                    if (ResourceSet_QualifiedNames_Match(this.to_compare_QualifiedName, qualifiedNameToCompare))
-                    {
-                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS FQN comparison is true");
-                        // In case where the search score is the same for multiple values, we cannot trust Microsoft Purview's ordering.
-                        // For example if we have a period in the resource set name or there are multiple assets with very similar names,
-                        // it's pushing the resource set of interest lower in the results (since ordering could be entirely random).
-                        // Only insert the first resource set seen and trust that it is ordered appropriately
-                        if (config!.prioritizeFirstResourceSet && !(matchingResourceSetHasBeenSeen)){
-                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been inserted first");
-                            validEntities.Insert(0,entity);
-                            // Assuming the order of entities are sorted by highest likely match,
-                            // if we 've seen any resource set, it should be the most likely to have matched.
-                            matchingResourceSetHasBeenSeen = true;
-                        } else{
-                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been added to the list");
-                            validEntities.Add(entity);
-                        }
+                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - The searchResultComparableQualifiedName of {searchResultComparableQualifiedName} is not match");
+                    continue;
+                }
+
+                if (IsBlobOrDataLakeResourceSet_Entity(entity.entityType))
+                {
+                    _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS FQN comparison is true");
+                    // In case where the search score is the same for multiple values, we cannot trust Microsoft Purview's ordering.
+                    // For example if we have a period in the resource set name or there are multiple assets with very similar names,
+                    // it's pushing the resource set of interest lower in the results (since ordering could be entirely random).
+                    // Only insert the first resource set seen and trust that it is ordered appropriately
+                    if (config!.prioritizeFirstResourceSet && !(matchingResourceSetHasBeenSeen)){
+                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been inserted first");
+                        validEntities.Insert(0,entity);
+                        // Assuming the order of entities are sorted by highest likely match,
+                        // if we 've seen any resource set, it should be the most likely to have matched.
+                        matchingResourceSetHasBeenSeen = true;
+                    } else{
+                        _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - RS {entity.qualifiedName} has been added to the list");
+                        validEntities.Add(entity);
                     }
                     
                 }
+                else if (IsBlobOrDataLakeFS_Entity(entity.entityType))
+                {
+                    // If there are already some entities, we might want to jump the line if
+                    // this entity is attached to an adf process in any way.
+                    if (validEntities.Count > 0)
+                    {
+                        JObject folder = await _client.GetByGuid(entity.id);
+                        if (IsInputOrOutputOfAzureDataFactoryEntity(folder)){
+                            _logger.LogDebug($"Validating {this.to_compare_QualifiedName} vs {entity.qualifiedName} - Discovered entity is part of an ADF process and has been inserted first");
+                            validEntities.Insert(0,entity);
+                            continue;
+                        }
+                        // If the first valid entity is the default generic entity, insert
+                        // this match into the first position and continue. This helps when
+                        // there is a folder matching but the generic entity is higher up in search
+                        if (validEntities[0].entityType == EntityType){
+                            validEntities.Insert(0,entity);
+                        }
+                    }
+                    // Fall through: We know the qualified name matches but it's either the first
+                    // valid entity OR it's not attached to any Azure Data Factory process
+                    validEntities.Add(entity);
+                }
                 else
                 {
-                    if (qualifiedNameToCompare.ToLower().Trim('/') == this.to_compare_QualifiedName.ToLower().Trim('/'))
-                    {
-                        if ((entity.entityType.ToLower() == "azure_blob_path") || (entity.entityType.ToLower() == "azure_datalake_gen2_path") || (entity.entityType.ToLower() == "azure_datalake_gen2_filesystem"))
-                        {
-                            if (validEntities.Count > 0)
-                            {
-                                JObject folder = await _client.GetByGuid(entity.id);
-                                if (folder.ContainsKey("entity"))
-                                {
-                                    if (((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!).Count > 0)
-                                    {
-                                        foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!))
-                                        {
-                                            if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
-                                            {
-                                                validEntities = new List<QueryValeuModel>();
-                                                validEntities.Add(entity);
-                                                return validEntities;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!).Count > 0)
-                                        {
-                                            foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!))
-                                            {
-                                                if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
-                                                {
-                                                    validEntities = new List<QueryValeuModel>();
-                                                    validEntities.Add(entity);
-                                                    return validEntities;
-                                                }
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                        validEntities.Add(entity);
-                    }
+                    // Fall through: We know the qualified name matches but it's not any of the above special cases
+                    validEntities.Add(entity);
                 }
             }
+
             return validEntities;
-
         }
 
-        private string Name_To_Search(string Name)
-        {
-            Func<string, bool> isNumber = delegate (string num)
-             {
-                 return Int64.TryParse(num, out long number)!;
-             };
-
-            Func<char, string> newName = delegate (char separator)
-             {
-                 string[] partsName = Name.Split(separator);
-                 int index = 0;
-                 foreach (string? part in partsName)
-                 {
-                     if (isNumber(part))
-                         partsName[index] = "{N}";
-                     index++;
-                 }
-                 return string.Join(separator, partsName)!;
-             };
-
-            if (isNumber(Name))
-            {
-                return "{N}";
-            }
-
-            if (Name.Contains('='))
-            {
-                return newName('=');
-            }
-
-            if (Name.Contains('-'))
-            {
-                return newName('-');
-            }
-
-            if (Name.Contains('_'))
-            {
-                return newName('_');
-            }
-
-            return Name;
-        }
         private bool Is_Valid_Name(string name)
         {
             Func<string, bool> isNumber = delegate (string num)
@@ -581,10 +461,45 @@ namespace Function.Domain.Helpers
         // For resource sets, since Microsoft Purview cannot register the same storage account for
         // both ADLS G2 and Blob Storage, we need to match against either pattern (dfs.core.windows.net
         // or blob.core.windows.net) since we cannot be certain which one the end user has scanned.
-        private bool ResourceSet_QualifiedNames_Match(string entityOfInterestQualifiedName, string candidateQualifiedName){
-            string _entityOfInterestFQN = entityOfInterestQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
-            string _candidateFQN = candidateQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","");
+        private bool QualifiedNames_Match_After_Normalizing(string entityOfInterestQualifiedName, string candidateQualifiedName)
+        {
+            string _entityOfInterestFQN = entityOfInterestQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","").Trim('/');
+            string _candidateFQN = candidateQualifiedName.ToLower().Trim().Replace(".dfs.core.windows.net","").Replace(".blob.core.windows.net","").Trim('/');
             return _entityOfInterestFQN == _candidateFQN;
+        }
+
+        // Given an entity (presumably a blob or data lake folder), check to see if it has
+        // relationship attributes that indicate the entity is the input to or output of
+        // an azure data factory (adf_) process.
+        private bool IsInputOrOutputOfAzureDataFactoryEntity(JObject folder)
+        {
+            if (!folder.ContainsKey("entity")){
+                return false;
+            }
+
+            // TODO Refactor this to look across both inputs and outputs from one list
+            if (((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!).Count > 0)
+            {
+                foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["inputToProcesses"]!))
+                {
+                    if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!).Count > 0)
+            {
+                foreach (JObject val in ((JArray)folder!["entity"]!["relationshipAttributes"]!["outputFromProcesses"]!))
+                {
+                    if (val!["typeName"]!.ToString().ToLower().IndexOf("adf_") > -1)
+                    {
+                        return true;
+                    }
+                }
+            }
+            // Fall through - If we didn't have an adf_ relationship
+            return false;
         }
     }
 

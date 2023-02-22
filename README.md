@@ -48,13 +48,17 @@ Gathering lineage data is performed in the following steps:
 
 * Supports table level lineage from Spark Notebooks and jobs for the following data sources:
   * Azure SQL
-  * Azure Synapse Analytics
+  * Azure Synapse Analytics (as input)
   * Azure Data Lake Gen 2
   * Azure Blob Storage
   * Delta Lake
-* Supports Spark 3.0, 3.1, and 3.2 (Interactive and Job clusters) / Spark 2.x (Job clusters)
-  * Databricks Runtimes between 6.4 and 10.4 are currently supported
-* Can be configured per cluster or for all clusters as a global configuration  
+  * Azure Data Explorer
+  * MySQL
+  * PostgreSQL
+* Supports Spark 3.0, 3.1, 3.2, and 3.3 (Interactive and Job clusters) / Spark 2.x (Job clusters)
+  * Databricks Runtimes between 9.1 and 11.3 LTS are currently supported
+* Can be configured per cluster or for all clusters as a global configuration 
+* Support **column level lineage** for ABFSS, WASBS, and default metastore hive tables (see [Limitations](./LIMITATIONS.md#column-level-mapping-supported-sources) for more detail)
 * Once configured, <span style="color: red;">**does not require any code changes to notebooks or jobs**</span>
 * Can [add new source support through configuration](./docs/extending-source-support.md)  
 
@@ -92,25 +96,23 @@ There are two deployment options for this solution accelerator:
 1. Once complete, open your Purview workspace and click the "Browse assets" button near the center of the page
 
 1. Click on the "By source type" tab  
-You should see several items listed under the heading of "Custom source types".  There will be a Databricks section and possibly a Purview Custom Connector section under this heading
+You should see at least one item listed under the heading of "Azure Databricks".  In addition there will possibly be a Purview Custom Connector section under the Custom source types heading
 
     ![browse_assets.png](./assets/img/readme/browse_assets.png)
 
-1. Click on the "Databricks" section, then click on the "Databricks Notebook" tile which corresponds to the notebook you ran. In the Properties or Related tabs select one of the "Notebook Tasks" which represent a task in a Databricks job. From the "Databricks Notebook Task", you may see the lineage of one or many of the different spark actions in the notebook.  This application may have a number of "Databricks Processes" linked under it which represent the data lineage.  To see these, see the Properties or  Related tabs
+1. Click on the "Databricks" section, then click on the link to the Azure Databricks workspace which the sample notebook was ran. Then select the notebook which you ran (for those running Databricks Jobs, you can also select the job and drill into the related tasks) 
+    * After running a Databricks Notebook on an Interactive Cluster, you will see lineage directly in the Notebook asset under the Lineage tab.
+    * After running a Databricks Job on a Job Cluster, you will see lineage in the Notebook Task asset. To navigate from a Notebook to a Notebook Task select the Properties tab and choose the Notebook Tasks from the Related Assets section. Please note that Databricks Jobs lineage require [additional setup](./deploy-base.md#support-extracting-lineage-from-databricks-jobs) outside of the demo deployment.
 
     ![databricks_task_related.png](./assets/img/readme/databricks_task_related.png)
-
-1. From the Related view, click on the processes icon, then click on one of the links representing the associated process objects
-
-1. Click on the properties tab to view the properties associated with the process.  Note that the full Spark Plan is included
-
-    ![spark_plan.png](./assets/img/readme/spark_plan.png)
 
 1. Click to the lineage view to see the lineage graph
 
     ![lineage_view.png](./assets/img/readme/lineage_view.png)
 
     **Note**: If you are viewing the Databricks Process shortly after it was created, sometimes the lineage tab takes some time to display. If you do not see the lineage tab, wait a few minutes and then refresh the browser.
+
+    **Lineage Note**: The screenshot above shows lineage to an Azure Data Lake Gen 2 folder, you must have scanned your Data Lake prior to running a notebook for it to be able to match to a Microsoft Purview built-in type like folders or resource sets.
 
 ## Troubleshooting
 
