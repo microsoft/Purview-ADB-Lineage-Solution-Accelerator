@@ -91,7 +91,17 @@ Supports both Azure PostgreSQL and on-prem/VM installations of PostgreSQL throug
 
 ## Azure Data Explorer
 
-Supports Azure Data Explorer (aka Kusto) through the [Azure Data Explorer Connector for Apache Spark](https://learn.microsoft.com/en-us/azure/data-explorer/spark-connector)
+Supports Azure Data Explorer (aka Kusto) through the [Azure Data Explorer Connector for Apache Spark](https://learn.microsoft.com/en-us/azure/data-explorer/spark-connector).
+
+* Only supports the `kustoTable` option.
+* If you use the `kustoQuery` option, it will return a Purview Generic Connector entity with a name of `COMPLEX` to capture the lineage but we are not able to parse arbitrary kusto queries at this time.
+
+## Azure Data Factory
+
+Supports capturing lineage for Databricks Notebook activities in Azure Data Factory (ADF). After running a notebook through ADF on an interactive or job cluster, you will see a Databricks Job asset in Microsoft Purview with a name similar to `ADF_<factory name>_<pipeline name>`. For each Databricks notebook activity, you will also see a Databricks Task with a name similar to `ADF_<factory name>_<pipeline name>_<activity name>`.
+
+* At this time, the Microsoft Purview view of Azure Data Factory lineage will not contain these tasks unless the Databricks Task uses or feeds a data source to a Data Flow or Copy activity.
+* Copy Activities may not show lineage connecting to these Databricks tasks since it emits individual file assets rather than folder or resource set assets.
 
 ## Other Data Sources and Limitations
 
@@ -108,10 +118,6 @@ We welcome [contributions](./CONTRIBUTING.md) to help map those types to officia
 Microsoft Purview's Fully Qualified Names are case sensitive. Spark Jobs may have data sources connections that are not in the proper casing as on the data source (e.g. `dbo.InputTable` might be the physical table's name in the SQL db but a Spark query may reference the table as `dbo.iNpUtTaBlE`).
 
 As a result, this solution attempts to find the best matching *existing* asset. If no existing asset is found to match based on qualified name, the data source name as found in the Spark query will be used toe create a dummy asset. On a subsequent scan of the data source in Purview and another run of the Spark query with the connector enabled will resolve the linkage.
-
-### Data Factory
-
-The solution currently reflects the unfriendly job name provided by Data Factory to Databricks as noted in [issue 72](https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator/issues/72#issuecomment-1211202405). You will see jobs with names similar to `ADF_<factory name>_<pipeline name>_<activity name>_<guid>`.
 
 ### Hive Metastore / Delta Table Names
 
