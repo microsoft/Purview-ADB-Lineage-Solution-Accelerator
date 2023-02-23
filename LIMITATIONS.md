@@ -71,8 +71,8 @@ Supports Azure SQL DB through the [Apache Spark Connector for Azure SQL DB](http
 
 Supports [Delta File Format](https://delta.io/).
 
+* Supports MERGE INTO statement on Databricks Runtime 10.4 LTS and higher.
 * Does not support Delta on Spark 2 Databricks Runtimes.
-* Does not currently support the MERGE INTO statement due to differences between proprietary Databricks and Open Source Delta implementations.
 * Commands such as [Vacuum](https://docs.delta.io/latest/delta-utility.html#toc-entry-1) or [Optimize](https://docs.microsoft.com/en-us/azure/databricks/spark/latest/spark-sql/language-manual/delta-optimize) do not emit any lineage information and will not result in a Purview asset.
 
 ## Azure MySQL
