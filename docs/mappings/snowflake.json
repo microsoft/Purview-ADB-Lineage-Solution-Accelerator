@@ -1,0 +1,13 @@
+{
+    "name": "snowflake",
+    "parserConditions": [
+        {
+            "op1": "prefix",
+            "compare": "=",
+            "op2": "snowflake"
+        }
+    ],
+    "qualifiedName": "snowflake://{nameSpcBodyParts[0]}/databases/{nameGroups[0].parts[0]}/schemas/{nameGroups[0].parts[1]}/tables/{nameGroups[0].parts[2]}",
+    "purviewDataType": "snowflake_table", 
+    "purviewPrefix": "https"
+}
