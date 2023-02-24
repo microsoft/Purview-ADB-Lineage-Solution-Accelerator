@@ -54,6 +54,7 @@ Gathering lineage data is performed in the following steps:
   * Delta Lake
   * Azure Data Explorer
   * Azure Data Factory orchestration
+  * Hive Tables (in default metastore)
   * MySQL
   * PostgreSQL
 * Supports Spark 3.0, 3.1, 3.2, and 3.3 (Interactive and Job clusters) / Spark 2.x (Job clusters)
