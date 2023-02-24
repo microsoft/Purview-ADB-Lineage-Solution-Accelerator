@@ -14,3 +14,10 @@ This directory contains a "gallery" of sample OpenLineage to Purview Mappings th
 * [Prioritize Azure SQL Non DBO](./az-sql.json)
     * Default mappings treat an Azure SQL table named `myschema.mytable` as schema of `myschema` and table of `mytable`.
     * If you remove the `azureSQLNonDboNoDotsInNames` mapping, the above example would default to `dbo.[myschema.mytable]`.
+
+## Snowflake
+
+* [Snowflake](./snowflake.json)
+    * Supports mapping Snowflake tables in Purview.
+    * OpenLineage returns a DataSet with `"namespace":"snowflake://<snowflakeurl>","name":"<database>.<schema>.<table>`
+    * Microsoft Purview expects a fully qualified name of `snowflake://<snowflakeurl>/databases/<database>/schemas/<schema>/tables/<table>`
