@@ -174,7 +174,7 @@ ADLSKEY=$(jq -r '.[1].value' <<< $adls_keys)
 CLUSTERNAME="openlineage-demo"
 
 ### Download Jar File
-curl -O -L https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.13.0/openlineage-spark-0.13.0.jar
+curl -O -L https://repo1.maven.org/maven2/io/openlineage/openlineage-spark/0.18.0/openlineage-spark-0.18.0.jar
 ###
 az storage container create -n rawdata --account-name $ADLSNAME --account-key $ADLSKEY
 sampleA_resp=$(az storage blob upload --account-name $ADLSNAME --account-key $ADLSKEY -f exampleInputA.csv -c rawdata -n examples/data/csv/exampleInputA/exampleInputA.csv)
