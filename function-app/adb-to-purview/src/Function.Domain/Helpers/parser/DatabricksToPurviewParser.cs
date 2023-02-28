@@ -267,7 +267,7 @@ namespace Function.Domain.Helpers
             databricksPythonWheelTask.Attributes.PackageName = _eEvent.AdbRoot?.JobTasks?[0].PythonWheelTask?.PackageName ?? "";
             databricksPythonWheelTask.Attributes.EntryPoint = _eEvent.AdbRoot?.JobTasks?[0].PythonWheelTask?.EntryPoint ?? "";
             databricksPythonWheelTask.Attributes.Parameters = _eEvent.AdbRoot?.JobTasks?[0].PythonWheelTask?.Parameters ?? new List<string>();
-            databricksPythonWheelTask.Attributes.Wheel = _eEvent.AdbRoot?.JobTasks?[0].Libraries?[0]["whl"] ?? "";
+            databricksPythonWheelTask.Attributes.Wheel = _eEvent.AdbRoot?.JobTasks?[0].Libraries?[0].wheelName ?? "";
 
             databricksPythonWheelTask.RelationshipAttributes.Job.QualifiedName = jobQn;
             
@@ -286,7 +286,7 @@ namespace Function.Domain.Helpers
             databricksSparkJarTask.Attributes.MainClassName = _eEvent.AdbRoot?.JobTasks?[0].SparkJarTask?.MainClassName ?? "";
             databricksSparkJarTask.Attributes.JarUri = _eEvent.AdbRoot?.JobTasks?[0].SparkJarTask?.JarUri ?? "";
             databricksSparkJarTask.Attributes.Parameters = _eEvent.AdbRoot?.JobTasks?[0].SparkJarTask?.Parameters ?? new List<string>();
-            databricksSparkJarTask.Attributes.Jar = _eEvent.AdbRoot?.JobTasks?[0].Libraries?[0]["jar"] ?? "";
+            databricksSparkJarTask.Attributes.Jar = _eEvent.AdbRoot?.JobTasks?[0].Libraries?[0].jarName ?? "";
 
             databricksSparkJarTask.RelationshipAttributes.Job.QualifiedName = jobQn;
             
