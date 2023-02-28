@@ -29,7 +29,7 @@ namespace Function.Domain.Models.Adb
         [JsonProperty("end_time")]
         public long EndTime = 0;
         [JsonProperty("libraries")]
-        public List<Dictionary<string,string>>? Libraries = null;
+        public List<JobLibrary>? Libraries = null;
         [JsonProperty("notebook_task")]
         public NotebookTask? NotebookTask = null;
         [JsonProperty("spark_jar_task")]
@@ -39,4 +39,44 @@ namespace Function.Domain.Models.Adb
         [JsonProperty("python_wheel_task")]
         public PythonWheelTask? PythonWheelTask = null;
     }
+    public class JobLibrary
+    {
+        [JsonProperty("jar")]
+        public string? jarName = null;
+        [JsonProperty("egg")]
+        public string? eggName = null;
+        [JsonProperty("whl")]
+        public string? wheelName = null;
+        [JsonProperty("pypi")]
+        public PyPiJobLibrary? pypiLibrary = null;
+        [JsonProperty("maven")]
+        public MavenJobLibrary? mavenLibrary = null;
+        [JsonProperty("cran")]
+        public CranJobLibrary? cranLibrary = null;
+    }
+    public class PyPiJobLibrary
+    {
+        [JsonProperty("package")]
+        public string? package = null;
+        [JsonProperty("repo")]
+        public string? repo = null;
+    }
+    public class MavenJobLibrary
+    {
+        [JsonProperty("coordinates")]
+        public string? coordinates = null;
+        [JsonProperty("repo")]
+        public string? repo = null;
+        [JsonProperty("exclusions")]
+        public List<string>? exclusions = null;
+    }
+    public class CranJobLibrary
+    {
+        [JsonProperty("package")]
+        public string? package = null;
+        [JsonProperty("repo")]
+        public string? repo = null;
+    }
+
 }
+
