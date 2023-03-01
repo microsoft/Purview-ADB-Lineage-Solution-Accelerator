@@ -5,6 +5,24 @@
             "op1": "prefix",
             "compare": "=",
             "op2": "adl"
+        },
+        {
+            "op1": "nameSpcBodyParts",
+            "compare": ">",
+            "op2": "1"
+        }
+    ],
+    "qualifiedName": "adl://{nameSpcBodyParts[0]}/{nameSpaceBodyJoinedBySlashFrom[1]}/{nameGroups[0]}",
+    "purviewDataType": "azure_datalake_gen1_path",
+    "purviewPrefix": "adl"
+},
+{
+    "name": "adlsg1",
+    "parserConditions": [
+        {
+            "op1": "prefix",
+            "compare": "=",
+            "op2": "adl"
         }
     ],
     "qualifiedName": "adl://{nameSpcBodyParts[0]}/{nameGroups[0]}",

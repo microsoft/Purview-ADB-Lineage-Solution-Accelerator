@@ -22,7 +22,7 @@ namespace Function.Domain.Helpers
         private ILogger _logger;
 
         private readonly string[] JSON_KEY_NAMES = { "prefix", "nameSpcConParts", "nameSpcBodyParts", "nameSpcNameVals", 
-                                                     "nameGroups"};
+                                                     "nameGroups", "nameSpaceBodyJoinedBySlashFrom"};
 
         /// <summary>
         /// Constructor for QnParser

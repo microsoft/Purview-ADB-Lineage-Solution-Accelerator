@@ -1,6 +1,24 @@
 {
     "olToPurviewMappings": [
         {
+            "name": "wasbsNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "wasbs"
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_blob_path",
+            "purviewPrefix": "https"
+        },
+        {
             "name": "wasbs",
             "parserConditions": [
                 {
@@ -10,6 +28,24 @@
                 }
             ],
             "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}",
+            "purviewDataType": "azure_blob_path",
+            "purviewPrefix": "https"
+        },
+        {
+            "name": "wasbNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "wasb"
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
             "purviewDataType": "azure_blob_path",
             "purviewPrefix": "https"
         },
@@ -24,6 +60,34 @@
             ],
             "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}",
             "purviewDataType": "azure_blob_path",
+            "purviewPrefix": "https"
+        },
+        {
+            "name": "abfsBlobRootFSNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfs"
+                },
+                {
+                    "op1": "nameSpcBodyParts[1]",
+                    "compare": "contains",
+                    "op2": "blob"
+                },
+                {
+                    "op1": "nameGroups[0]",
+                    "compare": "=",
+                    "op2": ""
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_filesystem",
             "purviewPrefix": "https"
         },
         {
@@ -50,6 +114,29 @@
             "purviewPrefix": "https"
         },
         {
+            "name": "abfsRootFSNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfs"
+                },
+                {
+                    "op1": "nameGroups[0]",
+                    "compare": "=",
+                    "op2": ""
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_filesystem",
+            "purviewPrefix": "https"
+        },
+        {
             "name": "abfsRootFS",
             "parserConditions": [
                 {
@@ -64,6 +151,34 @@
                 }
             ],
             "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_filesystem",
+            "purviewPrefix": "https"
+        },
+        {
+            "name": "abfssBlobRootFSNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfss"
+                },
+                {
+                    "op1": "nameSpcBodyParts[1]",
+                    "compare": "contains",
+                    "op2": "blob"
+                },
+                {
+                    "op1": "nameGroups[0]",
+                    "compare": "=",
+                    "op2": ""
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
             "purviewDataType": "azure_datalake_gen2_filesystem",
             "purviewPrefix": "https"
         },
@@ -91,6 +206,29 @@
             "purviewPrefix": "https"
         },
         {
+            "name": "abfssRootFSNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfss"
+                },
+                {
+                    "op1": "nameGroups[0]",
+                    "compare": "=",
+                    "op2": ""
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_filesystem",
+            "purviewPrefix": "https"
+        },
+        {
             "name": "abfssRootFS",
             "parserConditions": [
                 {
@@ -106,6 +244,30 @@
             ],
             "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}",
             "purviewDataType": "azure_datalake_gen2_filesystem",
+            "purviewPrefix": "https"
+        },
+        {
+            "name": "abfsBlobNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfs"
+                },
+                {
+                    "op1": "nameSpcBodyParts[1]",
+                    "compare": "contains",
+                    "op2": "blob"
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+                
+            ],
+            "qualifiedName": "https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_path",
             "purviewPrefix": "https"
         },
         {
@@ -127,6 +289,25 @@
             "purviewPrefix": "https"
         },
         {
+            "name": "abfsNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfs"
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_path",
+            "purviewPrefix": "https"
+        },
+        {
             "name": "abfs",
             "parserConditions": [
                 {
@@ -136,6 +317,29 @@
                 }
             ],
             "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_path",
+            "purviewPrefix": "https"
+        },
+        {
+            "name": "abfssBlobNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfss"
+                },
+                {
+                    "op1": "nameSpcBodyParts[1]",
+                    "compare": "contains",
+                    "op2": "blob"
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+            ],
+            "qualifiedName": "https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
             "purviewDataType": "azure_datalake_gen2_path",
             "purviewPrefix": "https"
         },
@@ -154,6 +358,25 @@
                 }
             ],
             "qualifiedName": "https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}",
+            "purviewDataType": "azure_datalake_gen2_path",
+            "purviewPrefix": "https"
+        },
+        {
+            "name": "abfssNLayerMnt",
+            "parserConditions": [
+                {
+                    "op1": "prefix",
+                    "compare": "=",
+                    "op2": "abfss"
+                },
+                {
+                    "op1": "nameSpcBodyParts",
+                    "compare": ">",
+                    "op2": "2"
+                }
+
+            ],
+            "qualifiedName": "https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameSpaceBodyJoinedBySlashFrom[2]}/{nameGroups[0]}",
             "purviewDataType": "azure_datalake_gen2_path",
             "purviewPrefix": "https"
         },
