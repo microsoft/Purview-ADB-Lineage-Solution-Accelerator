@@ -25,7 +25,9 @@ namespace UnitTests.Function.Domain.Helpers
                 new MountPoint(){MountPointName="/databricks-results",Source="databricks-results"},
                 new MountPoint(){MountPointName="/mnt/purview2/",Source="abfss://purview2@purviewexamplessa.dfs.core.windows.net/"},
                 new MountPoint(){MountPointName="/mnt/x/",Source="abfss://x@xsa.dfs.core.windows.net/"},
-                new MountPoint(){MountPointName="/mnt/x/y",Source="abfss://y@ysa.dfs.core.windows.net/"}
+                new MountPoint(){MountPointName="/mnt/x/y",Source="abfss://y@ysa.dfs.core.windows.net/"},
+                new MountPoint(){MountPointName="/mnt/x2/",Source="abfss://myx2@ysa.dfs.core.windows.net/subdir/"},
+                new MountPoint(){MountPointName="/mnt/adlg1/",Source="adl://gen1.azuredatalakestore.net/subdir/"}
             };
         }
     }
