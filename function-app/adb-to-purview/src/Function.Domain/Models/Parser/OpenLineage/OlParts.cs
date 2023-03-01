@@ -43,6 +43,14 @@ namespace Function.Domain.Models.OL
                     }
                 }
             }
+            // Add Support for NameSpaceBodyJoinedBySlash to enable mount points with trailing folders
+            for (int nmSpPos = this._olNameSpaceParts.NameSpaceBodyParts.Count(); nmSpPos > 0; nmSpPos--)
+            {
+                this._olNameSpaceParts.NameSpaceBodyJoinedBySlashFrom.Add(
+                    String.Join('/', this._olNameSpaceParts.NameSpaceBodyParts.TakeLast(nmSpPos))
+                );
+                
+            }
             var rgex = new Regex(@"(?<=\[).+?(?=\])");
             var rerslt = rgex.Matches(name);
             if (rerslt.Count > 0)
@@ -100,9 +108,9 @@ namespace Function.Domain.Models.OL
         /// <exception cref="System.ArgumentException"></exception>
         public Dictionary<string, object> GetDynamicPairs(string[] keys)
         {
-            if (keys == null || keys.Length != 5)
+            if (keys == null || keys.Length != 6)
             {
-                throw new System.ArgumentException("keys must be an array of length 5");
+                throw new System.ArgumentException("keys must be an array of length 6");
             }
             var pairs = new Dictionary<string, object>();
             pairs.Add(keys[0], this.Prefix);
@@ -110,6 +118,7 @@ namespace Function.Domain.Models.OL
             pairs.Add(keys[2], this.OlNameSpaceParts.NameSpaceBodyParts);
             pairs.Add(keys[3], this.OlNameSpaceParts.NameSpaceConnNameValues);
             pairs.Add(keys[4], this.OlNameParts.NameGroups);
+            pairs.Add(keys[5], this.OlNameSpaceParts.NameSpaceBodyJoinedBySlashFrom);
             
             return pairs;
         }
@@ -126,6 +135,8 @@ namespace Function.Domain.Models.OL
         public List<string> NameSpaceConnParts = new List<string>();
         // Splits out any name value pairs as identified by = symbol
         public Dictionary<string, string> NameSpaceConnNameValues = new Dictionary<string, string>();
+        // Joins the NameSpaceBodyParts joined by a forward slash
+        public List<string> NameSpaceBodyJoinedBySlashFrom = new List<string>();
     }
     
     public class OlNameParts

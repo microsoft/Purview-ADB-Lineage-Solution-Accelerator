@@ -91,8 +91,12 @@ namespace UnitTests.Function.Domain.Helpers
         // DBFS mount trailing slash in def
         [InlineData("dbfs", 
                     "/mnt/purview2", 
-                    "https://purviewexamplessa.dfs.core.windows.net/purview2")]  
-        // Azure SQL Non DBO Schema - <need verification of Purview string>
+                    "https://purviewexamplessa.dfs.core.windows.net/purview2")]
+        // DBFS mount with mountpoint containing a sub-directory
+        [InlineData("dbfs", 
+                    "/mnt/x2/foo", 
+                    "https://ysa.dfs.core.windows.net/myx2/subdir/foo")]
+        //Azure SQL Non DBO Schema - <need verification of Purview string>
         [InlineData("sqlserver://purview-to-adb-sql.database.windows.net;database=purview-to-adb-sqldb;", 
                     "[mytest].[tablename.will.mark]", 
                     "mssql://purview-to-adb-sql.database.windows.net/purview-to-adb-sqldb/mytest/tablename.will.mark")]
