@@ -25,7 +25,8 @@ namespace TestFunc
                         workerApplication.UseMiddleware<ScopedLoggingMiddleware>();
                     })
                 .ConfigureServices(s =>                
-                    {                        
+                    {       
+                        // Comment                 
                     s.AddScoped<IHttpHelper, HttpHelper>();
                     s.AddScoped<IOlToPurviewParsingService, OlToPurviewParsingService>(); 
                     s.AddScoped<IPurviewIngestion, PurviewIngestion>();
