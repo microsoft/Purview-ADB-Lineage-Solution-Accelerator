@@ -124,7 +124,23 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("postgresql://10.2.0.4:5432/postgres", 
             "myschema.table01", 
             "postgresql://servers/10.2.0.4:5432/dbs/postgres/schemas/myschema/tables/table01")]
+        // Postgres ssl=require
+        [InlineData("postgresql://pgazewdmaestrosingle.postgres.database.azure.com:5432/maestro-load?sslmode=require", 
+            "purview_trial.activitypurview",
+            "postgresql://pgazewdmaestrosingle.postgres.database.azure.com/maestro-load/purview_trial/activitypurview")]
+        // Postgres ssl=require Public
+        [InlineData("postgresql://pgazewdmaestrosingle.postgres.database.azure.com:5432/maestro-load?sslmode=require", 
+            "activitypurview",
+            "postgresql://pgazewdmaestrosingle.postgres.database.azure.com/maestro-load/public/activitypurview")]
+        // Postgres ssl=require and no port
+        [InlineData( 
+            "postgresql://pgazewdmaestrosingle.postgres.database.azure.com/maestro-load?sslmode=require",
+            "purview_trial.activitypurview",
+            "postgresql://pgazewdmaestrosingle.postgres.database.azure.com/maestro-load/purview_trial/activitypurview")]
         // Azure Data Explorer (Kusto)
+        [InlineData("azurekusto://qpll4l5hchczm.eastus2.kusto.windows.net/database01", 
+                    "table01", 
+                    "https://qpll4l5hchczm.eastus2.kusto.windows.net/database01/table01")]
         [InlineData("azurekusto://qpll4l5hchczm.eastus2.kusto.windows.net/database01", 
                     "table01", 
                     "https://qpll4l5hchczm.eastus2.kusto.windows.net/database01/table01")]

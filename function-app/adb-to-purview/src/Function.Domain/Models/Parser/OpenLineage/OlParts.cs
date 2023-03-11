@@ -26,7 +26,7 @@ namespace Function.Domain.Models.OL
             (string olPrefix, string olConnection) = GetPrefixConn(nameSpace);
             this.Prefix = olPrefix;
 
-            char[] separators = { '@', ':', '/', ';', ',' };
+            char[] separators = { '@', ':', '/', ';', ',', '?'};
             var initSplits = olConnection.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             foreach (var initSplit in initSplits)
             {
