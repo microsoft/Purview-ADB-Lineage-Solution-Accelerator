@@ -35,7 +35,7 @@ outputDf.createOrReplaceTempView("outputDf")
 
 // COMMAND ----------
 
-// This is ran only once
+// This is ran only once and screwing up our tests for delta
 // %sql
 // CREATE TABLE testcasesixteen
 // USING DELTA

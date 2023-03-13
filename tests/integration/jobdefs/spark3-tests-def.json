@@ -257,6 +257,36 @@
             "existing_cluster_id": "<CLUSTER_ID>",
             "timeout_seconds": 0,
             "email_notifications": {}
+        },
+        {
+            "task_key": "delta-merge-task",
+            "depends_on": [
+                {
+                    "task_key": "mysql-in-mysql-out"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/delta-in-delta-merge",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "delta-merge-pkg-task",
+            "depends_on": [
+                {
+                    "task_key": "delta-merge-task"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "/Shared/examples/delta-in-delta-merge-package",
+                "source": "WORKSPACE"
+            },
+            "existing_cluster_id": "<CLUSTER_ID>",
+            "timeout_seconds": 0,
+            "email_notifications": {}
         }
     ],
     "format": "MULTI_TASK"
