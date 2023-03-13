@@ -96,6 +96,22 @@ namespace UnitTests.Function.Domain.Helpers
         [InlineData("dbfs", 
                     "/mnt/x2/foo", 
                     "https://ysa.dfs.core.windows.net/myx2/subdir/foo")]
+        // DBFS mount with mountpoint containing a sub-directory for blob
+        [InlineData("dbfs", 
+                    "/mnt/blobx2/foo", 
+                    "https://ysa.blob.core.windows.net/myx2/subdir/foo")]
+        // DBFS mount containing a sub-directory
+        [InlineData("dbfs", 
+                    "/mnt/x2/retail", 
+                    "https://ysa.dfs.core.windows.net/myx2/subdir/retail")]  
+        // DBFS mount - Shortest String Match containing a sub-directory
+        [InlineData("dbfs", 
+                    "/mnt/x2/abc", 
+                    "https://ysa.dfs.core.windows.net/myx2/subdir/abc")]  
+        // DBFS mount - Longest String Match containing a sub-directory
+        [InlineData("dbfs", 
+                    "/mnt/x2/y/abc", 
+                    "https://ysa.dfs.core.windows.net/myx2/subdir/y/abc")]
         //Azure SQL Non DBO Schema - <need verification of Purview string>
         [InlineData("sqlserver://purview-to-adb-sql.database.windows.net;database=purview-to-adb-sqldb;", 
                     "[mytest].[tablename.will.mark]", 
