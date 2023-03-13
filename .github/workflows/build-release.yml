@@ -79,7 +79,8 @@ jobs:
     - name: Create One Line OlToPurviewMappings
       run: | 
         mkdir ~/artifact-mappings
-        python ./deployment/util/mappings-remove-spaces.py ./deployment/infra/OlToPurviewMappings.json ~/artifact-mappings/one-line-mappings.json
+        python ./deployment/util/mappings-remove-spaces.py ./deployment/infra/OlToPurviewMappings.json > ~/artifact-mappings/one-line-mappings.json
+        ls ~/artifact-mappings
 
     - name: Upload One Line OlToPurviewMappings Build Artifact
       uses: actions/upload-artifact@v3
