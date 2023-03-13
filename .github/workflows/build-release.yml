@@ -69,6 +69,17 @@ jobs:
         name: FunctionZip
         path: ~/artifact/FunctionZip.zip
 
+    - name: Create One Line OlToPurviewMappings
+      run: | 
+        mkdir ~/artifact-mappings
+        python ./deployment/util/mappings-remove-spaces.py ./deployment/infra/OlToPurviewMappings.json ~/artifact-mappings/one-line-mappings.json
+
+    - name: Upload One Line OlToPurviewMappings Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FunctionZip
+        path: ~/artifact-mappings/one-line-mappings.json
+
   runIntegrationTests:
     name: Test on Integration Tests
     needs: [build]

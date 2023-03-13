@@ -67,8 +67,15 @@
 		"storageAccountSecret": "storageAccountSecret",
 		"OLOutputAPIKeySecretName": "Ol-Output-Api-Key",
 		"containerName": "eventhubdata",
-		"functionSkuDynamic":{"name": "Y1","tier": "Dynamic"},
-		"functionSkuElasticPremium":{"tier": "ElasticPremium","name": "[parameters('functionSku')]","family": "EP"}
+		"functionSkuDynamic": {
+			"name": "Y1",
+			"tier": "Dynamic"
+		},
+		"functionSkuElasticPremium": {
+			"tier": "ElasticPremium",
+			"name": "[parameters('functionSku')]",
+			"family": "EP"
+		}
 	},
 	"resources": [
 		{
@@ -83,7 +90,7 @@
 			"tags": "[parameters('resourceTagValues')]",
 			"properties": {
 				"allowBlobPublicAccess": "False",
-            	                "supportsHttpsTrafficOnly": "True"
+				"supportsHttpsTrafficOnly": "True"
 			}
 		},
 		{
@@ -155,14 +162,14 @@
 					}
 				},
 				{
-                    "apiVersion": "2020-06-01",
-                    "type": "config",
-                    "name": "web",
-                    "dependsOn": [
-                        "[concat('Microsoft.Web/sites/', variables('functionAppName'))]"
-                    ],
-                    "properties": {
-                        "appSettings": [
+					"apiVersion": "2020-06-01",
+					"type": "config",
+					"name": "web",
+					"dependsOn": [
+						"[concat('Microsoft.Web/sites/', variables('functionAppName'))]"
+					],
+					"properties": {
+						"appSettings": [
 							{
 								"name": "AzureWebJobsStorage",
 								"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
@@ -232,8 +239,8 @@
 								"value": "[subscription().tenantId]"
 							}
 						]
-                    }
-                }
+					}
+				}
 			]
 		},
 		{
