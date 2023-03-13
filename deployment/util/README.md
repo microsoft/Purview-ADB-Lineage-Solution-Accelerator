@@ -9,12 +9,11 @@ usage: mappings-remove-spaces.py [-h] mappings_json output_path
 
 positional arguments:
   mappings_json  File path of the mappings json
-  output_path    File path where the oneline json file should land
 ```
 
 Sample:
 ```
-python ./deployment/util/mappings-remove-spaces.py ./deployment/infra/OlToPurviewMappings.json ./test.json
+python ./deployment/util/mappings-remove-spaces.py ./deployment/infra/OlToPurviewMappings.json > test.json
 ```
 
 ## mappings-update-arm
