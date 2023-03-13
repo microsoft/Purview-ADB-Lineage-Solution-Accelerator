@@ -71,7 +71,8 @@ Supports Azure SQL DB through the [Apache Spark Connector for Azure SQL DB](http
 
 Supports [Delta File Format](https://delta.io/).
 
-* Supports MERGE INTO statement on Databricks Runtime 10.4 LTS and higher.
+* Does NOT support MERGE INTO statement on Databricks due to differences in Databricsk and Open Source classes.
+  * An earlier release mistakenly indicated support 
 * Does not support Delta on Spark 2 Databricks Runtimes.
 * Commands such as [Vacuum](https://docs.delta.io/latest/delta-utility.html#toc-entry-1) or [Optimize](https://docs.microsoft.com/en-us/azure/databricks/spark/latest/spark-sql/language-manual/delta-optimize) do not emit any lineage information and will not result in a Purview asset.
 
@@ -156,5 +157,5 @@ Starting with OpenLineage 0.18.0 and release 2.3.0 of the solution accelerator, 
 
 ### Column Mapping Support for Delta Format
 
-* Delta Merge statements are supported when the table is stored in the default metastore
+* Delta Merge statements are not supported at this time
 * Delta to Delta is NOT supported at this time
