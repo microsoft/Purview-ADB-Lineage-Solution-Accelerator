@@ -85,7 +85,7 @@ jobs:
     - name: Upload One Line OlToPurviewMappings Build Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: FunctionZip
+        name: Mappings
         path: ~/artifact-mappings/one-line-mappings.json
 
   runIntegrationTests:
