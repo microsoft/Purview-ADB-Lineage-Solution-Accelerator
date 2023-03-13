@@ -9,6 +9,11 @@ on:
       - '**.csproj'
       - 'tests/integration/**'
   workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Flag as workflow dispatch'
+        required: true
+        type: boolean
 
 env:
   DOTNET_VERSION: '6.x.x' # The .NET SDK version to use
@@ -25,11 +30,13 @@ jobs:
         echo "Github Event Name: ${{ github.event_name }}" 
         echo "Github Ref: ${{ github.ref }}"
         echo "Github Ref Type: ${{ github.ref_type }}"
+        echo "Github Tags: ${{ inputs.tags }}"
 
   build:
     if: |
       github.event_name == 'pull_request' ||
-      (github.event_name == 'create' && github.ref_type == 'tag')
+      (github.event_name == 'create' && github.ref_type == 'tag') ||
+      ${{github.event_name == 'create' && inputs.tags}}
     name: build-${{matrix.os}}
     runs-on: ${{ matrix.os }}
     strategy:
