@@ -20,6 +20,7 @@ A related `*-expectations.json` file should exist for every test definition. It 
 |call-via-adf-spark2.scala|ABFS|ABFS|✅||Called via Azure Data Factory|
 |call-via-adf-spark3.scala|ABFS|ABFS||✅|Called via Azure Data Factory|
 |delta-in-delta-merge.scala|DELTA|DELTA|❌|❌|Uses a Merge Statement|
+|delta-in-delta-merge-package.py|DELTA|DELTA|❌|❌|Uses a Merge Statement|
 |delta-in-delta-out-abfss.scala|DELTA|DELTA||✅||
 |delta-in-delta-out-fs.scala|DELTA|DELTA||✅||
 |delta-in-delta-out-mnt.scala|DELTA|DELTA||✅|Uses a Mount Point|

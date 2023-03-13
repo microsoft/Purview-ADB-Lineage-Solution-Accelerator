@@ -52,5 +52,11 @@
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/wasbs-in-kusto-out/processes/D3E8F45D1D4150D809A56423DD2F2CFD->9D42C0F01CD2D2C2F014263C2D812602",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/kusto-in-wasbs-out",
   "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out",
-  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out/processes/9D42C0F01CD2D2C2F014263C2D812602->55517236A8804C9548A4CB81814AEA6B"
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out/processes/9D42C0F01CD2D2C2F014263C2D812602->55517236A8804C9548A4CB81814AEA6B",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-merge-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-merge-task/processes/XXX->XXX",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/delta-in-delta-merge",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-merge-pkg-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/delta-merge-pkg-task/processes/XXX->XXX",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/delta-in-delta-merge-package"
 ]
