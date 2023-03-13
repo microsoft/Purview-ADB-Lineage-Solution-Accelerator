@@ -51,7 +51,7 @@ Gathering lineage data is performed in the following steps:
   * Azure Synapse Analytics (as input)
   * Azure Data Lake Gen 2
   * Azure Blob Storage
-  * Delta Lake
+  * Delta Lake (Merge command not supported)
   * Azure Data Explorer
   * Azure Data Factory orchestration
   * Hive Tables (in default metastore)
