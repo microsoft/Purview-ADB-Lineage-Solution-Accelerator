@@ -285,15 +285,54 @@ EOF
 echo "END: Modify Spark config settings"
 OUTEREND
 
+# Confirm access to DBFS
+dbfs_access_counter=0
+dbfs_access_attempt_max=5
+dbfs_attempt_sleep_seconds=30
+while [ $dbfs_access_counter -lt $dbfs_access_attempt_max ];
+do
+    dbfs_list_response=$(curl -s -i -X GET https://$adb_ws_url/api/2.0/dbfs/list \
+    --header 'Accept: application/json' \
+    -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
+    --data '{ "path": "/" }' \
+    -o ./tmpheadercheck \
+    | cat ./tmpheadercheck | head -1 | xargs)
+    echo "Status Code from DBFS List operation: $dbfs_list_response";
+
+    if [[ $dbfs_list_response == *200 ]]
+    then
+        echo "Confirmed access to DBFS. Continuing to create assets in DBFS";
+        break;
+    else
+        echo "Failed to confim access to DBFS.";
+    fi;
+
+    dbfs_access_counter=$(expr $dbfs_access_counter + 1 );
+    if [[ $dbfs_access_counter == $dbfs_access_attempt_max ]]
+    then
+        echo "Reached maximum number of retries for accessing DBFS, exiting with error";
+        exit 10
+    else
+        echo "Will attempt again after $dbfs_attempt_sleep_seconds seconds";
+        sleep $dbfs_attempt_sleep_seconds;
+    fi;
+done
+
 curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/mkdirs \
     --header 'Accept: application/json' \
     -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
     --data '{ "path": "/databricks/openlineage" }'
 
 init_script_base64=$(base64 -w 0 ol_init_script.sh)
 
 curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/put \
     -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
     --data "{ \"path\": \"/databricks/openlineage/open-lineage-init-script.sh\", 
     \"contents\": \"$init_script_base64\", 
     \"overwrite\": true }"
@@ -318,7 +357,8 @@ OUTEREND
 
 stream_handle_response=$(curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/create \
     -H "Authorization: Bearer $global_adb_token" \
-    -H "X-Databricks-Azure-Workspace-Resource-Id": $adb_ws_id \
+    -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
     -d @adb_create_jar.json)
 stream_handle=$(echo $(jq -r '.handle' <<< $stream_handle_response))
 echo $stream_handle
@@ -327,13 +367,21 @@ echo "$(info) start uploading jar file"
 for file in $(ls -d openlineage-jarxx*)
 do
     jar_data=$(<$file)
-    curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/add-block -H "Authorization: Bearer $global_adb_token" -d "{\"data\" : \"$jar_data\", \"handle\":$stream_handle}"
+    curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/add-block \
+    -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
+    -d "{\"data\" : \"$jar_data\", \"handle\":$stream_handle}"
 done
 
 sleep 3
 echo "$(info) jar file uploaded"
 
-jar_upload_close_stream_response=$(curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/close -H "Authorization: Bearer $global_adb_token" -d "{\"handle\":$stream_handle}")
+jar_upload_close_stream_response=$(curl -s -X POST https://$adb_ws_url/api/2.0/dbfs/close \
+    -H "Authorization: Bearer $global_adb_token" \
+    -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+    -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
+    -d "{\"handle\":$stream_handle}")
 ## close stream connection
 
 sleep 3
@@ -377,6 +425,7 @@ if [[ $az_token == "" ]]; then
     adb_scope_creation_resp=$(echo $(curl -s \
         -X POST https://$adb_ws_url/api/2.0/secrets/scopes/create \
         -H "Authorization: Bearer $global_adb_token" \
+        -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
         -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
         --data @create-scope.json))
     adb_scope_creation_error_code=$(echo $(jq -r '.error_code' <<< $adb_scope_creation_resp))
@@ -405,7 +454,8 @@ echo "$(info) begin databricks demo cluster creation"
 if [[ $az_token == "" ]]; then
     curl -X POST https://$adb_ws_url/api/2.0/clusters/create \
         -H "Authorization: Bearer $global_adb_token" \
-        -H 'X-Databricks-Azure-Workspace-Resource-Id': $adb_ws_id \
+        -H "X-Databricks-Azure-SP-Management-Token: $az_token" \
+        -H "X-Databricks-Azure-Workspace-Resource-Id: $adb_ws_id" \
         -d @create-cluster.json
 else
     curl -X POST https://$adb_ws_url/api/2.0/clusters/create \
