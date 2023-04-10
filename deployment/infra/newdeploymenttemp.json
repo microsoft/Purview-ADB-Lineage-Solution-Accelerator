@@ -154,8 +154,7 @@
 					"location": "[resourceGroup().location]",
 					"apiVersion": "2020-06-01",
 					"dependsOn": [
-						"[resourceId('Microsoft.Web/sites/', variables('functionAppName'))]",
-						"[concat('Microsoft.Web/sites/', variables('functionAppName'), '/config/web')]"
+						"[resourceId('Microsoft.Web/sites/', variables('functionAppName'))]"
 					],
 					"properties": {
 						"packageUri": "http://aka.ms/APFunctions2-3"
@@ -169,7 +168,8 @@
 						"[resourceId('Microsoft.Web/sites/', variables('functionAppName'))]",
 						"[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
 						"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]",
-						"[resourceId('microsoft.insights/components', variables('applicationInsightsName'))]"
+						"[resourceId('microsoft.insights/components', variables('applicationInsightsName'))]",
+						"[concat('Microsoft.Web/Sites/', variables('functionAppName'), '/Extensions/MSDeploy')]"
 					],
 					"properties": {
 						"appSettings": [
@@ -410,7 +410,8 @@
 				"value": "[listKeys(concat(resourceId('Microsoft.Web/sites', variables('functionAppName')), '/host/default'), '2016-08-01').functionKeys.default]"
 			},
 			"dependsOn": [
-				"[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
+				"[resourceId('Microsoft.Web/sites/', variables('functionAppName'))]",
+				"[concat('Microsoft.Web/Sites/', variables('functionAppName'), '/Extensions/MSDeploy')]",
 				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
 			]
 		},
