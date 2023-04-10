@@ -410,6 +410,7 @@
 				"value": "[listKeys(concat(resourceId('Microsoft.Web/sites', variables('functionAppName')), '/host/default'), '2016-08-01').functionKeys.default]"
 			},
 			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
 				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
 			]
 		},
@@ -422,6 +423,7 @@
 				"value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value]"
 			},
 			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
 				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
 			]
 		},
@@ -434,6 +436,7 @@
 				"value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName')), '2019-04-01').keys[0].value]"
 			},
 			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName'))]",
 				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
 			]
 		},
