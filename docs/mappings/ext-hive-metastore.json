@@ -1,0 +1,53 @@
+[
+    {
+        "name": "hiveManagedTableDefault",
+        "parserConditions": [
+            {
+                "op1": "AdbWorkspaceUrl",
+                "compare": "contains-in",
+                "op2": "<adb workspace id1>|<adb workspace id2>|.....<adb workspace idn>"
+            },
+            {
+                "op1": "prefix",
+                "compare": "=",
+                "op2": "dbfs"
+            },
+            {
+                "op1": "nameGroups[0]",
+                "compare": "contains",
+                "op2": "hive/warehouse"
+            }
+        ],
+        "qualifiedName": "default.{nameGroups[0].parts[3]}@<sqlserver-name>.database.windows.net",
+        "purviewDataType": "hive_table",
+        "purviewPrefix": "hive"
+    },
+    {
+        "name": "hiveManagedTableNotDefault",
+        "parserConditions": [
+            {
+                "op1": "AdbWorkspaceUrl",
+                "compare": "contains-in",
+                "op2": "<adb workspace id1>|<adb workspace id2>|.....<adb workspace idn>"
+            },
+            {
+                "op1": "prefix",
+                "compare": "=",
+                "op2": "dbfs"
+            },
+            {
+                "op1": "nameGroups[0]",
+                "compare": "contains",
+                "op2": "hive/warehouse"
+            },
+            {
+                "op1": "nameGroups[0].part",
+                "compare": ">",
+                "op2": "4"
+            }
+        ],
+        "qualifiedName": "{nameGroups[0].part[3]}.{nameGroups[0].part[5]}@<sqlserver-name>.database.windows.net",
+        "purviewDataType": "hive_table",
+        "purviewPrefix": "hive"
+    }
+]
