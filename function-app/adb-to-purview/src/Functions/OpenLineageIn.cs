@@ -8,6 +8,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System.IO;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
@@ -30,6 +31,7 @@ namespace AdbToPurview.Function
         private EventHubProducerClient _producerClient;  
         private IConfiguration _configuration;
         private IOlFilter _olFilter;
+        private IEventParser _eventParser;
 
         public OpenLineageIn(
                 ILogger<OpenLineageIn> logger,
@@ -41,6 +43,7 @@ namespace AdbToPurview.Function
             _configuration = configuration;            
             _producerClient = new EventHubProducerClient(_configuration[EH_CONNECTION_STRING], _configuration[EVENT_HUB_NAME]);
             _olFilter = olFilter;
+            _eventParser = new EventParser(_logger);
         }
 
         [Function("OpenLineageIn")]
@@ -57,15 +60,25 @@ namespace AdbToPurview.Function
                 var events = new List<EventData>();
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 var strRequest = requestBody.ToString();
-                if (_olFilter.FilterOlMessage(strRequest))
+                var parsedEvent = _eventParser.ParseOlEvent(strRequest);
+                if (parsedEvent == null){
+                    _logger.LogError($"After parsing, event was null. Original payload: {strRequest}");
+                    return _httpHelper.CreateServerErrorHttpResponse(req);
+                }
+                var parsedEventString = JsonConvert.SerializeObject(parsedEvent);
+                if (parsedEventString == null){
+                    _logger.LogError($"After string serialization, event was null. Original payload: {strRequest}");
+                    return _httpHelper.CreateServerErrorHttpResponse(req);
+                }
+                if (_olFilter.FilterOlMessage(parsedEvent))
                 {
-                    var sendEvent = new EventData(strRequest);
+                    var sendEvent = new EventData(parsedEventString);
                     var sendEventOptions = new SendEventOptions();
                     // uses the OL Job Namespace as the EventHub partition key
-                    var jobNamespace = _olFilter.GetJobNamespace(strRequest);
+                    var jobNamespace = _olFilter.GetJobNamespace(parsedEvent);
                     if (jobNamespace == "" || jobNamespace == null)
                     {
-                        _logger.LogError($"No Job Namespace found in event: {strRequest}");
+                        _logger.LogError($"No Job Namespace found in event: {parsedEventString}");
                     }
                     else
                     {
@@ -73,7 +86,7 @@ namespace AdbToPurview.Function
                         events.Add(sendEvent);
                         await _producerClient.SendAsync(events, sendEventOptions);
                         // log OpenLineage incoming data
-                        _logger.LogInformation($"OpenLineageIn:{strRequest}");
+                        _logger.LogInformation($"OpenLineageIn:{parsedEventString}");
                     }
                 }
                 // Send appropriate success response
