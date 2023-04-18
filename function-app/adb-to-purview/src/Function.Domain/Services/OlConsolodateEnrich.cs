@@ -52,20 +52,8 @@ namespace Function.Domain.Services
         /// <returns> Enriched event or null if unable to process the event </returns>
         public async Task<EnrichedEvent?> ProcessOlMessage(String strEvent)
         {
-
-            var trimString = TrimPrefix(strEvent);
-            try
-            {
-                _event = JsonConvert.DeserializeObject<Event>(trimString) ?? new Event();
-                int planSize = System.Text.Encoding.Unicode.GetByteCount(_event.Run.Facets.SparkLogicalPlan.ToString());
-                if (planSize > _appSettingsConfig!.maxQueryPlanSize){
-                    _logger.LogWarning("Query Plan size exceeded maximum. Removing query plan from OpenLineage Event");
-                    _event.Run.Facets.SparkLogicalPlan = new JObject();
-                }
-            }
-            catch (JsonSerializationException ex) {
-                _logger.LogWarning(ex,$"Unrecognized Message: {strEvent}, error: {ex.Message} path: {ex.Path}");
-            }
+            var _eventParser = new EventParser(_logger);
+            var _event = _eventParser.ParseOlEvent(strEvent) ?? new Event();
 
             var validateOlEvent = new ValidateOlEvent(_loggerFactory);
             var olMessageConsolodation = new OlMessageConsolodation(_loggerFactory, _configuration);
@@ -128,27 +116,6 @@ namespace Function.Domain.Services
         public string GetJobNamespace()
         {
             return _event.Job.Namespace;
-        }
-
-        private Event? ParseOlEvent(string strEvent)
-        {
-            try{
-                var trimString = TrimPrefix(strEvent);
-                return JsonConvert.DeserializeObject<Event>(trimString);
-            }
-            catch (JsonSerializationException ex) {
-                _logger.LogWarning($"Json Serialization Issue: {strEvent}, error: {ex.Message} path: {ex.Path}");
-            }
-            // Parsing error
-            catch (Exception ex){
-                _logger.LogWarning($"Unrecognized Message: {strEvent}, error: {ex.Message}");
-            }
-            return null;
-        }
-
-        private string TrimPrefix(string strEvent)
-        {
-            return strEvent.Substring(strEvent.IndexOf('{')).Trim();
         }
     }
 }
