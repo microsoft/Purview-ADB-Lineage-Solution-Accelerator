@@ -83,10 +83,11 @@ namespace AdbToPurview.Function
                     else
                     {
                         sendEventOptions.PartitionKey = jobNamespace;
+                        
                         events.Add(sendEvent);
+                        _logger.LogInformation($"OpenLineageIn:{parsedEventString}");
                         await _producerClient.SendAsync(events, sendEventOptions);
                         // log OpenLineage incoming data
-                        _logger.LogInformation($"OpenLineageIn:{parsedEventString}");
                     }
                 }
                 // Send appropriate success response
