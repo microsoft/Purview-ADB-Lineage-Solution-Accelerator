@@ -43,9 +43,21 @@ The following app settings are experimental and may be removed in future release
 
 ## Spark Configuration
 
+For Openlineage-Spark 1.1.0+:
+
 |Configuration|Value|Config Location| Note|
 |----|----|----|---|
-|spark.openlineage.url.param.code| Function Key |*Cluster Spark Config or Init Script||
+|spark.openlineage.transport.type| http |*Cluster Spark Config or Init Script||
+|spark.openlineage.transport.url| <https://FUNCTION_APP_NAME.azurewebsites.net>|Cluster Spark Config or Init Script||
+|spark.openlineage.transport.endpoint| http |*Cluster Spark Config or Init Script||
+|spark.openlineage.transport.urlParams.code| Function Key |*Cluster Spark Config or Init Script||
+|spark.openlineage.namespace| WORKSPACE_ID#CLUSTER_ID |Cluster Spark Config or Init Script||
+
+For OpenLineage 0.18.0 or lower:
+
+|Configuration|Value|Config Location| Note|
+|----|----|----|---|
+|spark.openlineage.transport.urlParams.code| Function Key |*Cluster Spark Config or Init Script||
 |spark.openlineage.host| <https://FUNCTION_APP_NAME.azurewebsites.net>|Cluster Spark Config or Init Script||
 |spark.openlineage.namespace| WORKSPACE_ID#CLUSTER_ID |Cluster Spark Config or Init Script||
 |spark.openlineage.version| v1 |Cluster Spark Config or Init Script| Should be v1 for OpenLineage jar 0.9.0+. Should be 1 for OpenLineage jar 0.8.2 and earlier.|

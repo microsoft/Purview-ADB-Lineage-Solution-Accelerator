@@ -135,15 +135,26 @@ When reviewing the Driver logs, you see an error in the Log4j output that indica
 
 **Solution**: This indicates a problem connecting to the Azure Function from Databricks.
 
-* Confirm `spark.openlineage.url.param.code` and `spark.openlineage.host` values are set and correct.
+* If you are using OpenLineage 1.1.0 or higher, make sure the following spark configs are set:
+
+    ```
+    spark.openlineage.transport.type http
+    spark.openlineage.transport.endpoint api/v1/lineage
+    spark.openlineage.namespace <ADB-WORKSPACE-ID>#<DB_CLUSTER_ID>
+    spark.openlineage.transport.url https://<FUNCTION_APP_NAME>.azurewebsites.net
+    spark.openlineage.transport.urlParams.code <FUNCTION_APP_DEFAULT_HOST_KEY>
+    ```
+
+* If you are using Openlineage 0.18.0 or lower, Confirm `spark.openlineage.transport.urlParams.code` and `spark.openlineage.host` values are set and correct.
 * Confirm that the Azure Function is currently on and has the correct API routes for OpenLineageIn
 * Confirm that `spark.openlineage.version` is set correctly.
 
-    |SA Release|OpenLineage Jar|spark.openlineage.version|
+    |SA Release|OpenLineage Jar|spark.openlineage.version|spark.openlineage.transport.endpoint|
     |-----|----|----|
-    |1.0.x|0.8.2|1|
-    |1.1.x|0.8.2|1|
-    |2.x.x or newer|0.11.0 or newer|v1|
+    |1.0.x|0.8.2|1|not set|
+    |1.1.x|0.8.2|1|not set|
+    |2.0.x - 2.3.1|0.11.0 - 0.18.0|v1|not set|
+    |2.4.x or newer|1.1.0 or newer|not set|api/v1/lineage|
 
 ## <a id="pureviewout-load2purview" />PurviewOut Logs: Error Loading to Purview: 403 Forbidden
 

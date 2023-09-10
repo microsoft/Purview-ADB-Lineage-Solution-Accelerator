@@ -170,17 +170,18 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
 4. Create or modify an interactive or job cluster in your Databricks Workspace. Under Advanced Options, add this config to the [Spark Configuration](https://docs.microsoft.com/en-us/azure/databricks/clusters/configure#spark-configuration):
 
     ```text
-    spark.openlineage.version v1 
+    spark.openlineage.transport.type http
+    spark.openlineage.transport.endpoint api/v1/lineage
     spark.openlineage.namespace <ADB-WORKSPACE-ID>#<DB_CLUSTER_ID>
-    spark.openlineage.host https://<FUNCTION_APP_NAME>.azurewebsites.net
-    spark.openlineage.url.param.code <FUNCTION_APP_DEFAULT_HOST_KEY>
+    spark.openlineage.transport.url https://<FUNCTION_APP_NAME>.azurewebsites.net
+    spark.openlineage.transport.urlParams.code <FUNCTION_APP_DEFAULT_HOST_KEY>
     ```
 
     1. The ADB-WORKSPACE-ID value should be the first part of the URL when navigating to Azure Databricks, not the workspace name. For example, if the URL is: _https://adb-4630430682081461.1.azuredatabricks.net/_, the ADB-WORKSPACE-ID should be _adb-4630430682081461.1_.
     1. You should store the FUNCTION_APP_DEFAULT_HOST_KEY in a secure location. If you will be configuring individual clusters with the OpenLineage agent, you can use Azure Databricks secrets to store the key in Azure KeyVault and retrieve it as part of the cluster initialization script.  For more information on this, see the [Azure documentation](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#--databricks-backed-scopes)
 
     After configuring the secret storage, the API key for OpenLineage can be configured in the Spark config, as in the following example:
-    `spark.openlineage.url.param.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
+    `spark.openlineage.transport.urlParams.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
     1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
 
 5. At this point, you can run a Databricks notebook on an "all-purpose cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks notebook has finished running all cells.
