@@ -105,7 +105,7 @@ jobs:
         path: ./artifacts
 
     - name: Deploy Azure Function to Integration Env
-      uses: Azure/functions-action@v1.4.6
+      uses: Azure/functions-action@v1.5.1
       with:
         app-name: ${{ secrets.INT_FUNC_NAME }}
         package: ./artifacts/FunctionZip.zip
