@@ -489,7 +489,7 @@
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "postgresql"
+                    "op2": "postgres"
                 },
                 {
                     "op1": "nameGroups[0].parts",
@@ -517,7 +517,7 @@
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "postgresql"
+                    "op2": "postgres"
                 },
                 {
                     "op1": "nameSpcConParts",
@@ -540,7 +540,7 @@
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "postgresql"
+                    "op2": "postgres"
                 },
                 {
                     "op1": "nameGroups[0].parts",
@@ -558,7 +558,7 @@
                 {
                     "op1": "prefix",
                     "compare": "=",
-                    "op2": "postgresql"
+                    "op2": "postgres"
                 }
             ],
             "qualifiedName": "postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/public/tables/{nameGroups[0]}",
