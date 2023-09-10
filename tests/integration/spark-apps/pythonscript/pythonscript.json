@@ -2,17 +2,18 @@
     "name": "PythonScriptJob",
     "new_cluster": {
         "num_workers": 1,
-        "spark_version": "9.1.x-scala2.12",
+        "spark_version": "10.4.x-scala2.12",
         "spark_conf": {
-            "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}",
-            "spark.openlineage.host": "https://YOURFUNCTION.azurewebsites.net",
-            "spark.openlineage.namespace": "adb-123.1#ABC123",
-            "spark.openlineage.version": "1"
+            "spark.openlineage.transport.type" : "http",
+            "spark.openlineage.transport.endpoint" : "api/v1/lineage",
+            "spark.openlineage.namespace" : "$adb_ws_url_id#default",
+            "spark.openlineage.transport.url" : "https://$FUNNAME.azurewebsites.net",
+            "spark.openlineage.transport.urlParams.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
         },
         "node_type_id": "Standard_DS3_v2",
         "init_scripts": {
             "dbfs": {
-                "destination": "dbfs:/databricks/openlineagehardcoded/release-candidate.sh"
+                "destination": "dbfs:/databricks/openlineagehardcoded/ol-1-1.sh"
             }
         }
     },

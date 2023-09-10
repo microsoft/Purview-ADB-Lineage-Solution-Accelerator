@@ -231,14 +231,15 @@ adb_ws_url_id=$(echo $adb_ws_url |  sed 's/.azuredatabricks.net//g')
 cat << EOF > create-cluster.json
 {
     "cluster_name": "$CLUSTERNAME",
-    "spark_version": "9.1.x-scala2.12",
+    "spark_version": "10.4.x-scala2.12",
     "node_type_id": "Standard_DS3_v2",
     "num_workers": 1,
     "spark_conf": {
-        "spark.openlineage.version" : "v1",
+        "spark.openlineage.transport.type" : "http",
+        "spark.openlineage.transport.endpoint" : "api/v1/lineage",
         "spark.openlineage.namespace" : "$adb_ws_url_id#default",
-        "spark.openlineage.host" : "https://$FUNNAME.azurewebsites.net",
-        "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
+        "spark.openlineage.transport.url" : "https://$FUNNAME.azurewebsites.net",
+        "spark.openlineage.transport.urlParams.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
     },
     "spark_env_vars": {
         "PYSPARK_PYTHON" : "/databricks/python3/bin/python3"
@@ -249,7 +250,7 @@ cat << EOF > create-cluster.json
     "init_scripts": [
         {
             "dbfs":{
-                "destination": "dbfs:/databricks/openlineage/open-lineage-init-script.sh"
+                "destination": "dbfs:/databricks/openlineagehardcoded/ol-1-1.sh"
             }
         }
     ],
@@ -277,7 +278,6 @@ echo "BEGIN: Modify Spark config settings"
 cat << 'EOF' > /databricks/driver/conf/openlineage-spark-driver-defaults.conf
 [driver] {
   "spark.extraListeners" = "io.openlineage.spark.agent.OpenLineageSparkListener"
-  "spark.openlineage.url.param.codetest" = "testing"
   "spark.openlineage.samplestorageaccount" = "$ADLSNAME"
   "spark.openlineage.samplestoragecontainer" = "rawdata"
 }

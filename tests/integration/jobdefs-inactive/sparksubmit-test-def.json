@@ -17,12 +17,13 @@
                 },
                 "new_cluster": {
                     "cluster_name": "",
-                    "spark_version": "9.1.x-scala2.12",
+                    "spark_version": "10.4.x-scala2.12",
                     "spark_conf": {
-                        "spark.openlineage.url.param.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}",
-                        "spark.openlineage.host": "https://<FUNCTION_SERVICE_NAME>.azurewebsites.net",
-                        "spark.openlineage.namespace": "<DBR_WORKSPACE_NAME>#ABC123",
-                        "spark.openlineage.version": "1"
+                        "spark.openlineage.transport.type" : "http",
+                        "spark.openlineage.transport.endpoint" : "api/v1/lineage",
+                        "spark.openlineage.namespace" : "$adb_ws_url_id#default",
+                        "spark.openlineage.transport.url" : "https://$FUNNAME.azurewebsites.net",
+                        "spark.openlineage.transport.urlParams.code": "{{secrets/purview-to-adb-kv/Ol-Output-Api-Key}}"
                     },
                     "node_type_id": "Standard_DS3_v2",
                     "enable_elastic_disk": true,
