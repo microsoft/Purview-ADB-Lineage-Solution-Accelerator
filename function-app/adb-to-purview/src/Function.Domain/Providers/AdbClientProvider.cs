@@ -116,7 +116,7 @@ namespace Function.Domain.Providers
             }
 
             var request = new HttpRequestMessage() {
-                RequestUri = new Uri($"https://{adbWorkspaceUrl}.azuredatabricks.net/api/2.1/jobs/runs/get?run_id={runId}"),
+                RequestUri = new Uri($"https://{adbWorkspaceUrl}.databricks.azure.cn/api/2.1/jobs/runs/get?run_id={runId}"),
                 Method = HttpMethod.Get,
             };
             request.Headers.Authorization  =
