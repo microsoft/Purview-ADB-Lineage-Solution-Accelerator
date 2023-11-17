@@ -127,6 +127,8 @@ namespace Function.Domain.Providers
                 var tokenResponse = await _client.SendAsync(request);
 
                 tokenResponse.EnsureSuccessStatusCode();
+                var responseBody = await tokenResponse.Content.ReadAsStringAsync();
+                _log.LogInformation(responseBody);
                 resultAdbRoot = JsonConvert.DeserializeObject<AdbRoot>(await tokenResponse.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
