@@ -86,7 +86,7 @@
 			"sku": {
 				"name": "Standard_LRS"
 			},
-			"kind": "Storage",
+			"kind": "StorageV2",
 			"tags": "[parameters('resourceTagValues')]",
 			"properties": {
 				"allowBlobPublicAccess": "False",
@@ -101,7 +101,7 @@
 			"sku": {
 				"name": "Standard_LRS"
 			},
-			"kind": "Storage",
+			"kind": "StorageV2",
 			"tags": "[parameters('resourceTagValues')]",
 			"properties": {
 				"allowBlobPublicAccess": "False"
