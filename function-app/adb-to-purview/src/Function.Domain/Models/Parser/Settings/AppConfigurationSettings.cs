@@ -38,8 +38,7 @@ namespace Function.Domain.Models.Settings
         public string AuthenticationUri { get; set; } = "purview.azure.net";
         public string AppDomainUrl { get; set; } = "purview.azure.com";
         public string ResourceUri { get; set; } = "https://purview.azure.com";
-        public int maxQueryPlanSize {get; set; } = Int32.MaxValue;
-        public int maxColumnLineageSize {get; set;} = Int32.MaxValue;
+        public int maxPayloadSize {get; set;} = 1048576;
         public bool prioritizeFirstResourceSet { get; set; } = true;
         public string purviewApiEndPoint { get; set; } = "{ResourceUri}/catalog/api";
         public string purviewApiEntityBulkMethod { get; set; } = "/atlas/v2/entity/bulk";

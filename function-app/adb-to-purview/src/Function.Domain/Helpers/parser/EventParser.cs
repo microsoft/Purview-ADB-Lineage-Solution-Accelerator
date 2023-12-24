@@ -21,29 +21,40 @@ namespace Function.Domain.Helpers
         public Event? ParseOlEvent(string eventPayload){
             try{
                 var trimString = TrimPrefix(eventPayload);
+                var _totalPayloadSize = System.Text.Encoding.Unicode.GetByteCount(trimString);
+
                 var _event = JsonConvert.DeserializeObject<Event>(trimString);
-                int planSize = System.Text.Encoding.Unicode.GetByteCount(_event!.Run.Facets.SparkLogicalPlan.ToString());
-                if (planSize > _appSettingsConfig!.maxQueryPlanSize){
-                    _logger.LogWarning("Query Plan size exceeded maximum. Removing query plan from OpenLineage Event");
-                    _event.Run.Facets.SparkLogicalPlan = new JObject();
+                if (_event == null){
+                    _logger.LogWarning($"ParseOlEvent: Event Payload was null");
+                    return null;
                 }
                 
-                var _outputs = _event.Outputs;
-                int columnPlanSize = 0;
-                // check if total column lineage size is greater than max allowed
-                foreach (var output in _outputs){
-                    columnPlanSize += System.Text.Encoding.Unicode.GetByteCount(output.Facets.ColFacets.ToString());
-                }
-                if (columnPlanSize > _appSettingsConfig!.maxColumnLineageSize){
-                    _logger.LogWarning("Total column Lineage size exceeded maximum. Removing column lineage from OpenLineage Event");
-                    System.Collections.Generic.List<Outputs> updatedOutputs = new System.Collections.Generic.List<Outputs>();
-                    foreach (var output in _outputs){
-                        output.Facets.ColFacets = new ColumnLineageFacetsClass();
-                        updatedOutputs.Add(output);
-                    }
-                    _event.Outputs = updatedOutputs;
-                }
+                // Handle the 1 MB size limit of an Event Hub in an opinionated way
+                _logger.LogDebug($"ParseOlEvent: Payload Size Initial: {_totalPayloadSize}");
+                if (_totalPayloadSize > _appSettingsConfig!.maxPayloadSize){
+                    // First remove the Spark Plan, it has the least impact
+                    _logger.LogWarning("Total Payload from OpenLineage exceeded maximum size.");
+                    _logger.LogWarning("Total Payload from OpenLineage exceeded maximum size: Removing Spark Plan");
+                    _event.Run.Facets.SparkLogicalPlan = new JObject();
+                    var _sizeAfterStripPlan = System.Text.Encoding.Unicode.GetByteCount(JsonConvert.SerializeObject(_event).ToString());
+                    _logger.LogDebug($"ParseOlEvent: Payload Size After Pruning Spark Plan: {_totalPayloadSize}");
 
+                    if (_sizeAfterStripPlan > _appSettingsConfig!.maxPayloadSize){
+                        // Next remove the column lineage but this affects column mapping
+                        _logger.LogWarning("Total Payload from OpenLineage exceeded maximum size: Removing column lineage from OpenLineage Event");
+                        System.Collections.Generic.List<Outputs> updatedOutputs = new System.Collections.Generic.List<Outputs>();
+                        foreach (var output in _event.Outputs){
+                            output.Facets.ColFacets = new ColumnLineageFacetsClass();
+                            updatedOutputs.Add(output);
+                        }
+                        _event.Outputs = updatedOutputs;
+                    }
+
+                    var _sizeAfterStripPlanAndColLineage = System.Text.Encoding.Unicode.GetByteCount(JsonConvert.SerializeObject(_event).ToString());
+                    _logger.LogWarning($"ParseOlEvent - Payload Size After Pruning Spark Plan and ColumnLineage: {_sizeAfterStripPlanAndColLineage}");
+                    // TODO: Add reducing Mount Points
+                }
+                
                 return _event;
             }
             catch (JsonSerializationException ex) {
