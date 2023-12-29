@@ -104,18 +104,17 @@ jobs:
         name: FunctionZip
         path: ./artifacts
 
-    - name: Deploy Azure Function to Integration Env
-      uses: Azure/functions-action@v1.4.6
-      with:
-        app-name: ${{ secrets.INT_FUNC_NAME }}
-        package: ./artifacts/FunctionZip.zip
-        publish-profile: ${{ secrets.INT_PUBLISH_PROFILE }}
-    
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.INT_AZ_CLI_CREDENTIALS }}
-    
+
+    - name: Deploy Azure Function to Integration Env
+      uses: Azure/functions-action@v1.5.1
+      with:
+        app-name: ${{ secrets.INT_FUNC_NAME }}
+        package: ./artifacts/FunctionZip.zip
+        
     - name: Compare and Update App Settings on Deployed Function
       uses: azure/CLI@v1
       with:
