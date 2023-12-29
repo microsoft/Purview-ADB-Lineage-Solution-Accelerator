@@ -40,17 +40,20 @@ namespace Function.Domain.Helpers.Parser
         /// <param name="olEvent">OpenLineage Event message</param>
         /// <returns>true if input is valid, false if not</returns>
         public bool Validate(Event olEvent){
+            _log.LogInformation($"Validating input of an event with {olEvent.Inputs.Count} inputs and {olEvent.Outputs.Count} outputs");
             if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
             {
                 // Need to rework for multiple inputs and outputs in one packet - possibly combine and then hash
                 if (InOutEqual(olEvent))
                 { 
+                    _log.LogWarning($"Event considered NOT valid due to inputs and outputs being equal");
                     return false; 
                 }
                 if (olEvent.EventType == "START")
                 {
                     if (olEvent.Run.Facets.EnvironmentProperties == null)
                     {
+                        _log.LogWarning($"Start Event considered NOT valid due to missing Databricks Envrionment Properties");
                         return false;
                     }
                     return true;
@@ -61,9 +64,11 @@ namespace Function.Domain.Helpers.Parser
                 }
                 else
                 {
+                    _log.LogWarning($"Event considered NOT valid due to not matching any other condition");
                     return false;
                 }
             }
+            _log.LogWarning($"Event considered NOT valid due to not matching any other condition");
             return false;
         }
 
