@@ -39,7 +39,11 @@ namespace Function.Domain.Helpers.Parser
         /// </summary>
         /// <param name="olEvent">OpenLineage Event message</param>
         /// <returns>true if input is valid, false if not</returns>
-        public bool Validate(Event olEvent){
+        public bool Validate(Event? olEvent){
+            if (olEvent == null){
+                _log.LogWarning("Event considered NOT valid as it was null");
+                return false;
+            }
             _log.LogInformation($"Validating input of an event with {olEvent.Inputs.Count} inputs and {olEvent.Outputs.Count} outputs");
             if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
             {

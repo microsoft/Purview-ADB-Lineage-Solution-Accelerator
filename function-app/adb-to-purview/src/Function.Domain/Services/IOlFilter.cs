@@ -8,7 +8,7 @@ namespace Function.Domain.Services
 {
     public interface IOlFilter
     {
-        bool FilterOlMessage(Event olEvent);
+        bool FilterOlMessage(Event? olEvent);
         string GetJobNamespace(Event olEvent);
     }
 }

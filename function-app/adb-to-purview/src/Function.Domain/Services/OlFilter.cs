@@ -38,7 +38,7 @@ namespace Function.Domain.Services
         /// true: if the message should be passed on for further processing
         /// false: if the message should be filtered out
         /// </returns>
-        public bool FilterOlMessage(Event olEvent)
+        public bool FilterOlMessage(Event? olEvent)
         {
             try {
                 var validateEvent = new ValidateOlEvent(_loggerFactory);
