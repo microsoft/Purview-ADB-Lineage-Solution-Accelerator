@@ -86,7 +86,7 @@ namespace Function.Domain.Helpers.Parser
             nms2.Sort();
             nmspc.Sort();
             nmspc2.Sort();
-            return Enumerable.SequenceEqual(nms, nms2) && Enumerable.SequenceEqual(nms, nms2);
+            return Enumerable.SequenceEqual(nms, nms2) && Enumerable.SequenceEqual(nmspc, nmspc2);
         }
     }
 }
