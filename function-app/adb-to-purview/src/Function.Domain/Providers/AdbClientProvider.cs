@@ -26,6 +26,7 @@ namespace Function.Domain.Providers
         private AppConfigurationSettings? config = new AppConfigurationSettings();
 
         // static for simple function cache
+        // TODO: This may cause an issue when you are trying to handle multiple Databricks workspace
         private static JwtSecurityToken? _bearerToken;
         private HttpClient _client;
         private ILogger _log;
@@ -106,6 +107,7 @@ namespace Function.Domain.Providers
         {
             if (isTokenExpired(_bearerToken))
             {
+                _log.LogWarning($"AdbClient-GetSingleAdbJobAsync: need to update token cache to get runId {runId} for workspace {adbWorkspaceUrl}");
                 await GetBearerTokenAsync();
                 
                 if (_bearerToken is null)
@@ -131,7 +133,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"AdbClient-GetSingleAdbJobAsync: error, message: {ex.Message}");
+                _log.LogError(ex, $"AdbClient-GetSingleAdbJobAsync: error retrieving run information for runId {runId} for workspace {adbWorkspaceUrl}, message: {ex.Message}");
             }
             return resultAdbRoot;
         }
@@ -143,7 +145,7 @@ namespace Function.Domain.Providers
             }
             if (jwt.ValidTo > DateTime.Now.AddMinutes(3))
             {
-                _log.LogInformation("AdbClient-isTokenExpired: Token cache hit");
+                _log.LogInformation("AdbClient-isTokenExpired: Token cache hit, no need to refresh token");
                 return false;
             }
             return true;
