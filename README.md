@@ -63,6 +63,7 @@ Gathering lineage data is performed in the following steps:
 * Support **column level lineage** for ABFSS, WASBS, and default metastore hive tables (see [Limitations](./LIMITATIONS.md#column-level-mapping-supported-sources) for more detail)
 * Once configured, <span style="color: red;">**does not require any code changes to notebooks or jobs**</span>
 * Can [add new source support through configuration](./docs/extending-source-support.md)  
+* Note: Unity Catalog is not supported. [Unity Catalog metadata scanning](https://learn.microsoft.com/en-us/purview/register-scan-azure-databricks-unity-catalog) is supported in Microsoft Purview and is the preferred way to collect metadata and lineage for Unity enabled Databricks Workspaces.
 
 ## Videos
 
