@@ -191,46 +191,12 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
 
 ### <a id="jobs-lineage" />Support Extracting Lineage from Databricks Jobs
 
-To support Databricks Jobs, you must add the service principal to your Databricks workspace. To use the below scripts, you must authenticate to Azure Databricks using either [access tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication) or [AAD tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/). The snippets below assume you have generated an access token.
+To support Databricks Jobs, you must add the service principal to your Databricks workspace.
 
-1. [Add your Service Principal to Databricks as a User](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
-    * Create a file named `add-service-principal.json` that contains
-      ```json
-      {
-        "schemas": [ "urn:ietf:params:scim:schemas:core:2.0:ServicePrincipal" ],
-        "applicationId": "<azure-application-id>",
-        "displayName": "<display-name>",
-        "groups": [
-            {
-            "value": "<group-id>"
-            }
-        ],
-        "entitlements": [
-            {
-            "value":"allow-cluster-create"
-            }
-        ]
-      }
-      ```
-    * Provide a group id by executing the `groups` Databricks API and extracting a group id.
-      ```bash
-      curl -X GET \
-      https://<databricks-instance>/api/2.0/preview/scim/v2/Groups \
-      --header 'Authorization: Bearer DATABRICKS_ACCESS_TOKEN' \
-      | jq .
-      ```
-      You may use the admin group id or create a separate group to isolate the service principal.
+1. Follow the [official documentation](https://learn.microsoft.com/en-us/azure/databricks/administration-guide/users-groups/service-principals#--add-a-service-principal-to-a-workspace-using-the-workspace-admin-settings) to add your service principal through the Workspace Admin Settings User Interface. This will also add it to the Admin group.
+    * For adding the service principal via REST API see [databricks jobs and service principals](./docs/databricks-jobs-service-principal.md)
 
-    * Execute the following bash command after the file above has been created and populated.
-      ```bash
-      curl -X POST \
-      https://<databricks-instance>/api/2.0/preview/scim/v2/ServicePrincipals \
-      --header 'Content-type: application/scim+json' \
-      --header 'Authorization: Bearer DATABRICKS_ACCESS_TOKEN' \
-      --data @add-service-principal.json \
-      | jq .
-      ```
-2. [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
+2. This should be the same Service Principal that has Data Curator role in Microsoft Purview.
 
 3. At this point, you can run a Databricks job on a "job cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks job has finished.
 
