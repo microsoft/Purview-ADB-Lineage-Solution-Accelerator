@@ -156,6 +156,7 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
     > If you do not have line feed endings, your cluster will fail to start due to an init script error.
 
 3. Upload the init script and jar to dbfs using the [Databricks CLI](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/cli/)
+    * Alternatively, use the [databricks workspace import --format SOURCE](https://github.com/databricks/cli/blob/main/docs/commands.md#databricks-workspace-import---import-a-workspace-object) command to upload the init script as a workspace file.
 
     ```text
     dbfs mkdirs dbfs:/databricks/openlineage
@@ -181,7 +182,7 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
 
     After configuring the secret storage, the API key for OpenLineage can be configured in the Spark config, as in the following example:
     `spark.openlineage.url.param.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
-    1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
+    1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://learn.microsoft.com/en-us/azure/databricks/init-scripts/cluster-scoped#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
 
 5. At this point, you can run a Databricks notebook on an "all-purpose cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks notebook has finished running all cells.
 
@@ -204,6 +205,6 @@ To support Databricks Jobs, you must add the service principal to your Databrick
 
 ### <a id="global-init"/>Global Init Scripts
 
-You can also configure the OpenLineage listener to run globally, so that any cluster which is created automatically runs the listener.  To do this, you can utilize a [global init script](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#global-init-scripts).
+You can also configure the OpenLineage listener to run globally, so that any cluster which is created automatically runs the listener.  To do this, you can utilize a [global init script](https://learn.microsoft.com/en-us/azure/databricks/init-scripts/global).
 
 **Note**: Global initialization cannot currently use values from Azure Databricks KeyVault integration mentioned above. If using global initialization scripts, this key would need to be retrieved in the notebooks themselves, or hardcoded into the global init script.
