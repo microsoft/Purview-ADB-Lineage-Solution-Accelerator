@@ -17,7 +17,42 @@ You may need to modify the `deployment/infra/newdeploymenttemp.json` template fo
 1. The `storage{prefix}{uniqueid}` storage account requires one private endpoint with a target sub-resource of `blob`.
 1. The Azure Event Hub namespace requires a private endpoint with a target sub-resource of `namespace`.
 
+## Accelerator Network Schema
+
+In order to make all your resources private, you can modify component already deployed or modify arm template in order to create private resources. 
+In both cases Network schema sould resemble like this:
+
+![privateendpoint.png](../assets/img/private-endpoint/privateendpoint.png)
+
+In Azure v-net for a better handling I created several subnet
+- func-snet 
+For Function  Vnet injection
+
+- pep-snet
+For all private endpoint
+
+- purview-snet
+Reserved for Purview Endpoint
+
+- mgm-snet
+For management prupose
+
+When you create Private Endpoint some additional DNS zones are created/updated
+
+*privatelink.azurewebsites.net*
+*privatelink.blob.core.windows.net*
+*privatelink.file.core.windows.net*
+*privatelink.purview.azure.com*
+*privatelink.purviewstudio.azure.com*
+*privatelink.queue.core.windows.net*
+*privatelink.servicebus.windows.net*
+*privatelink.table.core.windows.net*
+*privatelink.vaultcore.azure.net*
+
+
+
 ### Additional Tutorials
 
 * Add [Private Endpoint to Storage Account](https://learn.microsoft.com/en-us/azure/storage/common/storage-private-endpoints)
 * Add [Private Endpoint to Azure Event Hub Namespace](https://learn.microsoft.com/en-us/azure/event-hubs/private-link-service)
+* Add [Private Endpoint to Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/private-link-service)
