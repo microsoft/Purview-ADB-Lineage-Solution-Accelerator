@@ -97,25 +97,31 @@ if __name__ == "__main__":
             continue
         searchable_success += eval_test_status(expected_qn, results, maximum_string_length)
     
-    # Get the processes expected from Purview
-    # If this ever gets larger than a hundred entities, may need to batch up calls
-    processes_from_purview = client.get_entity(
-        qualifiedName=expected_processes,
-        typeName="databricks_process"
-    )
-    processes_from_purview_qualifiedNames = []
-    for proc in processes_from_purview.get("entities", []):
-        processes_from_purview_qualifiedNames.append(proc.get("attributes", {}).get("qualifiedName"))
-    
     # Evaluate the processes
     process_success = 0
-    for expected_proc_qn in expected_processes:
-        process_success += eval_test_status(
-            expected_qn=expected_proc_qn, 
-            test_results=processes_from_purview_qualifiedNames,
-            maximum_string_length=maximum_string_length
-        )    
 
+    # We may be lazy and not actually add in any processes to the expectations
+    # if that's the case, skip this section
+    if len(expected_processes) > 0:
+        # Get the processes expected from Purview
+        # If this ever gets larger than a hundred entities, may need to batch up calls
+        processes_from_purview = client.get_entity(
+            qualifiedName=expected_processes,
+            typeName="databricks_process"
+        )
+        processes_from_purview_qualifiedNames = []
+        for proc in processes_from_purview.get("entities", []):
+            processes_from_purview_qualifiedNames.append(proc.get("attributes", {}).get("qualifiedName"))
+
+
+        for expected_proc_qn in expected_processes:
+            process_success += eval_test_status(
+                expected_qn=expected_proc_qn,
+                test_results=processes_from_purview_qualifiedNames,
+                maximum_string_length=maximum_string_length
+            )
+
+    # Summarize the results of assets and processes
     total_successes = searchable_success + process_success
     print(f"Summary: {total_successes:0>2}/{len(expected):0>2}")
     print(total_successes == len(expected), end="")

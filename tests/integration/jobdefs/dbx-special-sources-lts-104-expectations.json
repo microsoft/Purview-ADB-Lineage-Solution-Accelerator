@@ -1,0 +1,37 @@
+[
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/Syn-in-WB-in-Syn-Out",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/azsql-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/azuresql-in-azuresql-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/azsql-task/processes/B95334DF8F53EB63EDBA24AF88CFC7AA->80FC7C28AF3F669752CE8F2DA1987526",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/kusto-in-wasbs-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/kusto-in-wasbs-out-task/processes/9D42C0F01CD2D2C2F014263C2D812602->55517236A8804C9548A4CB81814AEA6B",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/wasbs-in-kusto-out-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/wasbs-in-kusto-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/wasbs-in-kusto-out-task/processes/D3E8F45D1D4150D809A56423DD2F2CFD->9D42C0F01CD2D2C2F014263C2D812602",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/mysql-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/mysql-in-mysql-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/mysql-task/processes/1F6965315A6049825A37C4AD085BD605->A08160B244AF828E1FDB80AC8D14FA96",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/postgres-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/postgres-in-postgres-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/postgres-task/processes/7E6CEF8EC093F119A11618169A8C4EAE->DB99105F739F05449E1ECD20A652DEE1",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/synapse-in-out-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-in-synapse-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/synapse-in-out-task/processes/xxxx->xxx",
+  
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/synapse-in-wasbs-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-in-wasbs-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/synapse-in-wasbs-out/processes/FC4F9610428CB3C9FBCB97DF6D2B939D->76AAA8ADC61434F8BFB7C92E6ABF8C85",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/synapse-wasbs-in-synapse-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/synapse-wasbs-in-synapse-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/synapse-wasbs-in-synapse-out/processes/xxx->xxx"  
+]

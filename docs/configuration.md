@@ -30,7 +30,6 @@ The following app settings are experimental and may be removed in future release
 | App Setting| Default Value in Code| Note|
 |----|----|----|
 |useResourceSet|true|Experimental feature|
-|maxQueryPlanSize|null|If the query plan bytes is greater than this value it will be removed from the databricks_process|
 |prioritizeFirstResourceSet|true|When matching against existing assets, the first resource set found will be prioritized over other assets like folders or purview custom connector entities.|
 |Spark_Entities|databricks_workspace;databricks_job;databricks_notebook;databricks_notebook_task||
 |Spark_Process|databricks_process||

@@ -156,6 +156,7 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
     > If you do not have line feed endings, your cluster will fail to start due to an init script error.
 
 3. Upload the init script and jar to dbfs using the [Databricks CLI](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/cli/)
+    * Alternatively, use the [databricks workspace import --format SOURCE](https://github.com/databricks/cli/blob/main/docs/commands.md#databricks-workspace-import---import-a-workspace-object) command to upload the init script as a workspace file.
 
     ```text
     dbfs mkdirs dbfs:/databricks/openlineage
@@ -181,7 +182,7 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
 
     After configuring the secret storage, the API key for OpenLineage can be configured in the Spark config, as in the following example:
     `spark.openlineage.url.param.code {{secrets/secret_scope/Ol-Output-Api-Key}}`
-    1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
+    1. Add a reference to the uploaded init script `dbfs:/databricks/openlineage/open-lineage-init-script.sh` on the [Init script section](https://learn.microsoft.com/en-us/azure/databricks/init-scripts/cluster-scoped#configure-a-cluster-scoped-init-script-using-the-ui) of the Advanced Options.
 
 5. At this point, you can run a Databricks notebook on an "all-purpose cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks notebook has finished running all cells.
 
@@ -191,46 +192,12 @@ Follow the instructions below and refer to the [OpenLineage Databricks Install I
 
 ### <a id="jobs-lineage" />Support Extracting Lineage from Databricks Jobs
 
-To support Databricks Jobs, you must add the service principal to your Databricks workspace. To use the below scripts, you must authenticate to Azure Databricks using either [access tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication) or [AAD tokens](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/aad/). The snippets below assume you have generated an access token.
+To support Databricks Jobs, you must add the service principal to your Databricks workspace.
 
-1. [Add your Service Principal to Databricks as a User](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/scim/scim-sp#add-service-principal)
-    * Create a file named `add-service-principal.json` that contains
-      ```json
-      {
-        "schemas": [ "urn:ietf:params:scim:schemas:core:2.0:ServicePrincipal" ],
-        "applicationId": "<azure-application-id>",
-        "displayName": "<display-name>",
-        "groups": [
-            {
-            "value": "<group-id>"
-            }
-        ],
-        "entitlements": [
-            {
-            "value":"allow-cluster-create"
-            }
-        ]
-      }
-      ```
-    * Provide a group id by executing the `groups` Databricks API and extracting a group id.
-      ```bash
-      curl -X GET \
-      https://<databricks-instance>/api/2.0/preview/scim/v2/Groups \
-      --header 'Authorization: Bearer DATABRICKS_ACCESS_TOKEN' \
-      | jq .
-      ```
-      You may use the admin group id or create a separate group to isolate the service principal.
+1. Follow the [official documentation](https://learn.microsoft.com/en-us/azure/databricks/administration-guide/users-groups/service-principals#--add-a-service-principal-to-a-workspace-using-the-workspace-admin-settings) to add your service principal through the Workspace Admin Settings User Interface. This will also add it to the Admin group.
+    * For adding the service principal via REST API see [databricks jobs and service principals](./docs/databricks-jobs-service-principal.md)
 
-    * Execute the following bash command after the file above has been created and populated.
-      ```bash
-      curl -X POST \
-      https://<databricks-instance>/api/2.0/preview/scim/v2/ServicePrincipals \
-      --header 'Content-type: application/scim+json' \
-      --header 'Authorization: Bearer DATABRICKS_ACCESS_TOKEN' \
-      --data @add-service-principal.json \
-      | jq .
-      ```
-2. [Assign the Service Principal as a contributor to the Databricks Workspace](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current)
+2. This should be the same Service Principal that has Data Curator role in Microsoft Purview.
 
 3. At this point, you can run a Databricks job on a "job cluster" in your configured workspace and observe lineage in Microsoft Purview once the Databricks job has finished.
 
@@ -238,6 +205,6 @@ To support Databricks Jobs, you must add the service principal to your Databrick
 
 ### <a id="global-init"/>Global Init Scripts
 
-You can also configure the OpenLineage listener to run globally, so that any cluster which is created automatically runs the listener.  To do this, you can utilize a [global init script](https://docs.microsoft.com/en-us/azure/databricks/clusters/init-scripts#global-init-scripts).
+You can also configure the OpenLineage listener to run globally, so that any cluster which is created automatically runs the listener.  To do this, you can utilize a [global init script](https://learn.microsoft.com/en-us/azure/databricks/init-scripts/global).
 
 **Note**: Global initialization cannot currently use values from Azure Databricks KeyVault integration mentioned above. If using global initialization scripts, this key would need to be retrieved in the notebooks themselves, or hardcoded into the global init script.

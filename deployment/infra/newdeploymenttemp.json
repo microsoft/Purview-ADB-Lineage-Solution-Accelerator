@@ -57,7 +57,7 @@
 		"openlineageKeyVaultName": "[replace(replace(toLower(concat(concat('keyvaut',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
 		"purviewAccountName": "[parameters('purviewName')]",
 		"eventHubSku": "Standard",
-		"captureEnabled": true,
+		"captureEnabled": false,
 		"captureEncodingFormat": "Avro",
 		"captureTime": 60,
 		"captureSize": 314572800,
@@ -86,7 +86,7 @@
 			"sku": {
 				"name": "Standard_LRS"
 			},
-			"kind": "Storage",
+			"kind": "StorageV2",
 			"tags": "[parameters('resourceTagValues')]",
 			"properties": {
 				"allowBlobPublicAccess": "False",
@@ -101,7 +101,7 @@
 			"sku": {
 				"name": "Standard_LRS"
 			},
-			"kind": "Storage",
+			"kind": "StorageV2",
 			"tags": "[parameters('resourceTagValues')]",
 			"properties": {
 				"allowBlobPublicAccess": "False"

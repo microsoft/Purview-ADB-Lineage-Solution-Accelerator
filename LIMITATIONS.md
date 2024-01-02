@@ -159,3 +159,7 @@ Starting with OpenLineage 0.18.0 and release 2.3.0 of the solution accelerator, 
 
 * Delta Merge statements are not supported at this time
 * Delta to Delta is NOT supported at this time
+
+# Unity Catalog
+
+Unity Catalog is not supported due to [OpenLineage not yet supporting Unity Catalog](https://github.com/OpenLineage/OpenLineage/issues/2121). Microsoft Purview supports [Unity Catalog metadata scanning](https://learn.microsoft.com/en-us/purview/register-scan-azure-databricks-unity-catalog) and is the preferred approach to handling Unity Catalog.

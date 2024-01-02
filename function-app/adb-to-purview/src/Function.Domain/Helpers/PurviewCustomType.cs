@@ -514,7 +514,7 @@ namespace Function.Domain.Helpers
         ILogger _logger;
         private AppConfigurationSettings? config = new AppConfigurationSettings();
         private MemoryCache _cache = MemoryCache.Default;
-        private CacheItemPolicy cacheItemPolicy;
+        private String TOKEN_CACHE_KEY = "token";
         /// <summary>
         /// Create Object passing the logger class
         /// </summary>
@@ -524,10 +524,6 @@ namespace Function.Domain.Helpers
             _logger = logger;
             httpclientManager = new HttpClientManager(logger);
             this.PurviewclientHelper = new PurviewClientHelper(httpclientManager, logger);
-            cacheItemPolicy = new CacheItemPolicy
-            {
-                AbsoluteExpiration = DateTimeOffset.Now.AddHours(config!.tokenCacheTimeInHours)
-            };
         }
 
         /// <summary>
@@ -657,11 +653,20 @@ namespace Function.Domain.Helpers
         }
         private async Task<string> GetToken()
         {
-
-            if (_cache.Contains("token"))
+            // If the Memory Cache already has a token stored
+            // test to see if it's actually expired (because the token might expire soon)
+            if (_cache.Contains(TOKEN_CACHE_KEY))
             {
-                return ((AuthenticationResult)_cache.Get("token")).AccessToken;
+                var cachedAuth = (AuthenticationResult)_cache.Get(TOKEN_CACHE_KEY);
+                // If the cached auth expires later than NOW + 3 minutes
+                // We are good to use the token for the next operation
+                if (cachedAuth.ExpiresOn > DateTime.UtcNow.AddMinutes(3)){
+                    _logger.LogInformation("PurviewClient-GetToken: Token cache hit, no need to refresh token");
+                    return cachedAuth.AccessToken;
+                }
+                // Else, fall through and get a new token because it's about to expire
             }
+            _logger.LogWarning("PurviewClient-GetToken: Purview Client Token doesn't exist or will expire soon, attempt refresh");
 
             // Even if this is a console application here, a daemon application is a confidential client application
             IConfidentialClientApplication app;
@@ -712,9 +717,19 @@ namespace Function.Domain.Helpers
                 return String.Empty;
             }
 
-            //_token = result;
-            var cacheItem = new CacheItem("token", result);
-            _cache.Add(cacheItem, cacheItemPolicy);
+            _logger.LogInformation($"PurviewClient-GetToken: Purview Client Token refresh successful. Adding to cache and will expire in {config!.tokenCacheTimeInHours}");
+            var cacheItem = new CacheItem(TOKEN_CACHE_KEY, result);
+            // We need to recreate this CacheItemPolicy every time
+            // If we set the policy only once, the AbsoluteExpiration won't get updated
+            // This should only be a problem in long standing PurviewClient applications
+            var cacheItemPolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddHours(config!.tokenCacheTimeInHours)
+            };
+            // Need to use Set in case the token already exists
+            // We expect that a token that expires in three minutes will be updated
+            // so the token will exist already
+            _cache.Set(cacheItem, cacheItemPolicy);
             return result.AccessToken;
         }
         /// <summary>
