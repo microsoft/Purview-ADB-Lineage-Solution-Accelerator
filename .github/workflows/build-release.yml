@@ -133,6 +133,13 @@ jobs:
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
+    - name: Start Integration ADX Cluster
+      run: source tests/integration/manage-adx-cluster.sh start ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.ADX_RG_NAME }} ${{ secrets.ADX_CLUSTER_NAME }}
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
     - name: Install Python Requirements and Databricks CLI
       run: pip install pyapacheatlas==0.12.0 azure-identity databricks-cli
 
@@ -168,6 +175,13 @@ jobs:
 
     - name: Stop Integration Synapse SQL Pool
       run: source tests/integration/manage-sql-pool.sh stop ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.INT_SYNAPSE_SQLPOOL_RG_NAME }} ${{ secrets.INT_SYNAPSE_WKSP_NAME }} ${{ secrets.INT_SYNAPSE_SQLPOOL_NAME }}
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    
+    - name: Stop Integration ADX Cluster
+      run: source tests/integration/manage-adx-cluster.sh stop ${{ secrets.INT_SUBSCRIPTION_ID }} ${{ secrets.ADX_RG_NAME }} ${{ secrets.ADX_CLUSTER_NAME }}
       env:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}

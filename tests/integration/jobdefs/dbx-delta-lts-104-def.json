@@ -1,0 +1,141 @@
+{
+  "name": "dbx-delta-lts-104",
+  "email_notifications": {
+    "no_alert_for_skipped_runs": false
+  },
+  "webhook_notifications": {},
+  "timeout_seconds": 0,
+  "max_concurrent_runs": 1,
+  "tasks": [
+    {
+      "task_key": "delta-merge-task",
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "/Shared/examples/delta-in-delta-merge",
+        "source": "WORKSPACE"
+      },
+      "existing_cluster_id": "0104-045638-iaecf5ne",
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "delta-merge-package-task",
+      "depends_on": [
+        {
+          "task_key": "delta-merge-task"
+        }
+      ],
+      "run_if": "ALL_DONE",
+      "notebook_task": {
+        "notebook_path": "/Shared/examples/delta-in-delta-merge-package",
+        "source": "WORKSPACE"
+      },
+      "existing_cluster_id": "0104-045638-iaecf5ne",
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "delta-with-abfss-task",
+      "depends_on": [
+        {
+          "task_key": "delta-merge-package-task"
+        }
+      ],
+      "run_if": "ALL_DONE",
+      "notebook_task": {
+        "notebook_path": "/Shared/examples/delta-in-delta-out-abfss",
+        "source": "WORKSPACE"
+      },
+      "existing_cluster_id": "0104-045638-iaecf5ne",
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "delta-fs-task",
+      "depends_on": [
+        {
+          "task_key": "delta-with-abfss-task"
+        }
+      ],
+      "run_if": "ALL_DONE",
+      "notebook_task": {
+        "notebook_path": "/Shared/examples/delta-in-delta-out-fs",
+        "source": "WORKSPACE"
+      },
+      "existing_cluster_id": "0104-045638-iaecf5ne",
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "delta-fs-col-changes-task",
+      "depends_on": [
+        {
+          "task_key": "delta-fs-task"
+        }
+      ],
+      "run_if": "ALL_DONE",
+      "notebook_task": {
+        "notebook_path": "/Shared/examples/delta-in-delta-out-fs-with-col-changes",
+        "source": "WORKSPACE"
+      },
+      "existing_cluster_id": "0104-045638-iaecf5ne",
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "delta-mnt-task",
+      "depends_on": [
+        {
+          "task_key": "delta-fs-col-changes-task"
+        }
+      ],
+      "run_if": "ALL_DONE",
+      "notebook_task": {
+        "notebook_path": "/Shared/examples/delta-in-delta-out-mnt",
+        "source": "WORKSPACE"
+      },
+      "existing_cluster_id": "0104-045638-iaecf5ne",
+      "timeout_seconds": 0,
+      "email_notifications": {},
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    }
+  ],
+  "run_as": {
+    "user_name": "examplemicrosoft.com"
+  }
+}

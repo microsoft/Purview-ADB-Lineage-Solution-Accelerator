@@ -1,0 +1,201 @@
+{
+    "name": "dbx-hdfs-core-lts-104",
+    "email_notifications": {
+      "no_alert_for_skipped_runs": false
+    },
+    "webhook_notifications": {},
+    "timeout_seconds": 0,
+    "max_concurrent_runs": 1,
+    "tasks": [
+      {
+        "task_key": "abfss-in-abfss-out-task",
+        "run_if": "ALL_SUCCESS",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/abfss-in-abfss-out",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "abfss-in-abfss-out-oauth-task",
+        "depends_on": [
+          {
+            "task_key": "abfss-in-abfss-out-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/abfss-in-abfss-out-oauth",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "abfss-in-abfss-out-root-task",
+        "depends_on": [
+          {
+            "task_key": "abfss-in-abfss-out-oauth-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/abfss-in-abfss-out-root",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "wasbs-in-wasbs-out-task",
+        "depends_on": [
+          {
+            "task_key": "abfss-in-abfss-out-root-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/wasbs-in-wasbs-out",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "wasbs-in-wasbs-out-with-param-task",
+        "depends_on": [
+          {
+            "task_key": "wasbs-in-wasbs-out-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/wasbs-in-wasbs-out-with-param",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "intermix-languages-task",
+        "depends_on": [
+          {
+            "task_key": "wasbs-in-wasbs-out-with-param-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/intermix-languages",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "mount-task",
+        "depends_on": [
+          {
+            "task_key": "intermix-languages-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/mnt-in-mnt-out",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "name-period-task",
+        "depends_on": [
+          {
+            "task_key": "mount-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/name-with-periods",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {},
+        "notification_settings": {
+          "no_alert_for_skipped_runs": false,
+          "no_alert_for_canceled_runs": false,
+          "alert_on_last_attempt": false
+        },
+        "webhook_notifications": {}
+      },
+      {
+        "task_key": "nested-parent-task",
+        "depends_on": [
+          {
+            "task_key": "name-period-task"
+          }
+        ],
+        "run_if": "ALL_DONE",
+        "notebook_task": {
+          "notebook_path": "/Shared/examples/nested-parent",
+          "source": "WORKSPACE"
+        },
+        "existing_cluster_id": "0104-045638-iaecf5ne",
+        "timeout_seconds": 0,
+        "email_notifications": {}
+      }
+    ],
+    "run_as": {
+      "user_name": "examplemicrosoft.com"
+    }
+  }

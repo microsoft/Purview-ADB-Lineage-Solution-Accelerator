@@ -1,0 +1,35 @@
+[
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-abfss-out-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-abfss-out-task/processes/58C1F24BA6C6FF7592F786C9FA8A3451->BA6B11F82FDCE37E849D25D545E6FB7A",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-abfss-out-oauth-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out-oauth",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-abfss-out-oauth-task/processes/BD4A7A895E605BF6C4DE003D3F6B3F39->A3B52DA733083E4642E1C3DB6B093E84",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-abfss-out-root-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/abfss-in-abfss-out-root",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/abfss-in-abfss-out-root-task/processes/0AFD1EDAC25ECE8253F387E74F28629A->1BB1B95C33EDB21B2D3903B9A8103087",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/wasbs-in-wasbs-out-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/wasbs-in-wasbs-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/wasbs-in-wasbs-out-task/processes/34DA3FD40AC2F55C125A86039355D6ED->4A56EEA94A2A249B6FA359EC03F43FF7",
+  
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/intermix-languages-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/intermix-languages",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/intermix-languages-task/processes/7D3D5D44FDC1DC865806712E633C5E56->B3CF5624F08EEEDF819869D074FA7774",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/mount-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/mnt-in-mnt-out",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/mount-task/processes/336D6FD3010382DAB8351BFF026B2CBE->C60C4BAB82567905C64B99E2DCBCA711",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/name-period-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/name-with-periods",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/name-period-task/processes/8530DB90732944CA2C3C02E4FEE633E2->054707838715BECB4629ECF6B398BF1A",
+
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/nested-parent-task",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/notebooks/Shared/examples/nested-parent",
+  "databricks://<WORKSPACE_ID>.azuredatabricks.net/jobs/<JOB_ID>/tasks/nested-parent-task/processes/8514E8FCB25E967BC6DA61D1A48E2CD4->7C40325C08313ADDF8F653CACEAAA8C1"
+  
+]
