@@ -6,7 +6,7 @@
 			"description": "purview_custom_connector_generic_column",
 			"serviceType": "Purview Custom Connector",
 			"options": {
-				"schemaAttributes": "data_type"
+				"schemaAttributes": "[\"data_type\"]"
 			},
 			"attributeDefs": [
 				{
