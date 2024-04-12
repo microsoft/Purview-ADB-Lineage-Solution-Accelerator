@@ -7,7 +7,7 @@ cffi==1.15.1
 charset-normalizer==2.1.1
 colorama==0.4.6
 cryptography==39.0.1
-idna==3.4
+idna==3.7
 importlib-metadata==5.1.0
 isodate==0.6.1
 msal==1.20.0
