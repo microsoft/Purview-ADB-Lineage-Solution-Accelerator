@@ -21,3 +21,10 @@ This directory contains a "gallery" of sample OpenLineage to Purview Mappings th
     * Supports mapping Snowflake tables in Purview.
     * OpenLineage returns a DataSet with `"namespace":"snowflake://<snowflakeurl>","name":"<database>.<schema>.<table>`
     * Microsoft Purview expects a fully qualified name of `snowflake://<snowflakeurl>/databases/<database>/schemas/<schema>/tables/<table>`
+
+## External hive metastore using azure SQL
+* [external hive metastore](./ext-hive-metastore.json)
+    * Supports mapping hive metastore table hosted in azure sql DB.
+    * OpenLineage returns a hive asset types with `@AdbWorkspaceUrl`
+    * Microsoft Purview expects a fully qualified name of `<database>.<table>@<sqlserver-name>.database.windows.net`
+    * In case of multiple Adb workspace, contains-in or in condition will help to compare multiple values in one single     mapping.

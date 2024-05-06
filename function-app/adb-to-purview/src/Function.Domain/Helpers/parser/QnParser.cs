@@ -152,6 +152,32 @@ namespace Function.Domain.Helpers
             return true;
         }
 
+        //The function ContainsIn and In will compare all  worspace names. This can be used for custom hive metastore. for first match it will return true
+
+        private bool ContainsIn(string firstOp, string valOp)
+        {
+            var vstrVal = valOp.Split("|");
+            foreach (var item in vstrVal)
+            {
+                if (firstOp.Contains(item)) return true;
+            }
+            return false;
+        }
+
+        private bool In(string firstOp, string valOp)
+        {
+            var vstrVal = valOp.Split("|");
+ 
+            foreach (var item in vstrVal)
+            {
+                if (firstOp == item) return true;
+            }
+ 
+            return false;
+        }
+
+
+
         private bool EvaluateCondition(ParserCondition parserCondition, Dictionary<string,object> olDynParts)
         {
             var firstOp = GetDynamicValue(parserCondition.Op1, olDynParts);
@@ -166,7 +192,11 @@ namespace Function.Domain.Helpers
                 case ">":
                     return int.Parse(firstOp) > int.Parse(parserCondition.ValOp2);
                 case "<":
-                    return int.Parse(firstOp) < int.Parse(parserCondition.ValOp2);                    
+                    return int.Parse(firstOp) < int.Parse(parserCondition.ValOp2); 
+                case "contains-in":
+                    return ContainsIn(firstOp, parserCondition.ValOp2);    
+                case "in":
+                    return In(firstOp, parserCondition.ValOp2);                   
             }
             return false;
         }
