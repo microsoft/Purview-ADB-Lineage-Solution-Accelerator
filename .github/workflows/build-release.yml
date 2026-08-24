@@ -44,9 +44,9 @@ jobs:
         os: [windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@871f041373faaad213a635d9afb62905ec029bbb # v1.10.1
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
       
@@ -71,7 +71,7 @@ jobs:
         Compress-Archive -Path D:/a/Purview-ADB-Lineage-Solution-Accelerator/Purview-ADB-Lineage-Solution-Accelerator/function-app/adb-to-purview/src/bin/Debug/net6.0/publish/* -DestinationPath ~/artifact/FunctionZip.zip
       
     - name: Upload Function Zip Build Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3.2.1
       with:
         name: FunctionZip
         path: ~/artifact/FunctionZip.zip
@@ -83,7 +83,7 @@ jobs:
         ls ~/artifact-mappings
 
     - name: Upload One Line OlToPurviewMappings Build Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3.2.1
       with:
         name: Mappings
         path: ~/artifact-mappings/one-line-mappings.json
@@ -95,29 +95,29 @@ jobs:
     environment: 
       name: Integration
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
 
     # Deploy the Function to integration environment
     - name: Download Artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
       with:
         name: FunctionZip
         path: ./artifacts
 
     - name: Deploy Azure Function to Integration Env
-      uses: Azure/functions-action@v1.4.6
+      uses: Azure/functions-action@a5745d20de8e03c1d0a2a44a79a670d22989e04f # v1.4.6
       with:
         app-name: ${{ secrets.INT_FUNC_NAME }}
         package: ./artifacts/FunctionZip.zip
         publish-profile: ${{ secrets.INT_PUBLISH_PROFILE }}
     
     - name: Azure Login
-      uses: azure/login@v1
+      uses: azure/login@cb79c773a3cfa27f31f25eb3f677781210c9ce3d # v1.6.1
       with:
         creds: ${{ secrets.INT_AZ_CLI_CREDENTIALS }}
     
     - name: Compare and Update App Settings on Deployed Function
-      uses: azure/CLI@v1
+      uses: azure/CLI@4db43908b9df2e7ac93c8275a8f9a448c59338dd # v1.0.9
       with:
         azcliversion: 2.34.1
         inlineScript: |
@@ -182,16 +182,16 @@ jobs:
     environment: 
       name: ReleaseEnvironment
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
 
     - name: Download Artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
       with:
         name: FunctionZip
         path: ~/artifacts
 
     - name: Create Release
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
       if: github.ref_type == 'tag'
       with:
         artifacts: ~/artifacts/FunctionZip.zip
